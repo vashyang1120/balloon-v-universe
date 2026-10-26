@@ -1,51 +1,95 @@
 /* ==========================================================
-   氣球小V遊戲宇宙 — 地圖選區設定檔
-   balloon-v-universe-v0.1.0-map-interaction-test-1
+   氣球小V遊戲宇宙 — 集中設定檔
+   balloon-v-universe-v0.2.0-lobby-integration-test-1
 
-   ★ 校準選區時，只需要修改這個檔案。
+   ★ 所有可調整的數值都集中在這個檔案：
+     選區座標、聚焦暗化、光暈、動畫速度、中央角色、RPG 對話。
+     其他檔案不需要修改。
 
    座標說明：
    - 所有座標都是「原始底圖上的像素位置」(x, y)。
    - 原點 (0,0) 在圖片左上角，往右 x 變大、往下 y 變大。
    - 目前底圖 assets/universe_map_bg.png 實際尺寸為 1536 × 1024。
    - 若日後換成不同解析度（但構圖相同）的圖片，
-     程式會依 designWidth / designHeight 自動等比換算，
-     不需要重算全部座標。
+     程式會依 designWidth / designHeight 自動等比換算。
 
    校準方法：
-   - 開啟網址並在後面加上 ?debug=1
+   - 網址後面加上 ?debug=1
      例如 https://vashyang1120.github.io/balloon-v-universe/?debug=1
-   - 畫面會顯示所有選區的外框，
+   - 會顯示四個選區外框（粉紅虛線）與角色腳底定位點（粉紅十字），
      點地圖任何位置，左上角會顯示該點的圖片座標。
-   - 把想要的點依序填進下面的 points 即可。
-     點與點之間程式會自動畫成平滑曲線。
    ========================================================== */
 
 window.MAP_CONFIG = {
-  version: "balloon-v-universe-v0.1.0-map-interaction-test-1",
+  version: "balloon-v-universe-v0.2.0-lobby-integration-test-1",
 
   /* 正式底圖路徑（不可替換成其他圖片） */
   mapSrc: "assets/universe_map_bg.png",
 
-  /* 下面 points 座標所依據的圖片尺寸 */
+  /* 下面所有座標所依據的圖片尺寸 */
   designWidth: 1536,
   designHeight: 1024,
 
-  /* 未選取區域的暗化程度（0.35 ～ 0.45 建議值） */
-  dimOpacity: 0.4,
+  /* 哪些畫面算「桌機」（與 style.css 的桌機版面條件相同） */
+  desktopQuery: "(min-width: 900px) and (min-aspect-ratio: 1/1)",
 
-  /* 遮罩邊緣柔和度（數字越大越柔和，單位：原圖像素） */
-  featherSize: 14,
+  /* ---------- 聚焦效果 ----------
+     darkness   ：未選區域變暗程度（0 = 不變暗，1 = 全黑）
+     saturation ：未選區域保留多少色彩（1 = 原色，0 = 黑白）
+     featherSize：選區邊緣柔和度（原圖像素）                */
+  focus: {
+    desktop: { darkness: 0.5, saturation: 0.45 },
+    mobile:  { darkness: 0.38, saturation: 0.65 },
+    featherSize: 14
+  },
 
-  /* 中央廣場：保留給未來的小V與氣球小狗角色（本版不放角色） */
-  plaza: { x: 735, y: 690 },
+  /* ---------- 選中區域光暈 ---------- */
+  glow: {
+    color: "#ffe680",        // 外圈金色
+    innerColor: "#ffffff",   // 內圈白色
+    desktopWidth: 18,        // 桌機光暈粗細（原圖像素）
+    mobileWidth: 11,         // 手機光暈粗細
+    blur: 9,                 // 光暈模糊程度
+    breatheSeconds: 2.4      // 呼吸光一次的秒數
+  },
 
+  /* ---------- 動畫速度（毫秒） ---------- */
+  animation: {
+    focusMs: 500,            // 暗化 / 聚焦切換
+    panelMs: 350             // 介紹面板滑入
+  },
+
+  /* ---------- 中央廣場角色（小V與氣球小狗合圖） ----------
+     footX / footY ：角色腳底要站在地圖上的哪一點（原圖座標）
+     height        ：整張角色 PNG 在地圖上的顯示高度（原圖像素）
+     anchorX/Y     ：角色 PNG 內「腳底點」的位置（0～1，相對於 PNG 寬高）
+                     目前 = PNG 內角色範圍的底部中央
+     shadow        ：腳下陰影大小與深淺                          */
+  character: {
+    src: "assets/universe_lobby_v_dog.png",
+    footX: 735,
+    footY: 752,
+    height: 185,
+    anchorX: 0.511,
+    anchorY: 0.986,
+    shadow: { widthRatio: 0.92, heightRatio: 0.13, offsetY: -6, opacity: 0.38 }
+  },
+
+  /* ---------- RPG 對話框 ---------- */
+  dialogue: {
+    speakerName: "氣球小V",
+    typeSpeedMs: 45,         // 每個字出現的間隔（越小越快）
+    portrait: null           // 正式 RPG 半身像（尚未指定，先不顯示）
+  },
+
+  /* ---------- 四個遊戲區域 ---------- */
   zones: [
     {
       id: "academy",
       name: "知識學院",
       game: "小V知識挑戰",
       intro: "一起挑戰有趣的知識題目！",
+      vLine: "準備好動動腦了嗎？一起來挑戰知識吧！",
       icon: "📚",
       direction: "上方中央",
       pin: { x: 690, y: 238 },          // 地圖上名牌的位置
@@ -60,6 +104,7 @@ window.MAP_CONFIG = {
       name: "音樂舞台",
       game: "氣球小V節奏遊戲",
       intro: "跟著音樂節奏一起挑戰！",
+      vLine: "跟著音樂一起玩，看看你的節奏感有多厲害！",
       icon: "🎵",
       direction: "右上方",
       pin: { x: 1180, y: 345 },
@@ -74,6 +119,7 @@ window.MAP_CONFIG = {
       name: "方塊工坊",
       game: "氣球小V方塊派對",
       intro: "動動腦，挑戰更高分！",
+      vLine: "來挑戰方塊吧！看看你能拿到多少分！",
       icon: "🧩",
       direction: "左側",
       pin: { x: 270, y: 548 },
@@ -88,8 +134,9 @@ window.MAP_CONFIG = {
       name: "派對島",
       game: "氣球小V：派對島大作戰",
       intro: "跟著小V和氣球小狗展開冒險！",
+      vLine: "準備好冒險了嗎？我們一起出發吧！",
       icon: "🏝️",
-      direction: "右下方",
+      direction: "右側",
       pin: { x: 1240, y: 610 },
       points: [
         [1000, 500], [1030, 450], [1120, 420], [1240, 400], [1360, 420],
