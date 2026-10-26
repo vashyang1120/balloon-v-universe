@@ -4,7 +4,7 @@ Balloon V Game Universe - Player Portal &amp; Game Lobby
 氣球小V遊戲宇宙 — 統一玩家入口
 
 ## 目前版本
-`balloon-v-universe-v0.2.0-lobby-integration-test-1`（大廳整合測試版）
+`balloon-v-universe-v0.2.1-focus-and-character-tuning-test-1`（桌機聚焦與中央角色調校測試版）
 
 ## 檔案
 | 檔案 | 用途 |

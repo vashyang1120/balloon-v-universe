@@ -1,6 +1,6 @@
 /* ==========================================================
    氣球小V遊戲宇宙 — 集中設定檔
-   balloon-v-universe-v0.2.0-lobby-integration-test-1
+   balloon-v-universe-v0.2.1-focus-and-character-tuning-test-1
 
    ★ 所有可調整的數值都集中在這個檔案：
      選區座標、聚焦暗化、光暈、動畫速度、中央角色、RPG 對話。
@@ -21,7 +21,7 @@
    ========================================================== */
 
 window.MAP_CONFIG = {
-  version: "balloon-v-universe-v0.2.0-lobby-integration-test-1",
+  version: "balloon-v-universe-v0.2.1-focus-and-character-tuning-test-1",
 
   /* 正式底圖路徑（不可替換成其他圖片） */
   mapSrc: "assets/universe_map_bg.png",
@@ -36,19 +36,27 @@ window.MAP_CONFIG = {
   /* ---------- 聚焦效果 ----------
      darkness   ：未選區域變暗程度（0 = 不變暗，1 = 全黑）
      saturation ：未選區域保留多少色彩（1 = 原色，0 = 黑白）
-     featherSize：選區邊緣柔和度（原圖像素）                */
+     haze       ：未選區域蓋上一層中性灰霧，降低對比與活力（0 = 不加）
+     darkColor  ：暗化用的顏色（v0.2.0 桌機與手機都是深藍 #0a0f2a）
+     featherSize：選區邊緣柔和度（原圖像素）
+     v0.2.0 桌機原值：darkness 0.5、saturation 0.45、haze 0、darkColor #0a0f2a */
   focus: {
-    desktop: { darkness: 0.5, saturation: 0.45 },
-    mobile:  { darkness: 0.38, saturation: 0.65 },
+    desktop: { darkness: 0.62, saturation: 0.2, haze: 0.22, darkColor: "#12121c" },
+    mobile:  { darkness: 0.38, saturation: 0.65, haze: 0,    darkColor: "#0a0f2a" },
+    hazeColor: "#88888e",      // 中性灰（不帶顏色，才不會反而增加色彩）
     featherSize: 14
   },
 
   /* ---------- 選中區域光暈 ---------- */
   glow: {
-    color: "#ffe680",        // 外圈金色
+    color: "#ffe680",        // 手機外圈金色（未改）
+    desktopColor: "#ffd84d", // 桌機外圈金色，較飽和（v0.2.0 桌機也是 #ffe680）
     innerColor: "#ffffff",   // 內圈白色
-    desktopWidth: 18,        // 桌機光暈粗細（原圖像素）
-    mobileWidth: 11,         // 手機光暈粗細
+    edgeColor: "#fff3b0",    // 清楚的金邊線（不模糊）
+    desktopWidth: 28,        // 桌機光暈粗細（v0.2.0：18）
+    mobileWidth: 11,         // 手機光暈粗細（未改）
+    desktopEdgeWidth: 4,     // 桌機清楚金邊粗細（v0.2.0 沒有）
+    mobileEdgeWidth: 0,      // 手機不加金邊，維持原樣
     blur: 9,                 // 光暈模糊程度
     breatheSeconds: 2.4      // 呼吸光一次的秒數
   },
@@ -64,12 +72,13 @@ window.MAP_CONFIG = {
      height        ：整張角色 PNG 在地圖上的顯示高度（原圖像素）
      anchorX/Y     ：角色 PNG 內「腳底點」的位置（0～1，相對於 PNG 寬高）
                      目前 = PNG 內角色範圍的底部中央
-     shadow        ：腳下陰影大小與深淺                          */
+     shadow        ：腳下陰影大小與深淺（大小會跟著 height 自動等比放大）
+     v0.2.0 原值：footX 735、footY 752、height 185                  */
   character: {
     src: "assets/universe_lobby_v_dog.png",
-    footX: 735,
-    footY: 752,
-    height: 185,
+    footX: 735,              // 未改（維持在廣場與階梯的中軸線上）
+    footY: 708,              // 752 → 708，往地圖後方移 44 像素
+    height: 200,             // 185 → 200，放大為 108.1%
     anchorX: 0.511,
     anchorY: 0.986,
     shadow: { widthRatio: 0.92, heightRatio: 0.13, offsetY: -6, opacity: 0.38 }

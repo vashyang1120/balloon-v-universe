@@ -1,12 +1,12 @@
 /* ==========================================================
    氣球小V遊戲宇宙 — 地圖互動
-   balloon-v-universe-v0.2.0-lobby-integration-test-1
+   balloon-v-universe-v0.2.1-focus-and-character-tuning-test-1
 
    結構：
    1. 讀取底圖實際尺寸 → 以原圖像素建立 SVG 座標系統
    2. 圖層（由下到上）：
       a. 原始底圖（畫兩層，抵銷底圖檔案本身約 4% 的半透明）
-      b. 聚焦層：黑白版底圖 + 暗色，用 SVG mask 挖空選中區域（邊緣羽化）
+      b. 聚焦層：黑白版底圖 + 灰紫霧（降對比）+ 暗色，用 SVG mask 挖空選中區域（邊緣羽化）
       c. 選中區域光暈
       d. 中央廣場角色（小V與氣球小狗）＋腳下陰影 —— 不會被暗化、不攔截點擊
       e. 透明點擊熱區（最上層）
@@ -54,6 +54,7 @@
     scaleY: 1,
     focusLayer: null,     // 聚焦層（黑白 + 暗色），整層淡入淡出
     grayImage: null,
+    hazeRect: null,
     darkRect: null,
     holes: {},            // 遮罩挖空 path（依區域 id）
     glows: {},
@@ -204,6 +205,9 @@
     state.grayImage = svgEl("image", {
       x: 0, y: 0, width: W, height: H, preserveAspectRatio: "none"
     }, state.focusLayer);
+    state.hazeRect = svgEl("rect", {
+      x: 0, y: 0, width: W, height: H, fill: CFG.focus.hazeColor, opacity: 0
+    }, state.focusLayer);
     state.darkRect = svgEl("rect", {
       x: 0, y: 0, width: W, height: H, fill: "#0a0f2a"
     }, state.focusLayer);
@@ -228,6 +232,10 @@
         "class": "glow__line glow__inner", d: d, fill: "none",
         stroke: CFG.glow.innerColor, "stroke-opacity": 0.8,
         "stroke-linejoin": "round", filter: "url(#glowBlur)"
+      }, g);
+      svgEl("path", {   // 清楚的金邊線（不模糊；手機粗細為 0 = 不顯示）
+        "class": "glow__edge", d: d, fill: "none",
+        stroke: CFG.glow.edgeColor, "stroke-opacity": 0.95, "stroke-linejoin": "round"
       }, g);
       state.glows[z.id] = g;
 
@@ -336,12 +344,24 @@
 
   function applyModeParams() {
     if (!state.focusLayer) return;
-    var f = focusParams();
+    var f = focusParams(), desk = isDesktop(), G = CFG.glow;
     state.grayImage.setAttribute("opacity", (1 - f.saturation).toFixed(3));
+    state.hazeRect.setAttribute("opacity", f.haze || 0);
     state.darkRect.setAttribute("opacity", f.darkness);
-    var width = (isDesktop() ? CFG.glow.desktopWidth : CFG.glow.mobileWidth) * state.scaleX;
-    els.svg.querySelectorAll(".glow__outer").forEach(function (p) { p.setAttribute("stroke-width", width); });
+    state.darkRect.setAttribute("fill", f.darkColor || "#0a0f2a");
+    var width = (desk ? G.desktopWidth : G.mobileWidth) * state.scaleX;
+    var edge = (desk ? G.desktopEdgeWidth : G.mobileEdgeWidth) * state.scaleX;
+    var color = desk ? (G.desktopColor || G.color) : G.color;
+    els.svg.querySelectorAll(".glow__outer").forEach(function (p) {
+      p.setAttribute("stroke-width", width);
+      p.setAttribute("stroke", color);
+    });
     els.svg.querySelectorAll(".glow__inner").forEach(function (p) { p.setAttribute("stroke-width", width * 0.35); });
+    els.svg.querySelectorAll(".glow__edge").forEach(function (p) {
+      p.setAttribute("stroke-width", edge);
+      p.style.display = edge > 0 ? "" : "none";
+    });
+    document.body.classList.toggle("is-desktop", desk);
   }
   if (desktopMQ.addEventListener) desktopMQ.addEventListener("change", applyModeParams);
   else if (desktopMQ.addListener) desktopMQ.addListener(applyModeParams);
@@ -435,7 +455,7 @@
     var p = pt.matrixTransform(els.svg.getScreenCTM().inverse());
     var x = Math.round(p.x / state.scaleX), y = Math.round(p.y / state.scaleY);
     els.debugBox.hidden = false;
-    els.debugBox.textContent = "座標 [" + x + ", " + y + "]";
+    els.debugBox.textContent = "座標 [" + x + ", " + y + "]\n模式：" + (isDesktop() ? "桌機" : "手機");
     console.log("[地圖座標]", "[" + x + ", " + y + "]");
   }
 

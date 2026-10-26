@@ -1,6 +1,6 @@
 /* ==========================================================
    氣球小V遊戲宇宙 — RPG 對話框元件
-   balloon-v-universe-v0.2.0-lobby-integration-test-1
+   balloon-v-universe-v0.2.1-focus-and-character-tuning-test-1
 
    使用方式（未來劇情也用同一個元件）：
      RpgDialogue.play([
