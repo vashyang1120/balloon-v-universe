@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="version" content="balloon-v-universe-v0.2.0-lobby-integration-test-1">
+  <title>氣球小V遊戲宇宙</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ===== 頂部：園區招牌 + 玩家功能區（預留） ===== -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__balloon" aria-hidden="true">🎈</span>
+      <h1 class="brand__title">氣球小V遊戲宇宙</h1>
+      <span class="version-tag">v0.2.0 整合測試</span>
+    </div>
+
+    <!-- 玩家通行證預留位置：本版不登入、不讀取任何玩家資料 -->
+    <button class="pass-chip" id="passChip" type="button" aria-haspopup="dialog">
+      <span class="pass-chip__icon" aria-hidden="true">🎫</span>
+      <span class="pass-chip__text">
+        <span class="pass-chip__label">玩家通行證</span>
+        <span class="pass-chip__status">玩家系統即將整合</span>
+      </span>
+    </button>
+  </header>
+
+  <main class="layout">
+
+    <!-- ===== 遊樂園地圖 ===== -->
+    <section class="map-wrap">
+      <div class="map-stage" id="mapStage">
+        <!-- SVG 由 main.js 依底圖實際尺寸建立：
+             底圖、暗化與去色層、光暈、中央角色、點擊熱區 -->
+        <svg id="mapSvg" class="map-svg" xmlns="http://www.w3.org/2000/svg"
+             preserveAspectRatio="xMidYMid meet" role="img" aria-label="氣球小V遊樂園地圖"></svg>
+
+        <!-- 地圖上的區域名牌（與熱區共用同一套座標） -->
+        <div class="pins" id="pins"></div>
+
+        <!-- 底圖載入狀態 / 錯誤訊息 -->
+        <div class="map-status" id="mapStatus">地圖載入中…</div>
+        <!-- 角色素材錯誤訊息（不會用其他圖片代替） -->
+        <div class="asset-warning" id="assetWarning" hidden></div>
+
+        <!-- 校準模式座標顯示（?debug=1 才會出現） -->
+        <div class="debug-box" id="debugBox" hidden></div>
+      </div>
+    </section>
+
+    <!-- ===== 園區導覽牌：大尺寸區域按鈕（手機主要操作方式） ===== -->
+    <nav class="guide-board" aria-label="園區導覽">
+      <div class="guide-board__title">🗺️ 園區導覽</div>
+      <div class="guide-board__grid" id="guideGrid"></div>
+    </nav>
+
+  </main>
+
+  <!-- ===== 遊戲介紹面板（不會被暗化） ===== -->
+  <aside class="info-panel" id="infoPanel" aria-live="polite" aria-hidden="true">
+    <button class="info-panel__close" id="closeBtn" type="button" aria-label="關閉">✕</button>
+    <div class="info-panel__ribbon" id="infoZone"></div>
+    <div class="info-panel__body">
+      <div class="info-panel__icon" id="infoIcon" aria-hidden="true"></div>
+      <div>
+        <div class="info-panel__label">遊戲</div>
+        <h2 class="info-panel__game" id="infoGame"></h2>
+        <p class="info-panel__intro" id="infoIntro"></p>
+      </div>
+    </div>
+    <button class="play-btn" id="playBtn" type="button">▶ 開始遊玩</button>
+    <button class="talk-btn" id="talkBtn" type="button">💬 聽小V介紹</button>
+  </aside>
+
+  <!-- ===== RPG 對話框（dialogue.js 控制） ===== -->
+  <div class="rpg" id="rpg" hidden>
+    <div class="rpg__shield" id="rpgShield"></div>   <!-- 對話期間擋住背景，避免誤觸 -->
+    <div class="rpg__box" role="dialog" aria-modal="true" aria-labelledby="rpgName">
+      <div class="rpg__portrait" id="rpgPortrait" hidden></div>
+      <div class="rpg__main">
+        <div class="rpg__name" id="rpgName"></div>
+        <p class="rpg__text" id="rpgText"></p>
+        <div class="rpg__actions">
+          <button class="rpg__skip" id="rpgSkip" type="button">略過 ⏭</button>
+          <button class="rpg__next" id="rpgNext" type="button">繼續 ▼</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 玩家通行證預留說明 ===== -->
+  <div class="modal" id="passModal" hidden>
+    <div class="modal__card pass-card" role="dialog" aria-modal="true" aria-labelledby="passTitle">
+      <h3 id="passTitle">🎫 玩家通行證</h3>
+      <p class="pass-card__notice">玩家系統即將整合<br>本版本不會登入、也不會儲存任何玩家資料。</p>
+      <div class="pass-card__layout" aria-hidden="true">
+        <div class="pass-card__emblem">通行證<br>圖案</div>
+        <ul class="pass-card__fields">
+          <li><span>玩家名稱</span><em>尚未開放</em></li>
+          <li><span>V幣</span><em>尚未開放</em></li>
+          <li><span>稱號</span><em>尚未開放</em></li>
+        </ul>
+      </div>
+      <div class="pass-card__buttons">
+        <button type="button" disabled>切換玩家</button>
+        <button type="button" disabled>新增玩家</button>
+        <button type="button" disabled>操作教學</button>
+      </div>
+      <p class="pass-card__soon">以上功能將在後續版本開放</p>
+      <button class="play-btn play-btn--small" id="passOk" type="button">知道了</button>
+    </div>
+  </div>
+
+  <!-- ===== 「開始遊玩」測試提示 ===== -->
+  <div class="modal" id="testModal" hidden>
+    <div class="modal__card" role="dialog" aria-modal="true" aria-labelledby="testTitle">
+      <div class="modal__icon">🎉</div>
+      <h3 id="testTitle">地圖互動測試成功</h3>
+      <p id="testDetail"></p>
+      <p class="modal__note">正式遊戲連結將在後續版本開放。</p>
+      <button class="play-btn play-btn--small" id="testOk" type="button">好的</button>
+    </div>
+  </div>
+
+  <script src="zones.js"></script>
+  <script src="dialogue.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
