@@ -1,0 +1,416 @@
+/* ==========================================================
+   氣球小V遊戲宇宙 — 樣式
+   balloon-v-universe-v0.1.0-map-interaction-test-1
+   ========================================================== */
+
+:root {
+  --map-ratio: 1.5;          /* 由 main.js 依底圖實際尺寸更新 */
+  --dim: 0.4;                /* 由 zones.js 的 dimOpacity 更新 */
+  --topbar-h: 52px;
+  --purple: #7a3fd1;
+  --purple-dark: #4d2391;
+  --pink: #ff5fa8;
+  --gold: #ffd84d;
+  --ink: #2b1d4f;
+  --card: #fffdf7;
+  --ease: cubic-bezier(.22, .8, .3, 1);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  width: 100%;
+  overflow-x: hidden;            /* 不允許多餘的左右滑動 */
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  color: var(--ink);
+  background: linear-gradient(180deg, #8fd3ff 0%, #c7ecff 45%, #fff3fb 100%);
+  -webkit-tap-highlight-color: transparent;
+}
+
+button { font-family: inherit; }
+
+/* ---------- 頂部標題列 ---------- */
+.topbar {
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 16px;
+}
+.title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: .04em;
+  text-shadow: 0 2px 0 var(--purple), 0 3px 8px rgba(77, 35, 145, .4);
+  white-space: nowrap;
+}
+.version-tag {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--purple-dark);
+  background: rgba(255, 255, 255, .75);
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* ---------- 版面 ---------- */
+.layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 16px 16px;
+}
+
+.map-wrap { width: 100%; display: flex; justify-content: center; }
+
+/* 地圖舞台：寬高比與底圖一致，SVG、名牌、熱區全部用同一個比例縮放 */
+.map-stage {
+  position: relative;
+  width: min(100%, calc((100vh - var(--topbar-h) - 24px) * var(--map-ratio)));
+  width: min(100%, calc((100dvh - var(--topbar-h) - 24px) * var(--map-ratio)));
+  aspect-ratio: var(--map-ratio);
+  border-radius: 20px;
+  overflow: hidden;
+  background: #bfe6ff;
+  box-shadow: 0 10px 30px rgba(43, 29, 79, .25), 0 0 0 4px rgba(255, 255, 255, .7);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.map-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ---------- SVG 圖層 ---------- */
+/* 暗化層與遮罩挖空的透明度由 main.js 逐格控制（不要在這裡設定 opacity） */
+.dim-rect { pointer-events: none; }
+
+.glow {
+  opacity: 0;
+  transition: opacity .45s var(--ease);
+  pointer-events: none;
+}
+.glow.is-hover { opacity: .45; }
+.glow.is-active { opacity: 1; }
+.glow.is-active .glow__line { animation: breathe 2.4s ease-in-out infinite; }
+
+@keyframes breathe {
+  0%, 100% { opacity: .55; }
+  50%      { opacity: 1; }
+}
+
+.hit {
+  fill: transparent;
+  stroke: none;
+  cursor: pointer;
+  pointer-events: all;
+  outline: none;
+}
+
+.zone-outline { display: none; pointer-events: none; }
+.debug .zone-outline { display: inline; }
+
+/* ---------- 地圖名牌 ---------- */
+.pins { position: absolute; inset: 0; pointer-events: none; }
+
+.pin {
+  position: absolute;
+  left: calc(var(--x) * 100%);
+  top: calc(var(--y) * 100%);
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 6px 14px 6px 10px;
+  border: 3px solid #fff;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #9a5cf0, var(--purple));
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: .05em;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--purple-dark), 0 6px 14px rgba(43, 29, 79, .35);
+  transition: transform .25s var(--ease), background .25s, box-shadow .25s;
+}
+.pin__icon { font-size: 1.15em; line-height: 1; }
+.pin:hover { transform: translate(-50%, -50%) scale(1.06); }
+.pin.is-active {
+  background: linear-gradient(180deg, #ffe680, #ffc21a);
+  color: var(--ink);
+  box-shadow: 0 4px 0 #c98a00, 0 0 0 4px rgba(255, 216, 77, .45), 0 6px 18px rgba(43, 29, 79, .35);
+  transform: translate(-50%, -50%) scale(1.08);
+}
+.pin:focus-visible { outline: 3px solid var(--pink); outline-offset: 3px; }
+
+/* 中央廣場保留位（目前不放角色，只佔位置） */
+.plaza-slot {
+  position: absolute;
+  width: 14%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.debug .plaza-slot { outline: 2px dashed #ff00aa; border-radius: 50%; }
+
+/* ---------- 狀態 / 校準 ---------- */
+.map-status {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--purple-dark);
+  background: rgba(255, 255, 255, .85);
+}
+.map-status[hidden] { display: none; }
+.map-status.is-error { color: #c0004e; }
+
+.debug-box {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, .75);
+  color: #fff;
+  font: 13px/1.4 ui-monospace, Menlo, Consolas, monospace;
+  pointer-events: none;
+  white-space: pre;
+}
+
+/* ---------- 園區導覽牌（大尺寸區域按鈕） ---------- */
+.guide-board {
+  width: 100%;
+  max-width: 560px;
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #c98d55, #a86b37);
+  border: 3px solid #fff1d6;
+  box-shadow: 0 5px 0 #7a4a22, 0 8px 18px rgba(43, 29, 79, .25);
+}
+.guide-board__title {
+  text-align: center;
+  font-weight: 900;
+  color: #fff8e6;
+  margin-bottom: 10px;
+  letter-spacing: .1em;
+  text-shadow: 0 2px 0 #7a4a22;
+}
+.guide-board__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.guide-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 68px;               /* 大尺寸點擊區 */
+  padding: 10px 12px;
+  border: 3px solid #fff;
+  border-radius: 14px;
+  background: var(--card);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #d9c7a8;
+  transition: transform .15s, background .25s, box-shadow .25s;
+}
+.guide-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #d9c7a8; }
+.guide-btn__icon { font-size: 28px; line-height: 1; }
+.guide-btn__text { display: flex; flex-direction: column; min-width: 0; }
+.guide-btn__name { font-size: 17px; font-weight: 900; }
+.guide-btn__dir  { font-size: 12px; color: #7a6a99; }
+.guide-btn.is-active {
+  background: linear-gradient(180deg, #fff3b0, #ffd84d);
+  box-shadow: 0 4px 0 #c98a00, 0 0 0 3px rgba(255, 255, 255, .8);
+}
+.guide-btn:focus-visible { outline: 3px solid var(--pink); outline-offset: 2px; }
+
+/* ---------- 遊戲介紹面板 ---------- */
+.info-panel {
+  position: fixed;
+  z-index: 20;
+  left: 24px;
+  bottom: 24px;
+  width: 340px;
+  padding: 20px 20px 18px;
+  border-radius: 22px;
+  background: var(--card);
+  border: 4px solid #fff;
+  box-shadow: 0 0 0 3px var(--gold), 0 14px 34px rgba(43, 29, 79, .35);
+  opacity: 0;
+  transform: translateY(24px) scale(.97);
+  pointer-events: none;
+  transition: opacity .35s var(--ease), transform .35s var(--ease);
+}
+.info-panel.is-open {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.info-panel.is-swap { animation: swap .35s var(--ease); }
+@keyframes swap {
+  0%   { opacity: .3; transform: translateY(8px); }
+  100% { opacity: 1;  transform: none; }
+}
+
+.info-panel__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: #efe7ff;
+  color: var(--purple-dark);
+  font-size: 20px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.info-panel__close:hover { background: #e0d1ff; }
+
+.info-panel__zone {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: var(--purple);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+.info-panel__game {
+  margin: 10px 48px 6px 0;
+  font-size: 22px;
+  line-height: 1.3;
+  font-weight: 900;
+}
+.info-panel__intro {
+  margin: 0 0 16px;
+  font-size: 16px;
+  color: #5b4d7a;
+}
+
+.play-btn {
+  width: 100%;
+  min-height: 56px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ff86c0, var(--pink));
+  color: #fff;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: .15em;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #c7337a, 0 8px 16px rgba(199, 51, 122, .35);
+  transition: transform .12s, box-shadow .12s;
+}
+.play-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #c7337a; }
+.play-btn--small { min-height: 48px; font-size: 18px; }
+
+/* ---------- 測試提示 ---------- */
+.test-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(30, 16, 60, .55);
+  animation: fadeIn .25s ease;
+}
+.test-modal[hidden] { display: none; }
+.test-modal__card {
+  width: min(360px, 100%);
+  padding: 26px 22px 20px;
+  border-radius: 22px;
+  background: var(--card);
+  text-align: center;
+  box-shadow: 0 0 0 4px var(--gold), 0 18px 40px rgba(0, 0, 0, .3);
+  animation: pop .35s var(--ease);
+}
+.test-modal__icon { font-size: 48px; }
+.test-modal__card h3 { margin: 6px 0 8px; font-size: 24px; color: var(--purple-dark); }
+.test-modal__card p { margin: 0 0 8px; font-size: 16px; }
+.test-modal__note { color: #7a6a99; font-size: 14px !important; margin-bottom: 16px !important; }
+@keyframes fadeIn { from { opacity: 0; } }
+@keyframes pop { from { transform: scale(.85); opacity: 0; } }
+
+/* ==========================================================
+   桌機（寬螢幕、橫向）：隱藏導覽牌，地圖盡量放大
+   ========================================================== */
+@media (min-width: 900px) and (min-aspect-ratio: 1/1) {
+  .guide-board { display: none; }
+}
+
+/* ==========================================================
+   手機 / 直向：地圖滿版寬度，下方導覽牌，介紹面板為底部抽屜
+   ========================================================== */
+@media (max-width: 899px), (max-aspect-ratio: 1/1) {
+  .layout { padding: 0 8px 16px; }
+  .map-stage {
+    width: 100%;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(43, 29, 79, .25), 0 0 0 3px rgba(255, 255, 255, .7);
+  }
+  .pin {
+    min-height: 26px;
+    gap: 3px;
+    padding: 3px 8px 3px 6px;
+    border-width: 2px;
+    font-size: 11px;
+    box-shadow: 0 2px 0 var(--purple-dark), 0 3px 8px rgba(43, 29, 79, .3);
+  }
+  .info-panel {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    padding: 18px 18px calc(18px + env(safe-area-inset-bottom));
+    border-radius: 22px 22px 0 0;
+    border-width: 4px 0 0;
+    transform: translateY(105%);
+  }
+  .info-panel.is-open { transform: none; }
+  /* 面板打開時，讓頁面底部留出空間，導覽牌不被蓋住 */
+  body.panel-open .layout { padding-bottom: 230px; }
+}
+
+@media (max-width: 380px) {
+  .title { font-size: 17px; }
+  .version-tag { font-size: 11px; padding: 3px 8px; }
+  .guide-btn { gap: 6px; padding: 8px; }
+  .guide-btn__icon { font-size: 24px; }
+  .guide-btn__name { font-size: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

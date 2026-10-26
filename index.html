@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="version" content="balloon-v-universe-v0.1.0-map-interaction-test-1">
+  <title>氣球小V遊戲宇宙</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <h1 class="title">🎈 氣球小V遊戲宇宙</h1>
+    <span class="version-tag">v0.1.0 地圖互動測試</span>
+  </header>
+
+  <main class="layout">
+
+    <!-- ===== 遊樂園地圖 ===== -->
+    <section class="map-wrap">
+      <div class="map-stage" id="mapStage">
+        <!-- SVG 由 main.js 依底圖實際尺寸建立：底圖、暗化遮罩、光暈、點擊熱區 -->
+        <svg id="mapSvg" class="map-svg" xmlns="http://www.w3.org/2000/svg"
+             preserveAspectRatio="xMidYMid meet" role="img" aria-label="氣球小V遊樂園地圖"></svg>
+
+        <!-- 地圖上的區域名牌（與熱區共用同一套座標） -->
+        <div class="pins" id="pins"></div>
+
+        <!-- 中央廣場：保留給未來的小V與氣球小狗角色 -->
+        <div class="plaza-slot" id="plazaSlot" aria-hidden="true"></div>
+
+        <!-- 底圖載入狀態 / 錯誤訊息 -->
+        <div class="map-status" id="mapStatus">地圖載入中…</div>
+
+        <!-- 校準模式座標顯示（?debug=1 才會出現） -->
+        <div class="debug-box" id="debugBox" hidden></div>
+      </div>
+    </section>
+
+    <!-- ===== 園區導覽牌：大尺寸區域按鈕（手機主要操作方式，桌機也可用） ===== -->
+    <nav class="guide-board" aria-label="園區導覽">
+      <div class="guide-board__title">🗺️ 園區導覽</div>
+      <div class="guide-board__grid" id="guideGrid"></div>
+    </nav>
+
+  </main>
+
+  <!-- ===== 遊戲介紹面板（不會被暗化） ===== -->
+  <aside class="info-panel" id="infoPanel" aria-live="polite" aria-hidden="true">
+    <button class="info-panel__close" id="closeBtn" type="button" aria-label="關閉">✕</button>
+    <div class="info-panel__zone" id="infoZone"></div>
+    <h2 class="info-panel__game" id="infoGame"></h2>
+    <p class="info-panel__intro" id="infoIntro"></p>
+    <button class="play-btn" id="playBtn" type="button">開始遊玩</button>
+  </aside>
+
+  <!-- ===== 「開始遊玩」測試提示 ===== -->
+  <div class="test-modal" id="testModal" hidden>
+    <div class="test-modal__card" role="dialog" aria-modal="true" aria-labelledby="testTitle">
+      <div class="test-modal__icon">🎉</div>
+      <h3 id="testTitle">地圖互動測試成功</h3>
+      <p id="testDetail"></p>
+      <p class="test-modal__note">正式遊戲連結將在後續版本開放。</p>
+      <button class="play-btn play-btn--small" id="testOk" type="button">好的</button>
+    </div>
+  </div>
+
+  <script src="zones.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
