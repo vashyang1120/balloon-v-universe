@@ -4,19 +4,29 @@ Balloon V Game Universe - Player Portal &amp; Game Lobby
 氣球小V遊戲宇宙 — 統一玩家入口
 
 ## 目前版本
-`balloon-v-universe-v0.2.1-focus-and-character-tuning-test-1`（桌機聚焦與中央角色調校測試版）
+`balloon-v-universe-v0.3.0-unified-player-lobby-test-1`（共用玩家大廳測試版）
 
 ## 檔案
 | 檔案 | 用途 |
 |---|---|
 | `index.html` | 頁面結構 |
 | `style.css` | 外觀樣式（桌機 / 手機） |
-| `main.js` | 地圖、聚焦遮罩、光暈、中央角色、選取邏輯 |
-| `dialogue.js` | RPG 對話框元件（逐字顯示、繼續、略過） |
-| `zones.js` | **集中設定檔：選區座標、聚焦強度、光暈、動畫速度、角色位置與大小、RPG 設定** |
+| `zones.js` | **集中設定檔**：選區、聚焦、角色、UI 素材路徑、遊戲入口位置、玩家系統設定、引導與教學文案 |
+| `main.js` | 地圖互動（v0.2.1 定案）＋大廳：遊戲入口、玩家資訊卡、頭像列、切換玩家、我的通行證 |
+| `identity.js` | 玩家身份工具：playerKey 公式逐字取自四款遊戲（v0.3.0 新增） |
+| `player-store.js` | 玩家資料層：Firebase 讀取、建立新玩家、本機記憶、身份交接介面（v0.3.0 新增） |
+| `onboarding.js` | 新手引導、找回通行證、首次入園教學（v0.3.0 新增） |
+| `dialogue.js` | RPG 對話框元件（正式底板、選項、不可略過的提醒） |
 | `assets/universe_map_bg.png` | 正式遊樂園底圖（不可修改） |
-| `assets/universe_lobby_v_dog.png` | 中央廣場小V與氣球小狗合圖（不可修改） |
+| `assets/universe_lobby_v_dog.png` | 中央廣場小V與氣球小狗（不可修改） |
+| `assets/ui/*.png` | 14 張正式 UI 素材（不可修改） |
 
-## 校準
-在網址後加上 `?debug=1`：顯示四個選區外框與角色腳底十字，
-點地圖任一處，左上角會顯示該點的原圖座標，填入 `zones.js` 即可。
+## 玩家資料規則
+- `playerKey = encodeFirebaseKeyPart(ID) + "__" + baseAvatarKey`（與遊戲相同）
+- `baseAvatarKey` 固定身份圖案；`displayAvatarKey` 可更換的展示頭像
+- 大廳只會在「建立新玩家」時寫入 `players/{playerKey}/profile`，而且只有完全不存在時才寫入
+- 大廳不會寫入 V幣、稱號、收藏或遊戲紀錄
+
+## 測試方式
+- `?sandbox=1`：測試沙盒，資料只存在瀏覽器分頁，不會連線或寫入正式 Firebase
+- `?debug=1`：顯示選區外框、角色腳底十字、座標與身份交接資料

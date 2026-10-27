@@ -1,67 +1,94 @@
 /* ==========================================================
-   氣球小V遊戲宇宙 — 地圖互動
-   balloon-v-universe-v0.2.1-focus-and-character-tuning-test-1
+   氣球小V遊戲宇宙 — 地圖互動與玩家大廳
+   balloon-v-universe-v0.3.0-unified-player-lobby-test-1
 
    結構：
-   1. 讀取底圖實際尺寸 → 以原圖像素建立 SVG 座標系統
-   2. 圖層（由下到上）：
-      a. 原始底圖（畫兩層，抵銷底圖檔案本身約 4% 的半透明）
-      b. 聚焦層：黑白版底圖 + 灰紫霧（降對比）+ 暗色，用 SVG mask 挖空選中區域（邊緣羽化）
-      c. 選中區域光暈
-      d. 中央廣場角色（小V與氣球小狗）＋腳下陰影 —— 不會被暗化、不攔截點擊
-      e. 透明點擊熱區（最上層）
-   3. selectZone() / clearSelection() 是唯一的選取邏輯，
-      地圖熱區、地圖名牌、導覽牌按鈕都呼叫它
-   4. 所有數值都來自 zones.js（MAP_CONFIG）
+   1. 地圖（v0.2.1 定案，程式未改）
+      a. 原始底圖（兩層）  b. 聚焦層（黑白＋灰霧＋暗色，SVG mask 挖空）
+      c. 選中光暈          d. 中央角色＋陰影（不攔截點擊）  e. 點擊熱區
+   2. v0.3.0 大廳
+      - 四個遊戲入口：正式 PNG（btn_*_idle.png）＋程式文字
+      - 右上玩家資訊卡、下方玩家頭像列、選擇玩家／我的通行證木牌
+      - 切換玩家確認、我的通行證、遊戲介紹面板、歡迎泡泡
+   3. 玩家資料只從 state.player.data 顯示；切換時先清空成「載入中」，
+      載入成功才換上新玩家；失敗就換回原本的玩家，兩人資料不會混在一起。
    ========================================================== */
 
 (function () {
   "use strict";
 
   var CFG = window.MAP_CONFIG;
+  var UI = CFG.ui;
+  var ID = window.PlayerIdentity;
+  var Store = window.PlayerStore;
   var SVG_NS = "http://www.w3.org/2000/svg";
   var XLINK_NS = "http://www.w3.org/1999/xlink";
   var DEBUG = /[?&]debug=1\b/.test(location.search);
   var desktopMQ = window.matchMedia(CFG.desktopQuery);
 
+  function $(id) { return document.getElementById(id); }
+
   var els = {
-    stage: document.getElementById("mapStage"),
-    svg: document.getElementById("mapSvg"),
-    pins: document.getElementById("pins"),
-    status: document.getElementById("mapStatus"),
-    assetWarning: document.getElementById("assetWarning"),
-    debugBox: document.getElementById("debugBox"),
-    guideGrid: document.getElementById("guideGrid"),
-    panel: document.getElementById("infoPanel"),
-    infoZone: document.getElementById("infoZone"),
-    infoIcon: document.getElementById("infoIcon"),
-    infoGame: document.getElementById("infoGame"),
-    infoIntro: document.getElementById("infoIntro"),
-    closeBtn: document.getElementById("closeBtn"),
-    playBtn: document.getElementById("playBtn"),
-    talkBtn: document.getElementById("talkBtn"),
-    testModal: document.getElementById("testModal"),
-    testDetail: document.getElementById("testDetail"),
-    testOk: document.getElementById("testOk"),
-    passChip: document.getElementById("passChip"),
-    passModal: document.getElementById("passModal"),
-    passOk: document.getElementById("passOk")
+    stage: $("mapStage"),
+    svg: $("mapSvg"),
+    entries: $("entries"),
+    status: $("mapStatus"),
+    assetWarning: $("assetWarning"),
+    debugBox: $("debugBox"),
+    panel: $("infoPanel"),
+    infoArt: $("infoArt"),
+    infoZone: $("infoZone"),
+    infoType: $("infoType"),
+    infoGame: $("infoGame"),
+    infoIntro: $("infoIntro"),
+    closeBtn: $("closeBtn"),
+    playBtn: $("playBtn"),
+    talkBtn: $("talkBtn"),
+    testModal: $("testModal"),
+    testDetail: $("testDetail"),
+    testHandoff: $("testHandoff"),
+    testOk: $("testOk"),
+    card: $("playerCard"),
+    cardAvatar: $("playerCardAvatar"),
+    cardId: $("playerCardId"),
+    cardTitle: $("playerCardTitle"),
+    cardCoins: $("playerCardCoins"),
+    dock: $("dock"),
+    avatarRow: $("avatarRow"),
+    signSelect: $("signSelect"),
+    signPass: $("signPass"),
+    switchModal: $("switchModal"),
+    switchAvatar: $("switchAvatar"),
+    switchId: $("switchId"),
+    switchCancel: $("switchCancel"),
+    switchOk: $("switchOk"),
+    passModal: $("passModal"),
+    passClose: $("passClose"),
+    passPanel: $("passModalPanel"),
+    passTabBody: $("passTabBody"),
+    bubble: $("welcomeBubble"),
+    bubbleText: $("welcomeText"),
+    toast: $("toast"),
+    sandbox: $("sandboxBanner")
   };
 
   var state = {
-    selected: null,       // 目前選取的區域 id，null = 未選取
-    scaleX: 1,            // 原圖實際寬 / designWidth
+    selected: null,
+    scaleX: 1,
     scaleY: 1,
-    focusLayer: null,     // 聚焦層（黑白 + 暗色），整層淡入淡出
+    focusLayer: null,
     grayImage: null,
     hazeRect: null,
     darkRect: null,
-    holes: {},            // 遮罩挖空 path（依區域 id）
+    holes: {},
     glows: {},
-    pins: {},
-    guideBtns: {},
+    entries: {},
     anim: { focus: 0, holes: {} },
-    rafId: 0
+    rafId: 0,
+    /* 玩家：data 為 null 時代表尚未選定玩家 */
+    player: { data: null, loading: false, loadingEntry: null, error: false, token: 0 },
+    switchTarget: null,
+    passTab: "basic"
   };
 
   var zoneById = {};
@@ -73,7 +100,30 @@
   var rootStyle = document.documentElement.style;
   rootStyle.setProperty("--panel-ms", CFG.animation.panelMs + "ms");
   rootStyle.setProperty("--breathe", CFG.glow.breatheSeconds + "s");
+  /* 讓 CSS 可以用到 14 張素材（避免在 CSS 裡寫死路徑） */
+  Object.keys(UI).forEach(function (k) { rootStyle.setProperty("--ui-" + k, "url('" + UI[k] + "')"); });
   if (DEBUG) document.body.classList.add("debug");
+  if (Store.sandbox) { els.sandbox.hidden = false; document.body.classList.add("is-sandbox"); }
+
+  /* ---------- 小型事件中心（教學用） ---------- */
+  var listeners = {};
+  function on(name, fn) { (listeners[name] = listeners[name] || []).push(fn); return function () { off(name, fn); }; }
+  function off(name, fn) { listeners[name] = (listeners[name] || []).filter(function (f) { return f !== fn; }); }
+  function emit(name, data) { (listeners[name] || []).slice().forEach(function (f) { try { f(data); } catch (e) { console.error(e); } }); }
+
+  function escapeHtml(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  var toastTimer = 0;
+  function toast(msg, ms) {
+    els.toast.textContent = msg;
+    els.toast.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { els.toast.hidden = true; }, ms || 2600);
+  }
 
   /* ---------- 工具 ---------- */
 
@@ -119,7 +169,7 @@
       state.scaleY = H / CFG.designHeight;
       rootStyle.setProperty("--map-ratio", (W / H).toFixed(5));
       buildSvg(W, H);
-      buildPins();
+      buildEntries();
       makeGrayscale(img, W, H);
       loadCharacter();
       applyModeParams();
@@ -304,39 +354,30 @@
     img.src = C.src;
   }
 
-  /* ---------- 地圖名牌（與熱區同一套座標） ---------- */
+  /* ==========================================================
+     遊戲入口（btn_*_idle.png ＋ 程式文字）
+     ========================================================== */
 
-  function buildPins() {
-    CFG.zones.forEach(function (z) {
-      var btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "pin";
-      btn.style.setProperty("--x", z.pin.x / CFG.designWidth);
-      btn.style.setProperty("--y", z.pin.y / CFG.designHeight);
-      btn.innerHTML = '<span class="pin__icon">' + z.icon + '</span><span class="pin__name">' + z.name + "</span>";
-      btn.setAttribute("aria-label", z.name + "：" + z.game);
-      btn.addEventListener("click", function () { selectZone(z.id); });
-      els.pins.appendChild(btn);
-      state.pins[z.id] = btn;
-    });
+  function entryArtHtml(z) {
+    return '<img class="entry__art" src="' + UI[z.button] + '" alt="" draggable="false">' +
+      '<span class="entry__name">' + escapeHtml(z.name) + "</span>" +
+      '<span class="entry__type">' + escapeHtml(z.gameType) + "</span>";
   }
 
-  /* ---------- 園區導覽牌按鈕 ---------- */
-
-  function buildGuide() {
+  function buildEntries() {
     CFG.zones.forEach(function (z) {
       var btn = document.createElement("button");
       btn.type = "button";
-      btn.className = "guide-btn";
-      btn.innerHTML =
-        '<span class="guide-btn__icon">' + z.icon + "</span>" +
-        '<span class="guide-btn__text">' +
-          '<span class="guide-btn__name">' + z.name + "</span>" +
-          '<span class="guide-btn__dir">地圖' + z.direction + "</span>" +
-        "</span>";
+      btn.className = "entry";
+      btn.dataset.zone = z.id;
+      btn.style.setProperty("--x", (z.entry.x / CFG.designWidth * 100) + "%");
+      btn.style.setProperty("--y", (z.entry.y / CFG.designHeight * 100) + "%");
+      btn.style.setProperty("--w", (z.entry.width / CFG.designWidth * 100) + "%");
+      btn.innerHTML = entryArtHtml(z);
+      btn.setAttribute("aria-label", z.name + "：" + z.game);
       btn.addEventListener("click", function () { selectZone(z.id); });
-      els.guideGrid.appendChild(btn);
-      state.guideBtns[z.id] = btn;
+      els.entries.appendChild(btn);
+      state.entries[z.id] = btn;
     });
   }
 
@@ -366,7 +407,9 @@
   if (desktopMQ.addEventListener) desktopMQ.addEventListener("change", applyModeParams);
   else if (desktopMQ.addListener) desktopMQ.addListener(applyModeParams);
 
-  /* ---------- 3. 選取邏輯（唯一入口） ---------- */
+  /* ==========================================================
+     選取邏輯（唯一入口：地圖熱區、遊戲入口按鈕都呼叫這裡）
+     ========================================================== */
 
   function setActiveClasses(id) {
     CFG.zones.forEach(function (z) {
@@ -375,12 +418,15 @@
         state.glows[z.id].classList.toggle("is-active", on);
         state.glows[z.id].classList.remove("is-hover");
       }
-      if (state.pins[z.id]) {
-        state.pins[z.id].classList.toggle("is-active", on);
-        state.pins[z.id].classList.toggle("is-muted", !!id && !on);
+      if (state.entries[z.id]) {
+        state.entries[z.id].classList.toggle("is-active", on);
+        state.entries[z.id].classList.toggle("is-muted", !!id && !on);
       }
-      if (state.guideBtns[z.id]) state.guideBtns[z.id].classList.toggle("is-active", on);
     });
+  }
+
+  function zoneCenterX(z) {
+    return z.points.reduce(function (s, p) { return s + p[0]; }, 0) / z.points.length;
   }
 
   function selectZone(id) {
@@ -392,20 +438,23 @@
     els.stage.classList.add("is-selected");
     setActiveClasses(id);
 
+    els.infoArt.innerHTML = entryArtHtml(z);
     els.infoZone.textContent = z.name;
-    els.infoIcon.textContent = z.icon;
+    els.infoType.textContent = z.gameType;
     els.infoGame.textContent = z.game;
     els.infoIntro.textContent = z.intro;
+    // 介紹面板放在選中區域的另一側，避免擋住剛選的建築
+    els.panel.classList.toggle("is-right", zoneCenterX(z) < CFG.designWidth * 0.4);
     els.panel.classList.add("is-open");
     els.panel.setAttribute("aria-hidden", "false");
     document.body.classList.add("panel-open");
     if (switching) {
       els.panel.classList.remove("is-swap");
-      void els.panel.offsetWidth;  // 重新觸發切換動畫
+      void els.panel.offsetWidth;
       els.panel.classList.add("is-swap");
     }
-
     animateTo(id);
+    emit("zoneSelected", id);
   }
 
   function clearSelection() {
@@ -459,50 +508,380 @@
     console.log("[地圖座標]", "[" + x + ", " + y + "]");
   }
 
-  /* ---------- 面板、按鈕、對話、提示 ---------- */
+  /* ==========================================================
+     頭像元件：頭像框（中央是奶油白底，不是透明）在下層，
+     頭像圖片以圓形裁切疊在奶油白圓的「上層」，所以白底不會蓋住頭像。
+     圓心與直徑依實際 PNG 量測（見 style.css .av--blue / --pink / --gold）。
+     ========================================================== */
 
-  function openModal(m, focusEl) { m.hidden = false; if (focusEl) focusEl.focus(); }
-  function closeModal(m) { m.hidden = true; }
+  function avatarHtml(key, frame, unlocked, extraClass) {
+    var src = ID.avatarSrc(key, unlocked);
+    var frameSrc = frame === "gold" ? UI.frameGold : frame === "pink" ? UI.framePink : UI.frameBlue;
+    return '<span class="av av--' + frame + (extraClass ? " " + extraClass : "") + '">' +
+      '<img class="av__frame" src="' + frameSrc + '" alt="" draggable="false">' +
+      (src ? '<img class="av__face" src="' + escapeHtml(src) + '" alt="" draggable="false" onerror="this.style.visibility=\'hidden\'">' : "") +
+      "</span>";
+  }
+
+  function frameFor(index) { return index % 2 === 0 ? "blue" : "pink"; }
+
+  /* ---------- 通行證面板（panel_pass_idle.png） ---------- */
+  function fmtDate(ts) {
+    if (!ts) return "";
+    var d = new Date(ts);
+    return d.getFullYear() + "/" + (d.getMonth() + 1) + "/" + d.getDate();
+  }
+
+  function passPanelHtml(p, mode) {
+    // mode = "created"：只顯示 ID、固定身份圖案（與建立日期）
+    // mode = "full"   ：加上 V幣、稱號
+    var lower = "";
+    if (mode === "full") {
+      lower =
+        '<span class="pass__stat"><b>V幣</b>' + escapeHtml(p.balance) + "</span>" +
+        '<span class="pass__stat"><b>稱號</b>' + escapeHtml(p.title ? p.title.name : "未裝備") + "</span>";
+    } else if (p.createdAt) {
+      lower = '<span class="pass__stat"><b>建立日期</b>' + fmtDate(p.createdAt) + "</span>";
+    }
+    return '<div class="pass">' +
+      '<img class="pass__bg" src="' + UI.panelPass + '" alt="" draggable="false">' +
+      '<span class="pass__face">' + (ID.avatarSrc(p.baseAvatarKey) ? '<img src="' + ID.avatarSrc(p.baseAvatarKey) + '" alt="" onerror="this.style.visibility=\'hidden\'">' : "") + "</span>" +
+      '<span class="pass__ribbon">' + escapeHtml(p.id) + "</span>" +
+      '<span class="pass__main">' +
+        '<span class="pass__label">玩家 ID</span>' +
+        '<span class="pass__id">' + escapeHtml(p.id) + "</span>" +
+        '<span class="pass__base">專屬身份圖案：' + escapeHtml(ID.avatarLabel(p.baseAvatarKey)) + "</span>" +
+      "</span>" +
+      '<span class="pass__lower">' + lower + "</span>" +
+      "</div>";
+  }
+
+  /* ==========================================================
+     玩家狀態與畫面
+     ========================================================== */
+
+  function current() { return state.player.data; }
+
+  function renderPlayerCard() {
+    var p = state.player;
+    els.card.hidden = !(p.data || p.loading || p.error);
+    els.card.classList.toggle("is-loading", p.loading);
+    els.card.classList.toggle("is-error", p.error && !p.loading);
+    if (p.loading) {
+      // 載入中：只顯示目標玩家的 ID（已知），其餘一律顯示「載入中」，絕不沿用上一位玩家的數值
+      var e = p.loadingEntry || {};
+      els.cardAvatar.innerHTML = avatarHtml(e.displayAvatarKey || e.baseAvatarKey, "gold", null, "is-dim");
+      els.cardId.textContent = e.id || "";
+      els.cardTitle.textContent = "載入中…";
+      els.cardCoins.textContent = "載入中…";
+      return;
+    }
+    if (p.error && !p.data) {
+      var en = p.loadingEntry || {};
+      els.cardAvatar.innerHTML = avatarHtml(en.baseAvatarKey, "gold", null, "is-dim");
+      els.cardId.textContent = en.id || "";
+      els.cardTitle.textContent = "讀取失敗";
+      els.cardCoins.textContent = "點這裡重試";
+      return;
+    }
+    var d = p.data;
+    if (!d) return;
+    els.cardAvatar.innerHTML = avatarHtml(d.displayAvatarKey, "gold", d.unlockedAvatars);
+    els.cardId.textContent = d.id;
+    els.cardTitle.textContent = d.title ? d.title.name : "未裝備";
+    els.cardCoins.textContent = String(d.balance);
+  }
+
+  function renderAvatarRow() {
+    var list = Store.getRemembered();
+    var curKey = state.player.loading ? (state.player.loadingEntry || {}).playerKey : (current() && current().playerKey);
+    els.avatarRow.innerHTML = "";
+    list.forEach(function (entry, i) {
+      var isCur = entry.playerKey === curKey;
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "av-item" + (isCur ? " is-current" : "");
+      b.setAttribute("role", "listitem");
+      b.dataset.key = entry.playerKey;
+      b.setAttribute("aria-label", (isCur ? "目前玩家：" : "切換到 ") + entry.id);
+      b.innerHTML = avatarHtml(entry.displayAvatarKey || entry.baseAvatarKey, isCur ? "gold" : frameFor(i)) +
+        '<span class="av-item__id">' + escapeHtml(entry.id) + "</span>";
+      b.addEventListener("click", function () { onAvatarTap(entry); });
+      els.avatarRow.appendChild(b);
+    });
+    var add = document.createElement("button");
+    add.type = "button";
+    add.className = "av-item av-item--add";
+    add.id = "addPlayerBtn";
+    add.setAttribute("aria-label", "新增玩家");
+    add.innerHTML = '<span class="av av--add"><img class="av__frame" src="' + UI.addPlayer + '" alt="" draggable="false"></span><span class="av-item__id">新增</span>';
+    add.addEventListener("click", function () { emit("addPlayer"); });
+    els.avatarRow.appendChild(add);
+  }
+
+  function renderBubble() {
+    var d = current();
+    var show = !!d && !state.player.loading && (isDesktop() || CFG.welcomeBubble.showOnMobile);
+    els.bubble.hidden = !show;
+    if (show) els.bubbleText.textContent = d.id + "，歡迎來玩！";
+  }
+
+  function renderAll() {
+    renderPlayerCard();
+    renderAvatarRow();
+    renderBubble();
+    if (DEBUG) renderDebugHandoff();
+  }
+
+  function renderDebugHandoff() {
+    var d = current();
+    if (!d) return;
+    els.debugBox.hidden = false;
+    els.debugBox.textContent = "playerKey：" + d.playerKey +
+      "\nbaseAvatarKey：" + d.baseAvatarKey + "　displayAvatarKey：" + d.displayAvatarKey +
+      "\n資料來源：" + (Store.sandbox ? "測試沙盒" : "Firebase") +
+      "\n交接網址範例：" + Store.handoff.launchUrl(d, "rhythm");
+  }
+
+  /* 載入並切換成某位玩家。
+     成功 → 換上新玩家；失敗 → 留在原本的玩家（或保留錯誤狀態），不混用資料。 */
+  function loadPlayer(entry, opts) {
+    opts = opts || {};
+    var p = state.player;
+    var token = ++p.token;
+    var previous = p.data;
+    p.loading = true;
+    p.error = false;
+    p.loadingEntry = entry;
+    clearSelection();
+    renderAll();
+    return Store.loadPlayerData(entry.playerKey, entry).then(function (res) {
+      if (token !== p.token) return { status: "stale" };
+      if (res.status !== "ok") throw Object.assign(new Error("notFound"), { notFound: true });
+      p.data = res.data;
+      p.loading = false;
+      p.loadingEntry = null;
+      Store.setCurrentKey(res.data.playerKey);
+      Store.remember(res.data);
+      renderAll();
+      emit("playerChanged", res.data);
+      return { status: "ok", data: res.data };
+    }).catch(function (err) {
+      if (token !== p.token) return { status: "stale" };
+      console.warn("[Lobby] 玩家資料讀取失敗：", err && err.message);
+      p.loading = false;
+      if (previous) {
+        p.data = previous;          // 換回原本玩家
+        p.loadingEntry = null;
+        p.error = false;
+      } else {
+        p.data = null;
+        p.error = true;             // 沒有原本玩家可換回：顯示讀取失敗
+      }
+      renderAll();
+      if (!opts.silent) toast(previous ? "載入失敗，維持原本的玩家「" + previous.id + "」" : "玩家資料讀取失敗，請檢查網路");
+      return { status: err && err.notFound ? "notFound" : "error", error: err };
+    });
+  }
+
+  /* ---------- 頭像列：點自己 / 點別人 ---------- */
+  function onAvatarTap(entry) {
+    var d = current();
+    if (state.player.loading) return;
+    if (d && entry.playerKey === d.playerKey) {
+      emit("avatarTapped", { self: true, entry: entry });
+      toast("這是目前的玩家：" + d.id);
+      return;
+    }
+    emit("avatarTapped", { self: false, entry: entry });
+    openSwitchConfirm(entry);
+  }
+
+  function openSwitchConfirm(entry) {
+    state.switchTarget = entry;
+    els.switchAvatar.innerHTML = avatarHtml(entry.displayAvatarKey || entry.baseAvatarKey, "blue");
+    els.switchId.textContent = entry.id;
+    els.switchModal.hidden = false;
+    els.switchOk.focus();
+  }
+
+  els.switchCancel.addEventListener("click", function () {
+    els.switchModal.hidden = true;
+    state.switchTarget = null;
+    emit("switchCancelled");
+  });
+  els.switchOk.addEventListener("click", function () {
+    var target = state.switchTarget;
+    els.switchModal.hidden = true;
+    state.switchTarget = null;
+    if (!target) return;
+    loadPlayer(target).then(function (r) {
+      if (r.status === "ok") toast("已切換為「" + r.data.id + "」");
+      emit("switchDone", r);
+    });
+  });
+
+  els.card.addEventListener("click", function () {
+    if (state.player.error && !state.player.data && state.player.loadingEntry) { loadPlayer(state.player.loadingEntry); return; }
+    if (current()) openPass();
+  });
+
+  /* ---------- 選擇玩家木牌：引導注意下方頭像列（不另開選擇頁） ---------- */
+  els.signSelect.addEventListener("click", function () {
+    els.avatarRow.classList.remove("is-hint");
+    void els.avatarRow.offsetWidth;
+    els.avatarRow.classList.add("is-hint");
+    toast("點下方的玩家頭像就可以切換玩家，按「＋」新增玩家");
+    emit("signSelectTapped");
+  });
+
+  /* ==========================================================
+     我的通行證
+     ========================================================== */
+
+  function openPass() {
+    var d = current();
+    if (!d) return;
+    els.passPanel.innerHTML = passPanelHtml(d, "full");
+    setPassTab("basic");
+    els.passModal.hidden = false;
+    els.passClose.focus();
+    emit("passOpened");
+  }
+  function closePass() {
+    if (els.passModal.hidden) return;
+    els.passModal.hidden = true;
+    emit("passClosed");
+  }
+
+  function setPassTab(tab) {
+    state.passTab = tab;
+    document.querySelectorAll("#passModal .tab").forEach(function (t) {
+      t.classList.toggle("is-active", t.dataset.tab === tab);
+      t.setAttribute("aria-selected", t.dataset.tab === tab ? "true" : "false");
+    });
+    var d = current();
+    if (!d) return;
+    var html = "";
+    var names = CFG.player.gameNames;
+    if (tab === "basic") {
+      html =
+        row("玩家 ID", escapeHtml(d.id)) +
+        row("專屬身份圖案", avatarHtml(d.baseAvatarKey, "blue", null, "av--sm") + "<span>" + escapeHtml(ID.avatarLabel(d.baseAvatarKey)) + '<em class="muted">（固定，不能更換）</em></span>') +
+        row("展示頭像", avatarHtml(d.displayAvatarKey, "pink", d.unlockedAvatars, "av--sm") + "<span>" + escapeHtml(ID.avatarLabel(d.displayAvatarKey)) + "</span>") +
+        row("稱號", escapeHtml(d.title ? d.title.name : "未裝備")) +
+        row("V幣", escapeHtml(d.balance) + (d.balanceExists ? "" : '<em class="muted">（尚無 V幣紀錄）</em>')) +
+        row("通行證代碼", '<code class="muted">' + escapeHtml(d.playerKey) + "</code>");
+    } else if (tab === "collection") {
+      var av = d.unlockedAvatarKeys;
+      html = '<h4 class="sec">已解鎖頭像</h4>' + (av.length
+        ? '<div class="av-grid">' + av.map(function (k) {
+            return '<div class="av-grid__item">' + avatarHtml(k, "blue", d.unlockedAvatars, "av--sm") + "<span>" + escapeHtml(ID.avatarLabel(k)) + "</span></div>";
+          }).join("") + "</div>"
+        : '<p class="empty">還沒有解鎖特殊頭像</p>');
+      var titles = d.unlockedTitles;
+      html += '<h4 class="sec">已解鎖稱號</h4>' + (titles.length
+        ? '<ul class="title-list">' + titles.map(function (t) {
+            return "<li><b>" + escapeHtml(t.name) + "</b><span>" + escapeHtml(names[t.gameId] || t.gameId) + "</span></li>";
+          }).join("") + "</ul>"
+        : '<p class="empty">還沒有解鎖稱號</p>');
+    } else {
+      html = '<ul class="record-list">' + CFG.player.gameIds.map(function (g) {
+        var n = d.unlockedTitles.filter(function (t) { return t.gameId === g; }).length;
+        return "<li><b>" + escapeHtml(names[g]) + "</b><span>已解鎖稱號 " + n + " 個</span></li>";
+      }).join("") + "</ul>" +
+        '<p class="empty">分數與關卡進度請在各遊戲中查看；大廳整合各遊戲紀錄將在後續版本開放。</p>';
+    }
+    els.passTabBody.innerHTML = html;
+  }
+  function row(label, value) { return '<div class="kv"><span class="kv__k">' + label + '</span><span class="kv__v">' + value + "</span></div>"; }
+
+  document.querySelectorAll("#passModal .tab").forEach(function (t) {
+    t.addEventListener("click", function () { setPassTab(t.dataset.tab); });
+  });
+  els.passClose.addEventListener("click", closePass);
+  els.passModal.addEventListener("click", function (e) { if (e.target === els.passModal) closePass(); });
+  els.signPass.addEventListener("click", function () { openPass(); emit("signPassTapped"); });
+
+  /* ==========================================================
+     遊戲介紹面板按鈕
+     ========================================================== */
 
   els.closeBtn.addEventListener("click", clearSelection);
 
   els.playBtn.addEventListener("click", function () {
     var z = zoneById[state.selected];
+    var d = current();
     if (!z) return;
-    els.testDetail.textContent = "已選擇「" + z.name + "」→ " + z.game;
-    openModal(els.testModal, els.testOk);
+    els.testDetail.textContent = "已選擇「" + z.name + "」→ " + z.game + (d ? "（玩家：" + d.id + "）" : "");
+    els.testHandoff.textContent = d
+      ? "身份交接測試資料：playerKey = " + d.playerKey + "。四款遊戲目前尚未支援接收大廳身份，正式跳轉留待後續版本。"
+      : "";
+    els.testModal.hidden = false;
+    els.testOk.focus();
+    emit("playPressed", z.id);
   });
 
   els.talkBtn.addEventListener("click", function () {
     var z = zoneById[state.selected];
-    if (!z || !window.RpgDialogue) return;
+    if (!z) return;
     window.RpgDialogue.play([{ speaker: CFG.dialogue.speakerName, text: z.vLine }]);
   });
 
-  els.passChip.addEventListener("click", function () { openModal(els.passModal, els.passOk); });
-
-  [[els.testModal, els.testOk], [els.passModal, els.passOk]].forEach(function (pair) {
-    var m = pair[0];
-    pair[1].addEventListener("click", function () { closeModal(m); });
-    m.addEventListener("click", function (e) { if (e.target === m) closeModal(m); });
-  });
+  els.testOk.addEventListener("click", function () { els.testModal.hidden = true; });
+  els.testModal.addEventListener("click", function (e) { if (e.target === els.testModal) els.testModal.hidden = true; });
 
   document.addEventListener("keydown", function (e) {
-    if (e.key !== "Escape") return;
-    if (!els.testModal.hidden) closeModal(els.testModal);
-    else if (!els.passModal.hidden) closeModal(els.passModal);
+    if (e.key !== "Escape" || window.RpgDialogue.isOpen()) return;
+    if (!els.testModal.hidden) els.testModal.hidden = true;
+    else if (!els.switchModal.hidden) els.switchCancel.click();
+    else if (!els.passModal.hidden) closePass();
     else clearSelection();
   });
 
-  /* ---------- 啟動 ---------- */
-  buildGuide();
+  if (desktopMQ.addEventListener) desktopMQ.addEventListener("change", renderBubble);
+
+  function setLobbyVisible(v) {
+    els.dock.hidden = !v;
+    document.body.classList.toggle("lobby-ready", v);
+  }
+
+  /* ---------- 歡迎泡泡位置（原圖座標 → 百分比） ---------- */
+  (function placeBubble() {
+    var B = CFG.welcomeBubble;
+    els.bubble.style.left = (B.x / CFG.designWidth * 100) + "%";
+    els.bubble.style.top = (B.y / CFG.designHeight * 100) + "%";
+    els.bubble.style.width = (B.width / CFG.designWidth * 100) + "%";
+    els.bubble.style.backgroundImage = "url('" + UI.speechWelcome + "')";
+  })();
+
+  /* ---------- 啟動地圖 ---------- */
   loadMap();
 
-  // 方便未來 RPG / 玩家系統串接
   window.BalloonUniverse = {
     version: CFG.version,
     selectZone: selectZone,
     clearSelection: clearSelection,
-    getSelected: function () { return state.selected; }
+    getSelected: function () { return state.selected; },
+    getPlayer: function () { return current(); },
+    isPlayerLoading: function () { return state.player.loading; },
+    handoff: function (gameId) { return Store.handoff.payload(current(), gameId); }
+  };
+
+  window.Lobby = {
+    on: on,
+    emit: emit,
+    toast: toast,
+    loadPlayer: loadPlayer,
+    current: current,
+    renderAll: renderAll,
+    setLobbyVisible: setLobbyVisible,
+    avatarHtml: avatarHtml,
+    passPanelHtml: passPanelHtml,
+    escapeHtml: escapeHtml,
+    openPass: openPass,
+    closePass: closePass,
+    isDesktop: isDesktop,
+    els: els
   };
 })();
