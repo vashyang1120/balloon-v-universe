@@ -1,6 +1,6 @@
 /* ==========================================================
    氣球小V遊戲宇宙 — 地圖互動與玩家大廳
-   balloon-v-universe-v0.3.0-unified-player-lobby-test-1
+   balloon-v-universe-v0.3.1-onboarding-audio-ux-test-1
 
    結構：
    1. 地圖（v0.2.1 定案，程式未改）
@@ -103,6 +103,15 @@
   /* 讓 CSS 可以用到 14 張素材（避免在 CSS 裡寫死路徑） */
   Object.keys(UI).forEach(function (k) { rootStyle.setProperty("--ui-" + k, "url('" + UI[k] + "')"); });
   if (DEBUG) document.body.classList.add("debug");
+
+  /* 實際可視高度（含 Android Chrome 工具列與虛擬鍵盤）→ CSS 變數 --vvh，讓固定操作列永遠在畫面內 */
+  function updateVvh() {
+    var h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    rootStyle.setProperty("--vvh", Math.round(h) + "px");
+  }
+  updateVvh();
+  window.addEventListener("resize", updateVvh);
+  if (window.visualViewport) window.visualViewport.addEventListener("resize", updateVvh);
   if (Store.sandbox) { els.sandbox.hidden = false; document.body.classList.add("is-sandbox"); }
 
   /* ---------- 小型事件中心（教學用） ---------- */
@@ -115,6 +124,23 @@
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
+  }
+
+  function sfx(name) { try { if (window.BVAudio) window.BVAudio.sfx(name); } catch (e) {} }
+
+  /* ==========================================================
+     教學互動守衛（v0.3.1）
+     所有大廳主要操作在執行前都先問 guard(動作, 資料)。
+     平常沒有規則 → 全部允許；教學時由 onboarding.js 設定規則：
+       規則回傳 true  → 允許執行（正確操作）
+       規則回傳 false → 不執行，並由規則本身給玩家回饋（提示文字＋提醒音＋高亮正確目標）
+     動作名稱：selectZone / mapBlank / closePanel / play / talk / avatarSelf / avatarOther /
+               addPlayer / signSelect / signPass / card / passTab / passClose / escape
+     ========================================================== */
+  var guardPolicy = null;
+  function guard(action, data) {
+    if (!guardPolicy) return true;
+    try { return guardPolicy(action, data || {}) !== false; } catch (e) { console.error(e); return true; }
   }
 
   var toastTimer = 0;
@@ -309,8 +335,15 @@
     svg.addEventListener("click", function (e) {
       var hit = e.target.closest ? e.target.closest(".hit") : null;
       if (DEBUG) showDebugCoords(e);
-      if (hit) selectZone(hit.getAttribute("data-zone"));
-      else clearSelection();
+      if (hit) {
+        var zid = hit.getAttribute("data-zone");
+        if (!guard("selectZone", { zone: zid, via: "map" })) return;
+        if (state.selected !== zid) sfx("select");
+        selectZone(zid);
+      } else {
+        if (!guard("mapBlank")) return;
+        clearSelection();
+      }
     });
   }
 
@@ -375,7 +408,11 @@
       btn.style.setProperty("--w", (z.entry.width / CFG.designWidth * 100) + "%");
       btn.innerHTML = entryArtHtml(z);
       btn.setAttribute("aria-label", z.name + "：" + z.game);
-      btn.addEventListener("click", function () { selectZone(z.id); });
+      btn.addEventListener("click", function () {
+        if (!guard("selectZone", { zone: z.id, via: "entry" })) return;
+        if (state.selected !== z.id) sfx("select");
+        selectZone(z.id);
+      });
       els.entries.appendChild(btn);
       state.entries[z.id] = btn;
     });
@@ -514,13 +551,16 @@
      圓心與直徑依實際 PNG 量測（見 style.css .av--blue / --pink / --gold）。
      ========================================================== */
 
+  /* v0.3.1：頭像放在獨立的圓形裁切層 .av__clip 裡，可以單獨放大臉部（--zoom），
+     頭像框（含氣球、星星裝飾）維持原圖完整，不會被裁切 */
   function avatarHtml(key, frame, unlocked, extraClass) {
     var src = ID.avatarSrc(key, unlocked);
     var frameSrc = frame === "gold" ? UI.frameGold : frame === "pink" ? UI.framePink : UI.frameBlue;
     return '<span class="av av--' + frame + (extraClass ? " " + extraClass : "") + '">' +
       '<img class="av__frame" src="' + frameSrc + '" alt="" draggable="false">' +
+      '<span class="av__clip">' +
       (src ? '<img class="av__face" src="' + escapeHtml(src) + '" alt="" draggable="false" onerror="this.style.visibility=\'hidden\'">' : "") +
-      "</span>";
+      "</span></span>";
   }
 
   function frameFor(index) { return index % 2 === 0 ? "blue" : "pink"; }
@@ -606,7 +646,12 @@
       b.setAttribute("aria-label", (isCur ? "目前玩家：" : "切換到 ") + entry.id);
       b.innerHTML = avatarHtml(entry.displayAvatarKey || entry.baseAvatarKey, isCur ? "gold" : frameFor(i)) +
         '<span class="av-item__id">' + escapeHtml(entry.id) + "</span>";
-      b.addEventListener("click", function () { onAvatarTap(entry); });
+      b.addEventListener("click", function () {
+        var me = current();
+        var self = !!(me && entry.playerKey === me.playerKey);
+        if (!guard(self ? "avatarSelf" : "avatarOther", { entry: entry })) return;
+        onAvatarTap(entry);
+      });
       els.avatarRow.appendChild(b);
     });
     var add = document.createElement("button");
@@ -615,7 +660,10 @@
     add.id = "addPlayerBtn";
     add.setAttribute("aria-label", "新增玩家");
     add.innerHTML = '<span class="av av--add"><img class="av__frame" src="' + UI.addPlayer + '" alt="" draggable="false"></span><span class="av-item__id">新增</span>';
-    add.addEventListener("click", function () { emit("addPlayer"); });
+    add.addEventListener("click", function () {
+      if (!guard("addPlayer")) return;
+      emit("addPlayer");
+    });
     els.avatarRow.appendChild(add);
   }
 
@@ -716,18 +764,21 @@
     state.switchTarget = null;
     if (!target) return;
     loadPlayer(target).then(function (r) {
-      if (r.status === "ok") toast("已切換為「" + r.data.id + "」");
+      if (r.status === "ok") { sfx("success"); toast("已切換為「" + r.data.id + "」"); }
+      else if (r.status !== "stale") sfx("error");
       emit("switchDone", r);
     });
   });
 
   els.card.addEventListener("click", function () {
+    if (!guard("card")) return;
     if (state.player.error && !state.player.data && state.player.loadingEntry) { loadPlayer(state.player.loadingEntry); return; }
     if (current()) openPass();
   });
 
   /* ---------- 選擇玩家木牌：引導注意下方頭像列（不另開選擇頁） ---------- */
   els.signSelect.addEventListener("click", function () {
+    if (!guard("signSelect")) return;
     els.avatarRow.classList.remove("is-hint");
     void els.avatarRow.offsetWidth;
     els.avatarRow.classList.add("is-hint");
@@ -797,19 +848,20 @@
   function row(label, value) { return '<div class="kv"><span class="kv__k">' + label + '</span><span class="kv__v">' + value + "</span></div>"; }
 
   document.querySelectorAll("#passModal .tab").forEach(function (t) {
-    t.addEventListener("click", function () { setPassTab(t.dataset.tab); });
+    t.addEventListener("click", function () { if (!guard("passTab")) return; setPassTab(t.dataset.tab); });
   });
-  els.passClose.addEventListener("click", closePass);
-  els.passModal.addEventListener("click", function (e) { if (e.target === els.passModal) closePass(); });
-  els.signPass.addEventListener("click", function () { openPass(); emit("signPassTapped"); });
+  els.passClose.addEventListener("click", function () { if (!guard("passClose")) return; closePass(); });
+  els.passModal.addEventListener("click", function (e) { if (e.target === els.passModal && guard("passClose")) closePass(); });
+  els.signPass.addEventListener("click", function () { if (!guard("signPass")) return; openPass(); emit("signPassTapped"); });
 
   /* ==========================================================
      遊戲介紹面板按鈕
      ========================================================== */
 
-  els.closeBtn.addEventListener("click", clearSelection);
+  els.closeBtn.addEventListener("click", function () { if (!guard("closePanel")) return; clearSelection(); });
 
   els.playBtn.addEventListener("click", function () {
+    if (!guard("play")) return;
     var z = zoneById[state.selected];
     var d = current();
     if (!z) return;
@@ -823,6 +875,7 @@
   });
 
   els.talkBtn.addEventListener("click", function () {
+    if (!guard("talk")) return;
     var z = zoneById[state.selected];
     if (!z) return;
     window.RpgDialogue.play([{ speaker: CFG.dialogue.speakerName, text: z.vLine }]);
@@ -833,6 +886,7 @@
 
   document.addEventListener("keydown", function (e) {
     if (e.key !== "Escape" || window.RpgDialogue.isOpen()) return;
+    if (!guard("escape")) return;
     if (!els.testModal.hidden) els.testModal.hidden = true;
     else if (!els.switchModal.hidden) els.switchCancel.click();
     else if (!els.passModal.hidden) closePass();
@@ -840,6 +894,54 @@
   });
 
   if (desktopMQ.addEventListener) desktopMQ.addEventListener("change", renderBubble);
+
+  /* ---------- 通用按鈕確認音（集中一處；同一次點擊只會有一個提示音） ---------- */
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("button");
+    if (!b || b.disabled || b.closest("#rpg") || b.closest(".audio-ctl")) return;
+    if (b.classList.contains("entry")) return;   // 選區有自己的 select 音
+    sfx("confirm");
+  });
+
+  /* ==========================================================
+     音樂／音效設定（小按鈕＋小型設定）
+     ========================================================== */
+  (function audioUi() {
+    var A = window.BVAudio;
+    var btn = $("audioBtn"), pop = $("audioPop"), dot = $("audioDot"), icon = $("audioIcon");
+    var bgmT = $("bgmToggle"), sfxT = $("sfxToggle"), status = $("audioStatus");
+    if (!A || !btn) return;
+    var TEXT = {
+      idle: "背景音樂：準備中", waiting: "背景音樂：點畫面任一處開始播放", loading: "背景音樂：載入中…",
+      playing: "背景音樂：播放中", blocked: "瀏覽器暫停了音樂，點一下畫面再試一次", off: "背景音樂：已關閉",
+      missing: "找不到背景音樂檔案", hidden: "背景音樂：分頁在背景，暫停中"
+    };
+    function render() {
+      var p = A.prefs(), st = A.bgmState();
+      bgmT.checked = p.bgm; sfxT.checked = p.sfx;
+      status.textContent = TEXT[st] || st;
+      btn.dataset.state = st;
+      icon.textContent = p.bgm || p.sfx ? "🎵" : "🔇";
+      btn.setAttribute("aria-label", "聲音設定：" + (TEXT[st] || st) + "；介面音效" + (p.sfx ? "開" : "關"));
+      dot.title = TEXT[st] || "";
+    }
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      pop.hidden = !pop.hidden;
+      btn.setAttribute("aria-expanded", String(!pop.hidden));
+      render();
+    });
+    pop.addEventListener("click", function (e) { e.stopPropagation(); });
+    document.addEventListener("click", function () { if (!pop.hidden) { pop.hidden = true; btn.setAttribute("aria-expanded", "false"); } });
+    bgmT.addEventListener("change", function () { A.setBgm(bgmT.checked); render(); });
+    sfxT.addEventListener("change", function () { A.setSfx(sfxT.checked); if (sfxT.checked) A.sfx("confirm"); render(); });
+    var blockedToastShown = false;
+    A.onBgmState(function (st) {
+      render();
+      if (st === "blocked" && !blockedToastShown) { blockedToastShown = true; toast("瀏覽器暫停了音樂，點一下畫面就能再試一次"); }
+    });
+    render();
+  })();
 
   function setLobbyVisible(v) {
     els.dock.hidden = !v;
@@ -881,6 +983,9 @@
     escapeHtml: escapeHtml,
     openPass: openPass,
     closePass: closePass,
+    setGuard: function (fn) { guardPolicy = fn; document.body.classList.toggle("is-guarded", !!fn); },
+    clearGuard: function () { guardPolicy = null; document.body.classList.remove("is-guarded"); },
+    sfx: sfx,
     isDesktop: isDesktop,
     els: els
   };

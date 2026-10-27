@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="version" content="balloon-v-universe-v0.3.0-unified-player-lobby-test-1">
+  <meta name="version" content="balloon-v-universe-v0.3.1-onboarding-audio-ux-test-1">
   <title>氣球小V遊戲宇宙</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="style.css?v=0.3.0">
+  <link rel="stylesheet" href="style.css?v=0.3.1">
 </head>
 <body class="is-booting">
 
@@ -18,7 +18,7 @@
     <div class="brand">
       <span class="brand__balloon" aria-hidden="true">🎈</span>
       <h1 class="brand__title">氣球小V遊戲宇宙</h1>
-      <span class="version-tag">v0.3.0 玩家大廳測試</span>
+      <span class="version-tag">v0.3.1 新手與音效測試</span>
     </div>
   </header>
 
@@ -48,6 +48,21 @@
         <div class="map-status" id="mapStatus">地圖載入中…</div>
         <div class="asset-warning" id="assetWarning" hidden></div>
         <div class="debug-box" id="debugBox" hidden></div>
+      </div>
+
+      <!-- 音樂／音效設定（小按鈕＋小型設定，不佔大面板） -->
+      <div class="audio-ctl" id="audioCtl">
+        <button class="audio-ctl__btn" id="audioBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="聲音設定">
+          <span class="audio-ctl__icon" id="audioIcon" aria-hidden="true">🎵</span>
+          <span class="audio-ctl__dot" id="audioDot" aria-hidden="true"></span>
+        </button>
+        <div class="audio-pop" id="audioPop" hidden role="dialog" aria-label="聲音設定">
+          <label class="audio-pop__row"><span>🎵 背景音樂</span>
+            <input type="checkbox" id="bgmToggle" class="switch"></label>
+          <label class="audio-pop__row"><span>🔔 介面音效</span>
+            <input type="checkbox" id="sfxToggle" class="switch"></label>
+          <p class="audio-pop__status" id="audioStatus"></p>
+        </div>
       </div>
 
       <!-- 四個遊戲入口（桌機：在地圖上；手機：地圖下方一排） -->
@@ -91,18 +106,20 @@
     <div class="spot__block" data-side="left"></div>
     <div class="spot__block" data-side="right"></div>
     <div class="spot__ring" id="spotRing"></div>
+    <div class="spot__hint" id="spotHint" hidden><span id="spotHintText"></span></div>
   </div>
 
   <!-- ===== RPG 對話框（正式底板 panel_dialogue_idle.png） ===== -->
   <div class="rpg" id="rpg" hidden>
     <div class="rpg__shield" id="rpgShield"></div>
-    <div class="rpg__wrap">
+    <div class="rpg__wrap" id="rpgWrap">
       <div class="rpg__choices" id="rpgChoices" hidden></div>
       <div class="rpg__box" id="rpgBox" role="dialog" aria-modal="true" aria-labelledby="rpgName">
         <button class="rpg__skip" id="rpgSkip" type="button">略過 ⏭</button>
         <div class="rpg__portrait" id="rpgPortrait" hidden></div>
         <div class="rpg__name" id="rpgName"></div>
         <p class="rpg__text" id="rpgText"></p>
+        <span class="rpg__nexthint" id="rpgNextHint" hidden></span>
         <button class="rpg__next" id="rpgNext" type="button" aria-label="繼續"></button>
       </div>
     </div>
@@ -150,11 +167,12 @@
 
   <div class="toast" id="toast" role="status" hidden></div>
 
-  <script src="zones.js?v=0.3.0"></script>
-  <script src="identity.js?v=0.3.0"></script>
-  <script src="player-store.js?v=0.3.0"></script>
-  <script src="dialogue.js?v=0.3.0"></script>
-  <script src="main.js?v=0.3.0"></script>
-  <script src="onboarding.js?v=0.3.0"></script>
+  <script src="zones.js?v=0.3.1"></script>
+  <script src="audio.js?v=0.3.1"></script>
+  <script src="identity.js?v=0.3.1"></script>
+  <script src="player-store.js?v=0.3.1"></script>
+  <script src="dialogue.js?v=0.3.1"></script>
+  <script src="main.js?v=0.3.1"></script>
+  <script src="onboarding.js?v=0.3.1"></script>
 </body>
 </html>

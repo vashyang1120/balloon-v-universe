@@ -1,6 +1,6 @@
 /* ==========================================================
    氣球小V遊戲宇宙 — 新手引導、找回通行證、首次入園教學（v0.3.0 新增）
-   balloon-v-universe-v0.3.0-unified-player-lobby-test-1
+   balloon-v-universe-v0.3.1-onboarding-audio-ux-test-1
 
    啟動規則：
    - 本機沒有記住任何玩家 → 小V歡迎 →「建立新玩家」或「我玩過了」
@@ -28,6 +28,12 @@
   var card = document.getElementById("flowCard");
   var V = CFG.dialogue.speakerName;
 
+  /* 新手流程中的對話：不用保護層、不可略過，並避開目前顯示的操作卡片（依實際位置計算） */
+  function FLOW_OPTS() {
+    return { shield: false, allowSkip: false, avoid: function () { return flow.hidden || card.hidden ? [] : [card]; } };
+  }
+  function err(id, msg) { var e = document.getElementById(id); if (e) e.textContent = msg; L.sfx("error"); }
+
   function say(text, extra) { return Object.assign({ speaker: V, text: text }, extra || {}); }
   function fill(s, draft) {
     return s.replace("{id}", draft.id || "").replace("{avatar}", ID.avatarLabel(draft.base) || "");
@@ -51,10 +57,26 @@
     return '<div class="pick-grid" role="radiogroup" aria-label="身份圖案">' +
       ID.builtinAvatars.map(function (a, i) {
         var on = a.key === selected;
-        return '<button type="button" class="pick' + (on ? " is-on" : "") + '" role="radio" aria-checked="' + on + '" data-key="' + a.key + '">' +
-          L.avatarHtml(a.key, on ? "gold" : (i % 2 ? "pink" : "blue")) +
+        return '<button type="button" class="pick' + (on ? " is-on" : "") + '" role="radio" aria-checked="' + on + '" data-key="' + a.key + '" aria-label="' + esc(a.label) + '">' +
+          L.avatarHtml(a.key, on ? "gold" : (i % 2 ? "pink" : "blue"), null, "av--pick") +
+          '<span class="pick__check" aria-hidden="true">✓</span>' +
           '<span class="pick__label">' + esc(a.label) + "</span></button>";
       }).join("") + "</div>";
+  }
+  /* 選了圖案後：底部固定列顯示「已選：xxx」，確認按鈕變成可按的高亮狀態 */
+  function markPicked(key) {
+    var lab = document.getElementById("fPicked"), btn = card.querySelector(".flow__foot .btn--primary");
+    if (lab) { lab.innerHTML = key ? "已選：<b>" + esc(ID.avatarLabel(key)) + "</b>" : "還沒有選擇圖案"; lab.classList.toggle("is-on", !!key); }
+    if (btn) { btn.classList.toggle("is-ready", !!key); if (key) { btn.classList.remove("is-pop"); void btn.offsetWidth; btn.classList.add("is-pop"); } }
+  }
+  function pickFoot(backLabel, nextId, nextLabel) {
+    return '<div class="flow__foot">' +
+      '<span class="flow__picked" id="fPicked">還沒有選擇圖案</span>' +
+      '<p class="flow__error" id="fErr" role="alert"></p>' +
+      '<div class="flow__buttons">' +
+        '<button class="btn btn--ghost" id="fBack" type="button">' + backLabel + "</button>" +
+        '<button class="btn btn--primary" id="' + nextId + '" type="button">' + nextLabel + "</button>" +
+      "</div></div>";
   }
   function bindGrid(onPick) {
     card.querySelectorAll(".pick").forEach(function (b, i) {
@@ -64,9 +86,11 @@
           o.classList.toggle("is-on", on);
           o.setAttribute("aria-checked", on);
           var key = o.dataset.key;
-          o.querySelector(".av").outerHTML = L.avatarHtml(key, on ? "gold" : (j % 2 ? "pink" : "blue"));
+          o.querySelector(".av").outerHTML = L.avatarHtml(key, on ? "gold" : (j % 2 ? "pink" : "blue"), null, "av--pick");
         });
+        L.sfx("select");
         onPick(b.dataset.key);
+        markPicked(b.dataset.key);
       });
     });
   }
@@ -84,7 +108,7 @@
     var lines = fromLobby
       ? [say(T.addPlayerPrompt, { choices: choices })]
       : [say(T.welcome[0]), say(T.welcome[1], { choices: choices })];
-    D.ask(lines, { shield: false, allowSkip: false }).then(function (r) {
+    D.ask(lines, FLOW_OPTS()).then(function (r) {
       if (r.replaced) return;
       if (r.choice === "new") newPlayer({ fromLobby: fromLobby });
       else if (r.choice === "returning") returning({ fromLobby: fromLobby });
@@ -97,7 +121,7 @@
      ========================================================== */
   function newPlayer(opts) {
     var draft = { id: "", base: "", seenR1: false, seenR2: false, fromLobby: !!(opts && opts.fromLobby) };
-    D.ask([say(T.newStart)], { shield: false, allowSkip: false }).then(function () { stepId(draft); });
+    D.ask([say(T.newStart)], FLOW_OPTS()).then(function () { stepId(draft); });
   }
 
   function stepId(draft) {
@@ -115,12 +139,12 @@
     setTimeout(function () { input.focus(); }, 50);
     function next() {
       var v = ID.validateNewId(input.value);
-      if (!v.ok) { document.getElementById("fErr").textContent = v.msg; input.focus(); return; }
+      if (!v.ok) { err("fErr", v.msg); input.focus(); return; }
       draft.id = v.id;
       if (draft.seenR1) { stepAvatar(draft); return; }
       // 第一次提醒：完整 RPG，不可略過；看完才進入圖案選擇
       showFlow(null);
-      D.ask([say(T.reminder1, { noSkip: true })], { shield: false, allowSkip: false }).then(function () {
+      D.ask([say(T.reminder1, { noSkip: true })], FLOW_OPTS()).then(function () {
         draft.seenR1 = true;
         stepAvatar(draft);
       });
@@ -132,19 +156,18 @@
 
   function stepAvatar(draft) {
     showFlow(
-      '<div class="flow__step">建立通行證 · 2 / 3</div>' +
-      '<h2 class="flow__title">選擇你的專屬身份圖案</h2>' +
-      '<p class="flow__notice">⚠️ ' + esc(T.reminder1) + "</p>" +
-      avatarGrid(draft.base) +
-      '<p class="flow__error" id="fErr" role="alert"></p>' +
-      '<div class="flow__buttons">' +
-        '<button class="btn btn--ghost" id="fBack" type="button">上一步</button>' +
-        '<button class="btn btn--primary" id="fNext" type="button">確定這個圖案</button>' +
-      "</div>", "flow__card--pick");
+      '<div class="flow__head">' +
+        '<div class="flow__step">建立通行證 · 2 / 3</div>' +
+        '<h2 class="flow__title">選擇你的專屬身份圖案</h2>' +
+        '<p class="flow__notice">⚠️ ' + esc(T.reminder1) + "</p>" +
+      "</div>" +
+      '<div class="flow__body">' + avatarGrid(draft.base) + "</div>" +
+      pickFoot("上一步", "fNext", "確認這個圖案"), "flow__card--pick");
+    markPicked(draft.base);
     bindGrid(function (key) { draft.base = key; document.getElementById("fErr").textContent = ""; });
     document.getElementById("fBack").addEventListener("click", function () { stepId(draft); });
     document.getElementById("fNext").addEventListener("click", function () {
-      if (!draft.base) { document.getElementById("fErr").textContent = "請先選一個圖案"; return; }
+      if (!draft.base) { err("fErr", "請先點一個圖案喔！"); return; }
       stepConfirm(draft);
     });
   }
@@ -172,7 +195,7 @@
       : [say(fill(T.reminder2[0], draft), { noSkip: true }),
          say(fill(T.reminder2[1], draft), { noSkip: true }),
          say(fill(T.reminder2[2], draft), { noSkip: true, choices: choices })];
-    D.ask(lines, { shield: false, allowSkip: false }).then(function (r) {
+    D.ask(lines, FLOW_OPTS()).then(function (r) {
       if (r.replaced) return;
       draft.seenR2 = true;
       if (r.choice === "ok") create(draft);
@@ -189,7 +212,7 @@
         return D.ask([say(T.duplicate, { choices: [
           { label: "我玩過了", value: "returning", primary: true },
           { label: "重新選擇", value: "retry" }
-        ] })], { shield: false, allowSkip: false }).then(function (r) {
+        ] })], FLOW_OPTS()).then(function (r) {
           if (r.choice === "returning") returning({ fromLobby: draft.fromLobby, prefill: { id: draft.id, base: draft.base } });
           else stepId(draft);   // 保留已輸入的 ID 與圖案，讓玩家修改
         });
@@ -204,7 +227,7 @@
       D.ask([say(T.createFailed, { choices: [
         { label: "再試一次", value: "retry", primary: true },
         { label: "返回修改", value: "back" }
-      ] })], { shield: false, allowSkip: false }).then(function (r) {
+      ] })], FLOW_OPTS()).then(function (r) {
         if (r.choice === "retry") create(draft); else stepConfirm(draft);
       });
     });
@@ -219,7 +242,8 @@
       '<p class="flow__hint">記住你的玩家 ID「' + esc(entry.id) + "」和這個「" + esc(ID.avatarLabel(entry.baseAvatarKey)) + "」圖案，下次就能找回這張通行證。</p>" +
       '<div class="flow__buttons"><button class="btn btn--primary btn--big" id="fEnter" type="button">進入遊樂園 ▶</button></div>',
       "flow__card--pass");
-    D.ask([say(T.created)], { shield: false, allowSkip: false });
+    L.sfx("pass");
+    D.ask([say(T.created)], FLOW_OPTS());
     document.getElementById("fEnter").addEventListener("click", function () {
       if (D.isOpen()) D.close();
       enterLobby(entry, { tutorial: true, transition: true });
@@ -264,17 +288,18 @@
         }).join("") + "</div>"
       : "";
     showFlow(
-      '<div class="flow__step">我玩過了</div>' +
-      '<h2 class="flow__title">找回我的通行證</h2>' +
-      '<p class="flow__hint">' + esc(T.returningAsk) + "</p>" + quick +
-      '<input class="flow__input" id="fId" type="text" maxlength="40" autocomplete="off" placeholder="玩家 ID" value="' + esc(sel.id) + '">' +
-      '<p class="flow__label">當初選的專屬身份圖案</p>' +
-      avatarGrid(sel.base) +
-      '<p class="flow__error" id="fErr" role="alert"></p>' +
-      '<div class="flow__buttons">' +
-        '<button class="btn btn--ghost" id="fBack" type="button">返回</button>' +
-        '<button class="btn btn--primary" id="fFind" type="button">找回通行證</button>' +
-      "</div>", "flow__card--pick");
+      '<div class="flow__head">' +
+        '<div class="flow__step">我玩過了</div>' +
+        '<h2 class="flow__title">找回我的通行證</h2>' +
+        '<p class="flow__hint">' + esc(T.returningAsk) + "</p>" +
+      "</div>" +
+      '<div class="flow__body">' + quick +
+        '<input class="flow__input" id="fId" type="text" maxlength="40" autocomplete="off" placeholder="玩家 ID" value="' + esc(sel.id) + '">' +
+        '<p class="flow__label">當初選的專屬身份圖案</p>' +
+        avatarGrid(sel.base) +
+      "</div>" +
+      pickFoot("返回", "fFind", "找回通行證"), "flow__card--pick");
+    markPicked(sel.base);
     bindGrid(function (key) { sel.base = key; });
     card.querySelectorAll(".quick__item").forEach(function (b) {
       b.addEventListener("click", function () {
@@ -284,10 +309,10 @@
     });
     document.getElementById("fBack").addEventListener("click", function () { startGate(opts.fromLobby); });
     document.getElementById("fFind").addEventListener("click", function () {
-      var err = document.getElementById("fErr");
+      var errEl = document.getElementById("fErr");
       var id = document.getElementById("fId").value.trim();
-      if (!id) { err.textContent = "請輸入玩家 ID"; return; }
-      if (!sel.base) { err.textContent = "請選擇當初的身份圖案"; return; }
+      if (!id) { err("fErr", "請輸入玩家 ID"); return; }
+      if (!sel.base) { err("fErr", "請選擇當初的身份圖案"); return; }
       var key = ID.makePlayerKey(id, sel.base);
       var btn = document.getElementById("fFind");
       btn.disabled = true;
@@ -297,7 +322,7 @@
           return D.ask([say(T.returningNotFound, { choices: [
             { label: "再試一次", value: "retry", primary: true },
             { label: "建立新玩家", value: "new" }
-          ] })], { shield: false, allowSkip: false }).then(function (r) {
+          ] })], FLOW_OPTS()).then(function (r) {
             if (r.choice === "new") newPlayer({ fromLobby: opts.fromLobby });
             else returning({ fromLobby: opts.fromLobby, prefill: { id: id, base: sel.base } });
           });
@@ -311,24 +336,31 @@
         console.warn("[Onboarding] 找回失敗：", e && e.message);
         btn.disabled = false;
         btn.textContent = "找回通行證";
-        err.textContent = T.loadFailed;
+        errEl.textContent = T.loadFailed;
+        L.sfx("error");
       });
     });
   }
 
   /* ==========================================================
-     首次入園教學：聚光燈 + 小V對話 + 玩家實際點擊
+     首次入園教學（v0.3.1 重寫）
+     - 每一步明確定義：類型（intro 只是介紹 / action 要實際操作）、合法操作、點錯回饋
+     - 所有大廳操作都經過 main.js 的 guard()；教學只要設定一個規則函式，
+       不需要在各個按鈕寫特例，也不是靠 pointer-events 擋住（點錯一定有回饋）
+     - 聚光燈只負責「看哪裡」（不攔截點擊）；目標旁的小提示負責「點哪裡」
      ========================================================== */
   var spot = document.getElementById("spot");
   var ring = document.getElementById("spotRing");
+  var hint = document.getElementById("spotHint");
+  var hintText = document.getElementById("spotHintText");
   var blocks = {};
   spot.querySelectorAll(".spot__block").forEach(function (b) { blocks[b.dataset.side] = b; });
-  var spotTargets = null, spotRaf = 0, spotPass = false;
+  var spotTargets = null, spotRaf = 0, hintTimer = 0, hintNormal = "";
 
   function rectOf(targets) {
     var r = null;
-    targets.forEach(function (t) {
-      if (!t || t.hidden) return;
+    (targets || []).forEach(function (t) {
+      if (!t || t.hidden || !t.isConnected) return;
       var b = t.getBoundingClientRect();
       if (!b.width && !b.height) return;
       r = r ? { left: Math.min(r.left, b.left), top: Math.min(r.top, b.top), right: Math.max(r.right, b.right), bottom: Math.max(r.bottom, b.bottom) }
@@ -339,127 +371,182 @@
   function layoutSpot() {
     if (!spotTargets) return;
     var r = rectOf(spotTargets);
+    var W = window.innerWidth, H = window.innerHeight;
     if (r) {
-      var pad = 8, W = window.innerWidth, H = window.innerHeight;
+      var pad = 8;
       var l = Math.max(0, r.left - pad), t = Math.max(0, r.top - pad), rr = Math.min(W, r.right + pad), bb = Math.min(H, r.bottom + pad);
       Object.assign(blocks.top.style, { left: 0, top: 0, width: W + "px", height: t + "px" });
       Object.assign(blocks.bottom.style, { left: 0, top: bb + "px", width: W + "px", height: Math.max(0, H - bb) + "px" });
       Object.assign(blocks.left.style, { left: 0, top: t + "px", width: l + "px", height: Math.max(0, bb - t) + "px" });
       Object.assign(blocks.right.style, { left: rr + "px", top: t + "px", width: Math.max(0, W - rr) + "px", height: Math.max(0, bb - t) + "px" });
       Object.assign(ring.style, { left: l + "px", top: t + "px", width: (rr - l) + "px", height: (bb - t) + "px" });
+      if (!hint.hidden) {
+        // 目標旁小提示：優先放在目標上方，放不下就放下方；左右不超出畫面
+        var hw = hint.offsetWidth, hh = hint.offsetHeight, cx = (l + rr) / 2;
+        var above = t - hh - 14 >= 8;
+        var ht = above ? t - hh - 14 : Math.min(H - hh - 8, bb + 14);
+        var hl = Math.max(8, Math.min(W - hw - 8, cx - hw / 2));
+        hint.style.left = hl + "px"; hint.style.top = ht + "px";
+        hint.style.setProperty("--arrow-x", Math.max(16, Math.min(hw - 16, cx - hl)) + "px");
+        hint.classList.toggle("is-above", above);
+        hint.classList.toggle("is-below", !above);
+      }
     }
     spotRaf = requestAnimationFrame(layoutSpot);
   }
-  function showSpot(targets, passThrough) {
-    spotTargets = targets.filter(Boolean);
-    spotPass = !!passThrough;
-    ring.classList.toggle("is-block", !spotPass);
+  function showSpot(targets, hintMsg, opts) {
+    opts = opts || {};
+    spotTargets = (targets || []).filter(Boolean);
     spot.hidden = false;
+    spot.classList.toggle("spot--hintonly", !!opts.hintOnly);
+    hintNormal = hintMsg || "";
+    setHint(hintNormal, false);
     var first = spotTargets[0];
-    if (first && first.scrollIntoView) first.scrollIntoView({ block: "center", behavior: "instant" });
+    if (first && first.scrollIntoView && !opts.noScroll) first.scrollIntoView({ block: "nearest", behavior: "instant" });
     cancelAnimationFrame(spotRaf);
     layoutSpot();
   }
-  function hideSpot() { spot.hidden = true; spotTargets = null; cancelAnimationFrame(spotRaf); }
-
-  function dialogPos(targets) {
-    var r = rectOf(targets.filter(Boolean));
-    if (!r) return "bottom";
-    return (r.top + r.bottom) / 2 > window.innerHeight * 0.5 ? "top" : "bottom";
+  function setHint(msg, isWrong) {
+    hint.hidden = !msg;
+    hintText.textContent = msg || "";
+    hint.classList.toggle("is-wrong", !!isWrong);
+  }
+  function hideSpot() {
+    spot.hidden = true; spotTargets = null; cancelAnimationFrame(spotRaf);
+    clearTimeout(hintTimer); setHint("", false);
+  }
+  /* 點錯：小提示換成溫和提醒、聚光燈框抖一下、播放提醒音；2.4 秒後恢復原本小提示 */
+  function wrongFeedback(msg) {
+    L.sfx("error");
+    ring.classList.remove("is-shake"); void ring.offsetWidth; ring.classList.add("is-shake");
+    if (msg) {
+      setHint(msg, true);
+      clearTimeout(hintTimer);
+      hintTimer = setTimeout(function () { setHint(hintNormal, false); }, 2400);
+    }
   }
 
-  /* 等待某個大廳事件或玩家按「略過」 */
   function waitFor(eventName, filter) {
-    return new Promise(function (resolve) {
-      var offFn = L.on(eventName, function (d) { if (!filter || filter(d)) { offFn(); resolve({ ok: true, data: d }); } });
+    var offFn;
+    var p = new Promise(function (resolve) {
+      offFn = L.on(eventName, function (d) { if (!filter || filter(d)) { offFn(); resolve({ ok: true, data: d }); } });
     });
+    p.cancel = function () { if (offFn) offFn(); };
+    return p;
   }
 
+  var tutorialRunning = false;
   function runTutorial() {
-    var d = L.current();
-    if (!d) return;
-    var key = d.playerKey;
-    var els = L.els;
-    var mapTargets = L.isDesktop() ? [els.stage] : [els.stage, els.entries];
+    var me = L.current();
+    if (!me || tutorialRunning) return Promise.resolve();
+    tutorialRunning = true;
+    var key = me.playerKey, els = L.els, S = TU.steps;
     var ended = false;
+    var mapTargets = function () { return L.isDesktop() ? [els.stage] : [els.stage, els.entries]; };
+    var myAvatar = function () { return els.avatarRow.querySelector(".av-item.is-current"); };
+
     function end() {
       if (ended) return;
       ended = true;
+      tutorialRunning = false;
+      L.clearGuard();                 // 恢復所有正常操作
       hideSpot();
       Store.markTutorialDone(key);
       document.body.classList.remove("tutorial-on");
+      if (D.isOpen()) D.close();
     }
-    function talk(text, targets, extra) {
-      return D.ask([say(text, extra)], { shield: false, position: dialogPos(targets), allowSkip: true }).then(function (r) {
-        if (r.skipped && !r.replaced) end();
-        return r;
+
+    /* 只是介紹：唯一正確操作是紫色箭頭；其他大廳操作 → 溫和提醒＋高亮箭頭 */
+    function intro(cfg, targets) {
+      if (ended) return Promise.resolve();
+      showSpot(targets, "", {});
+      L.setGuard(function () {
+        wrongFeedback(null);
+        L.toast(TU.wrongIntro);
+        D.nudgeNext();
+        return false;
       });
+      return D.ask([say(cfg.text, { nextHint: TU.nextHint })], {
+        shield: false, allowSkip: true,
+        avoid: function () { return (targets || []).filter(function (t) { return t && rectOf([t]) && (rectOf([t]).bottom - rectOf([t]).top) < window.innerHeight * 0.6; }); }
+      }).then(function (r) { if (r && r.skipped && !r.replaced) end(); });
     }
-    /* 等待實際操作的步驟：對話顯示提示（沒有繼續鍵），玩家做完操作才往下 */
-    function act(text, targets, eventName, filter) {
+
+    /* 要實際操作：只有指定目標算正確；其他操作 → 目標旁提示溫和提醒，不中斷、不跳步驟 */
+    function action(cfg, targetsFn, allow, eventName, filter, extra) {
+      if (ended) return Promise.resolve(false);
+      extra = extra || {};
       return new Promise(function (resolve) {
         var done = false;
-        talk(text, targets, { waitAction: true }).then(function (r) { if (!done && r.skipped) { done = true; resolve(false); } });
-        waitFor(eventName, filter).then(function (res) { if (done) return; done = true; D.next(); resolve(res); });
+        var ev = waitFor(eventName, filter);
+        showSpot(targetsFn(), cfg.hint, { hintOnly: extra.hintOnly });
+        L.setGuard(function (act, data) {
+          if (allow(act, data)) return true;
+          var msg = (act === "addPlayer" && cfg.wrongAdd) || (act === "avatarOther" && cfg.wrongOther) || cfg.wrong;
+          wrongFeedback(msg);
+          return false;
+        });
+        if (!extra.noDialog) {
+          D.ask([say(cfg.text, { waitAction: true })], {
+            shield: false, allowSkip: true,
+            avoid: function () { return targetsFn().concat([hint]); },
+            onWaitClick: function () { wrongFeedback(cfg.wrong); }
+          }).then(function (r) {
+            if (!done && r && r.skipped && !r.replaced) { done = true; ev.cancel(); end(); resolve(false); }
+          });
+        }
+        ev.then(function (res) {
+          if (done) return;
+          done = true;
+          L.setGuard(function () { return false; });   // 推進前先鎖住，避免連點跳步
+          if (D.isOpen()) D.next();
+          resolve(res);
+        });
       });
     }
 
     document.body.classList.add("tutorial-on");
     L.closePass();
+    window.BalloonUniverse.clearSelection();
 
-    // 1. 四個遊戲區域
-    showSpot(mapTargets, false);
-    talk(TU.zones, mapTargets).then(function () {
-      if (ended) return;
-      // 2. 實際點一個遊戲區域
-      showSpot(mapTargets, true);
-      return act(TU.tryZone, mapTargets, "zoneSelected");
-    }).then(function (ok) {
-      if (ended || ok === false) return end();
-      // 3. 介紹面板與開始遊玩（不強制按）
-      var t = [els.panel];
-      showSpot(t, false);
-      return talk(TU.tryPlay, t);
-    }).then(function () {
-      if (ended) return;
-      window.BalloonUniverse.clearSelection();
-      // 4. 下方頭像列：實際點一下自己的頭像（不強制切換成別人）
-      var t = [els.avatarRow];
-      showSpot(t, true);
-      return act(TU.avatars, t, "avatarTapped");
-    }).then(function (res) {
-      if (ended || res === false) return end();
-      if (res && res.data && !res.data.self) {
-        // 玩家點了別人：已跳出真正的切換確認視窗，等他取消或確認
+    return intro(S.zones, mapTargets())
+      .then(function () {
+        return action(S.tryZone, mapTargets, function (a) { return a === "selectZone"; }, "zoneSelected");
+      })
+      .then(function (ok) {
+        if (ended || ok === false) return;
+        return intro(S.play, [els.panel]);
+      })
+      .then(function () {
+        if (ended) return;
+        window.BalloonUniverse.clearSelection();
+        return action(S.avatar, function () { return [myAvatar()]; }, function (a) { return a === "avatarSelf"; }, "avatarTapped", function (d) { return d && d.self; });
+      })
+      .then(function (ok) {
+        if (ended || ok === false) return;
+        return intro(S.avatarDone, [els.avatarRow]);
+      })
+      .then(function () {
+        if (ended) return;
+        return intro(S.info, [els.card]);
+      })
+      .then(function () {
+        if (ended) return;
+        return action(S.pass, function () { return [els.signPass]; }, function (a) { return a === "signPass"; }, "passOpened");
+      })
+      .then(function (ok) {
+        if (ended || ok === false) return;
+        // 通行證打開時：不放大對話框擋住內容，只在 ✕ 旁顯示短提示；可切換分頁、按 ✕ 關閉
+        return action(S.passView, function () { return [document.getElementById("passClose")]; },
+          function (a) { return a === "passClose" || a === "passTab" || a === "escape"; }, "passClosed", null, { noDialog: true, hintOnly: true });
+      })
+      .then(function (ok) {
+        if (ended || ok === false) return;
         hideSpot();
-        return Promise.race([waitFor("switchCancelled"), waitFor("switchDone")]).then(function () {
-          var t = [els.avatarRow];
-          showSpot(t, false);
-          return talk(TU.avatarsDone, t);
-        });
-      }
-      var t2 = [els.avatarRow];
-      showSpot(t2, false);
-      return talk(TU.avatarsDone, t2);
-    }).then(function () {
-      if (ended) return;
-      // 5. 右上角玩家資料
-      var t = [els.card];
-      showSpot(t, false);
-      return talk(TU.info, t);
-    }).then(function () {
-      if (ended) return;
-      // 6. 我的通行證：實際點開
-      var t = [els.signPass];
-      showSpot(t, true);
-      return act(TU.pass, t, "passOpened");
-    }).then(function (res) {
-      if (ended || res === false) return end();
-      hideSpot();
-      return waitFor("passClosed").then(function () {
-        return D.ask([say(TU.done)], { shield: false });
-      });
-    }).then(function () { end(); });
+        L.setGuard(function () { return true; });
+        return D.ask([say(S.done.text)], { shield: false });
+      })
+      .then(function () { end(); });
   }
 
   /* ==========================================================

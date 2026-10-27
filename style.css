@@ -1,6 +1,6 @@
 /* ==========================================================
    氣球小V遊戲宇宙 — 樣式
-   balloon-v-universe-v0.3.0-unified-player-lobby-test-1
+   balloon-v-universe-v0.3.1-onboarding-audio-ux-test-1
 
    - 可調數值集中在 zones.js；這裡只放外觀
    - 14 張 UI PNG 一律保持原始長寬比（aspect-ratio），不扭曲
@@ -167,15 +167,21 @@ img { -webkit-user-drag: none; user-select: none; }
    ========================================================== */
 .av { position: relative; display: inline-block; width: 64px; aspect-ratio: 1; flex: none; }
 .av__frame { position: absolute; inset: 0; width: 100%; height: 100%; }
-.av__face {
-  position: absolute; border-radius: 50%; object-fit: cover; background: #fff7e6;
+.av__clip {
+  position: absolute; border-radius: 50%; overflow: hidden; background: #fff7e6;
   left: calc(var(--cx) - var(--d) / 2); top: calc(var(--cy) - var(--d) / 2);
   width: var(--d); height: var(--d);
 }
+.av__face {
+  display: block; width: 100%; height: 100%; object-fit: cover;
+  object-position: 50% var(--face-y, 50%); transform: scale(var(--zoom, 1)); transform-origin: 50% var(--face-y, 50%);
+}
+/* 身份圖案選擇：頭像原圖臉部周圍有黑色留白，放大臉部（頭像框本身不變、不裁切裝飾） */
+.av--pick { --zoom: 1.22; --face-y: 38%; }
 .av--blue { --cx: 50.6%; --cy: 50.2%; --d: 46.4%; }
 .av--gold { --cx: 49.6%; --cy: 48.9%; --d: 47.4%; }
 .av--pink { --cx: 49.8%; --cy: 53.1%; --d: 49.4%; }
-.av.is-dim .av__face { opacity: .45; filter: grayscale(.6); }
+.av.is-dim .av__clip { opacity: .45; filter: grayscale(.6); }
 .av--sm { width: 48px; }
 .av--lg { width: 132px; }
 
@@ -415,9 +421,9 @@ code.muted { font-size: 12px; }
 .flow__card {
   width: min(600px, 100%); margin-top: 3vh; padding: 22px 22px 18px; border-radius: 28px; background: var(--card);
   border: 4px solid #fff; box-shadow: 0 0 0 4px var(--gold), 0 18px 40px rgba(0,0,0,.3);
-  max-height: calc(100dvh - 40px); overflow-y: auto; animation: pop .35s var(--ease);
+  max-height: calc(var(--vvh, 100dvh) - 40px); overflow-y: auto; animation: pop .35s var(--ease);
 }
-body.rpg-open .flow__card { max-height: calc(100dvh - var(--rpg-space, 330px)); margin-top: 1.5vh; }
+body.rpg-open .flow__card:not(.flow__card--pick) { max-height: calc(var(--vvh, 100dvh) - var(--rpg-space, 330px)); margin-top: 1.5vh; }
 .flow.is-leaving { transition: opacity var(--leave-ms, .9s) ease; opacity: 0; }
 .flow.is-leaving .flow__card { transition: transform var(--leave-ms, .9s) var(--ease); transform: scale(1.15) translateY(-20px); }
 .flow__step { display: inline-block; padding: 3px 12px; border-radius: 999px; background: var(--purple-soft); color: var(--purple-dark); font-size: 13px; font-weight: 900; }
@@ -440,16 +446,47 @@ body.rpg-open .flow__card { max-height: calc(100dvh - var(--rpg-space, 330px)); 
 .spinner { width: 22px; height: 22px; border-radius: 50%; border: 4px solid var(--purple-soft); border-top-color: var(--purple); animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.pick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; }
+/* v0.3.1：桌機每格 118px（頭像框 104px，臉部約 59px）；v0.3.0 為 84px／70px */
+.pick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
 .pick {
-  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 2px 6px;
-  border: 3px solid transparent; border-radius: 16px; background: none; cursor: pointer;
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 2px 8px;
+  border: 4px solid transparent; border-radius: 20px; background: none; cursor: pointer;
+  transition: transform .15s var(--ease), background .2s, border-color .2s;
 }
-.pick .av { width: 70px; }
-.pick__label { font-size: 13px; font-weight: 800; color: var(--ink-soft); }
-.pick.is-on { border-color: var(--gold); background: #fff6cf; }
-.pick.is-on .pick__label { color: var(--ink); }
+.pick .av { width: 104px; max-width: 100%; }
+.pick__label { font-size: 15px; font-weight: 900; color: var(--ink-soft); }
+.pick:hover { background: #fffaf0; }
+.pick.is-on { border-color: var(--gold); background: #fff3b8; transform: scale(1.04); box-shadow: 0 0 0 3px #fff, 0 0 18px 4px rgba(255,200,0,.55); }
+.pick.is-on .pick__label { color: var(--purple-dark); }
+.pick__check {
+  position: absolute; top: 2px; right: 6px; width: 30px; height: 30px; border-radius: 50%;
+  display: none; align-items: center; justify-content: center;
+  background: var(--purple); color: #fff; font-size: 18px; font-weight: 900; box-shadow: 0 0 0 3px #fff;
+}
+.pick.is-on .pick__check { display: flex; animation: pop .25s var(--ease); }
 .pick:focus-visible { outline: 3px solid var(--pink); outline-offset: 1px; }
+
+/* 選圖案卡片：上方標題固定、中間頭像清單獨立捲動、下方操作列固定可見 */
+.flow__card--pick {
+  display: flex; flex-direction: column; overflow: hidden; padding-bottom: 0;
+  height: min(760px, calc(var(--vvh, 100dvh) - 40px)); max-height: none !important;
+}
+.flow__head { flex: none; }
+.flow__body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 4px 2px 14px; -webkit-overflow-scrolling: touch; }
+.flow__foot {
+  flex: none; margin: 0 -22px; padding: 10px 22px calc(12px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, rgba(255,253,247,.94), var(--card)); border-top: 3px dashed #f1e2b8;
+  display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 10px;
+}
+.flow__foot .flow__buttons { margin: 0; flex-wrap: nowrap; }
+.flow__foot .flow__error { grid-column: 1 / -1; grid-row: 2; min-height: 0; margin: 4px 0 0; }
+.flow__foot .flow__error:empty { display: none; }
+.flow__picked { font-size: 15px; font-weight: 800; color: #9a8cb8; }
+.flow__picked.is-on { color: var(--purple-dark); }
+.flow__foot .btn--primary { opacity: .72; }
+.flow__foot .btn--primary.is-ready { opacity: 1; box-shadow: 0 5px 0 var(--purple-dark), 0 0 0 4px rgba(255,216,77,.85), 0 0 18px 4px rgba(255,216,77,.6); }
+.flow__foot .btn--primary.is-pop { animation: btnPop .45s var(--ease); }
+@keyframes btnPop { 40% { transform: scale(1.1); } }
 
 .confirm { display: flex; align-items: center; gap: 18px; padding: 10px; border-radius: 20px; background: #fff6cf; border: 3px dashed var(--gold); }
 .confirm__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 18px; }
@@ -467,16 +504,20 @@ body.rpg-open .flow__card { max-height: calc(100dvh - var(--rpg-space, 330px)); 
 .quick__item small { color: #9a8cb8; font-weight: 700; }
 
 /* ==========================================================
-   RPG 對話框（panel_dialogue_idle.png 608×248）
-   名牌 13–44% × 6–30%；文字區 9–84% × 35–85%；箭頭鈕中心 (88%, 79%)
+   RPG 對話框（panel_dialogue_idle.png 608×248）— v0.3.1 依 PNG 像素實測
+   紫色名牌（填色）：x 97–289px（15.95–47.53%），y 34–79px（13.71–31.85%），中心 (31.74%, 22.78%)
+   下一步圓鈕：圓心 (533.5px, 189px) = (87.75%, 76.21%)；紫色圓半徑 22px、含金邊 28px（直徑 9.2% 寬）
+   文字區：x 9.5%–83%，y 36%–88%
    ========================================================== */
 .rpg { position: fixed; inset: 0; z-index: 60; --rpg-w: min(680px, 96vw); }
 .rpg__shield { position: absolute; inset: 0; background: rgba(30,16,60,.28); animation: fadeIn .2s ease; }
 .rpg--noshield { pointer-events: none; }
 .rpg--noshield .rpg__shield { display: none; }
+/* 位置由 dialogue.js 依可視範圍與目標計算（top）；這裡的 bottom 只是第一格畫面的預設 */
 .rpg__wrap {
   position: absolute; left: 50%; bottom: max(14px, env(safe-area-inset-bottom)); transform: translateX(-50%);
   width: var(--rpg-w); pointer-events: auto; animation: rise .3s var(--ease);
+  transition: top .25s var(--ease);
 }
 .rpg--top .rpg__wrap { bottom: auto; top: 64px; }
 @keyframes rise { from { transform: translate(-50%, 30px); opacity: 0; } }
@@ -487,22 +528,46 @@ body.rpg-open .flow__card { max-height: calc(100dvh - var(--rpg-space, 330px)); 
   container-type: inline-size;
 }
 .rpg__name {
-  position: absolute; left: 13.5%; width: 30%; top: 6.5%; height: 22%;
+  position: absolute; left: 15.95%; width: 31.58%; top: 13.71%; height: 18.14%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 4.2cqw; font-weight: 900; letter-spacing: .12em; color: #fff; white-space: nowrap;
+  padding-left: .12em;            /* 抵銷 letter-spacing 在最後一個字後面多出的空間，讓字視覺置中 */
+  font-size: 4.1cqw; line-height: 1; font-weight: 900; letter-spacing: .12em; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .rpg__text {
-  position: absolute; left: 9.5%; right: 15%; top: 36%; bottom: 15%; margin: 0;
+  position: absolute; left: 9.5%; right: 17%; top: 36%; bottom: 12%; margin: 0;
   overflow-y: auto; white-space: pre-line;
   font-size: clamp(15px, 3.6cqw, 24px); line-height: 1.55; font-weight: 800; color: var(--ink);
 }
+/* 點擊熱區：與 PNG 圓鈕同心（translate -50%），比可見圓（9.2%）略大（12%）；
+   CSS 不另畫第二個圓，只有一圈與 PNG 圓鈕同大小的發光（::after，9.2/12 = 76.7%） */
 .rpg__next {
-  position: absolute; left: 83.4%; top: 70%; width: 9.2%; aspect-ratio: 1; border-radius: 50%;
+  position: absolute; left: 87.75%; top: 76.21%; width: 12%; aspect-ratio: 1; border-radius: 50%;
+  transform: translate(-50%, -50%);
   padding: 0; border: 0; background: transparent; cursor: pointer;
-  animation: nextPulse 1.2s ease-in-out infinite;
 }
-@keyframes nextPulse { 50% { box-shadow: 0 0 0 4px rgba(255,216,77,.9), 0 0 16px 4px rgba(255,216,77,.7); } }
-.rpg--wait .rpg__next, .rpg--choosing .rpg__next { visibility: hidden; animation: none; }
+.rpg__next:focus { outline: none; }   /* 不要瀏覽器預設焦點框（會變成第二個圓圈） */
+.rpg__next::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 76.7%; height: 76.7%; border-radius: 50%;
+  transform: translate(-50%, -50%); animation: nextPulse 1.4s ease-in-out infinite;
+}
+@keyframes nextPulse { 50% { box-shadow: 0 0 0 3px rgba(255,216,77,.9), 0 0 14px 4px rgba(255,216,77,.75); } }
+.rpg--hintnext .rpg__next::after, .rpg--nudge .rpg__next::after { animation: nextStrong .9s ease-in-out infinite; }
+@keyframes nextStrong { 50% { box-shadow: 0 0 0 5px #fff3b0, 0 0 24px 10px rgba(255,200,0,.95); } }
+.rpg--nudge .rpg__next { animation: nudge .5s ease 2; }
+@keyframes nudge { 25% { transform: translate(-50%, -50%) scale(1.18); } 60% { transform: translate(-50%, -50%) scale(.95); } }
+.rpg__nexthint {
+  position: absolute; right: calc(100% - 87.75% + 7.5%); top: 76.21%; transform: translateY(-50%);
+  padding: .6cqw 2cqw; border-radius: 999px; background: var(--gold); color: var(--ink);
+  font-size: clamp(12px, 2.7cqw, 16px); font-weight: 900; white-space: nowrap; pointer-events: none;
+  box-shadow: 0 0 0 2px #fff, 0 3px 8px rgba(43,29,79,.25);
+}
+.rpg--nudge .rpg__nexthint { animation: nudgeX .5s ease 2; }
+@keyframes nudgeX { 30% { transform: translate(-6px, -50%); } 60% { transform: translate(3px, -50%); } }
+.rpg--wait .rpg__next, .rpg--choosing .rpg__next { visibility: hidden; }
+.rpg--wait .rpg__next::after, .rpg--choosing .rpg__next::after { animation: none; }
+.rpg__choices.is-nudge { animation: nudgeY .45s ease 2; }
+@keyframes nudgeY { 40% { transform: translateY(-6px); } }
 .rpg--wait .rpg__box, .rpg--choosing .rpg__box { cursor: default; }
 .rpg__skip {
   position: absolute; z-index: 1; right: 3%; top: -14px; min-height: 36px; padding: 0 14px;
@@ -521,16 +586,73 @@ body.rpg-open .flow__card { max-height: calc(100dvh - var(--rpg-space, 330px)); 
 body { --rpg-space: calc(min(680px, 96vw) * 248 / 608 + 96px); }
 
 /* ==========================================================
+   音樂／音效設定（小按鈕＋小型設定）
+   ========================================================== */
+.audio-ctl { position: fixed; z-index: 31; top: 14px; right: 242px; }
+.audio-ctl__btn {
+  position: relative; width: 46px; height: 46px; border-radius: 50%; border: 3px solid #fff; cursor: pointer;
+  background: linear-gradient(180deg, #a466f5, var(--purple)); color: #fff; font-size: 21px; line-height: 1;
+  box-shadow: 0 0 0 2px rgba(255,216,77,.85), 0 4px 10px rgba(43,29,79,.3);
+}
+.audio-ctl__dot {
+  position: absolute; right: -2px; bottom: -2px; width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid #fff; background: #b9b0cc;
+}
+.audio-ctl__btn[data-state="playing"] .audio-ctl__dot { background: #2ecc71; animation: dotPulse 1.6s ease-in-out infinite; }
+.audio-ctl__btn[data-state="waiting"] .audio-ctl__dot,
+.audio-ctl__btn[data-state="blocked"] .audio-ctl__dot,
+.audio-ctl__btn[data-state="loading"] .audio-ctl__dot { background: #ff9f1a; }
+.audio-ctl__btn[data-state="missing"] .audio-ctl__dot { background: #e74c3c; }
+@keyframes dotPulse { 50% { box-shadow: 0 0 0 4px rgba(46,204,113,.35); } }
+.audio-pop {
+  position: absolute; top: calc(100% + 8px); right: -6px; width: 240px; padding: 10px 12px;
+  border-radius: 18px; background: var(--card); box-shadow: 0 0 0 3px var(--gold), 0 10px 24px rgba(43,29,79,.3);
+  animation: pop .2s var(--ease);
+}
+.audio-pop__row { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; font-size: 16px; font-weight: 900; cursor: pointer; }
+.audio-pop__status { margin: 4px 0 0; font-size: 13px; font-weight: 700; color: var(--ink-soft); line-height: 1.4; }
+.switch {
+  appearance: none; -webkit-appearance: none; flex: none; width: 52px; height: 30px; margin: 0; border-radius: 999px;
+  background: #d9d2e6; position: relative; cursor: pointer; transition: background .2s;
+}
+.switch::after {
+  content: ""; position: absolute; left: 3px; top: 3px; width: 24px; height: 24px; border-radius: 50%;
+  background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.25); transition: transform .2s var(--ease);
+}
+.switch:checked { background: var(--purple); }
+.switch:checked::after { transform: translateX(22px); }
+.switch:focus-visible { outline: 3px solid var(--pink); outline-offset: 2px; }
+
+/* ==========================================================
    教學聚光燈
    ========================================================== */
+/* v0.3.1：聚光燈只負責「看哪裡」，不攔截點擊；所有點擊交給 main.js 的 guard() 判斷並給回饋 */
 .spot { position: fixed; inset: 0; z-index: 55; pointer-events: none; }
-.spot__block { position: fixed; background: rgba(20,10,40,.58); pointer-events: auto; }
+.spot__block { position: fixed; background: rgba(20,10,40,.55); pointer-events: none; }
+.spot--hintonly { z-index: 59; }
+.spot--hintonly .spot__block { display: none; }
 .spot__ring {
   position: fixed; border-radius: 18px; pointer-events: none;
   box-shadow: 0 0 0 4px var(--gold), 0 0 26px 8px rgba(255,216,77,.75);
   animation: ringPulse 1.6s ease-in-out infinite;
 }
-.spot__ring.is-block { pointer-events: auto; }
+.spot__ring.is-shake { animation: ringShake .45s ease 1, ringPulse 1.6s ease-in-out .45s infinite; }
+@keyframes ringShake { 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
+/* 目標旁的短提示 */
+.spot__hint {
+  position: fixed; z-index: 2; max-width: min(260px, calc(100vw - 16px)); padding: 8px 14px;
+  border-radius: 14px; background: var(--gold); color: var(--ink); font-size: 16px; font-weight: 900; line-height: 1.3;
+  box-shadow: 0 0 0 3px #fff, 0 6px 16px rgba(43,29,79,.35); pointer-events: none;
+  animation: hintBob 1.4s ease-in-out infinite;
+}
+.spot__hint::after {
+  content: ""; position: absolute; left: var(--arrow-x, 50%); width: 14px; height: 14px; transform: translateX(-50%) rotate(45deg);
+  background: inherit; box-shadow: 3px 3px 0 0 #fff;
+}
+.spot__hint.is-above::after { bottom: -6px; }
+.spot__hint.is-below::after { top: -6px; box-shadow: -3px -3px 0 0 #fff; }
+.spot__hint.is-wrong { background: #ffe0ef; color: var(--pink-dark); animation: none; }
+@keyframes hintBob { 50% { transform: translateY(-4px); } }
 @keyframes ringPulse { 50% { box-shadow: 0 0 0 6px #fff3b0, 0 0 36px 12px rgba(255,216,77,.95); } }
 
 /* ==========================================================
@@ -614,8 +736,21 @@ body:not(.lobby-ready) .entries { opacity: .85; }
   .flow__card { padding: 16px 14px 14px; border-radius: 22px; margin-top: 0; }
   .flow__title { font-size: 20px; }
   .flow__notice { font-size: 15px; }
-  .pick-grid { grid-template-columns: repeat(4, 1fr); }
-  .pick .av { width: 100%; max-width: 64px; }
+  /* v0.3.1 手機：每列 3 欄（v0.3.0 為 4 欄、頭像框最大 64px）；390 寬時頭像框約 100px、臉部約 57px */
+  .pick-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .pick { padding: 4px 0 6px; border-width: 3px; }
+  .pick .av { width: 100%; max-width: 108px; }
+  .pick__label { font-size: 14px; }
+  .pick__check { width: 26px; height: 26px; font-size: 16px; top: 2px; right: 4px; }
+  .flow__card--pick { height: calc(var(--vvh, 100dvh) - 20px); padding: 14px 12px 0; }
+  .flow__card--pick .flow__title { font-size: 19px; margin: 6px 0 4px; }
+  .flow__card--pick .flow__notice { font-size: 14px; padding: 8px 10px; margin-bottom: 8px; line-height: 1.4; }
+  .flow__card--pick .flow__hint { font-size: 14px; margin-bottom: 6px; }
+  .flow__foot { margin: 0 -12px; padding: 8px 12px calc(10px + env(safe-area-inset-bottom)); grid-template-columns: 1fr; row-gap: 6px; }
+  .flow__foot .flow__picked { text-align: center; }
+  .flow__foot .flow__buttons { display: grid; grid-template-columns: 1fr 1.6fr; gap: 8px; }
+  .flow__foot .btn { min-height: 52px; padding: 0 10px; }
+  .flow__foot .flow__error { grid-row: auto; text-align: center; }
   .confirm .av--lg { width: 96px; }
   .confirm__id { font-size: 22px; }
 
@@ -627,6 +762,11 @@ body:not(.lobby-ready) .entries { opacity: .85; }
   body { --rpg-space: calc(96vw * 248 / 608 + 92px); }
 
   .kv__k { width: 82px; }
+
+  /* 手機：聲音按鈕放在地圖右上角（標題列已被名稱與玩家卡佔滿） */
+  .audio-ctl { position: absolute; top: 8px; right: 8px; }
+  .audio-ctl__btn { width: 40px; height: 40px; font-size: 19px; }
+  .audio-pop { right: 0; width: min(250px, calc(100vw - 32px)); }
 }
 
 @media (max-width: 380px) {
@@ -636,4 +776,12 @@ body:not(.lobby-ready) .entries { opacity: .85; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* 測試沙盒：上方提示條不可蓋住操作卡片 */
+body.is-sandbox .flow { padding-top: 38px; }
+body.is-sandbox .flow__card--pick { height: min(760px, calc(var(--vvh, 100dvh) - 66px)); }
+@media (max-width: 899px), (max-aspect-ratio: 1/1) {
+  body.is-sandbox .flow__card--pick { height: calc(var(--vvh, 100dvh) - 46px); }
+  .sandbox-banner { font-size: 11.5px; padding: 3px 10px; }
 }

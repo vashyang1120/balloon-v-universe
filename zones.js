@@ -1,6 +1,6 @@
 /* ==========================================================
    氣球小V遊戲宇宙 — 集中設定檔
-   balloon-v-universe-v0.3.0-unified-player-lobby-test-1
+   balloon-v-universe-v0.3.1-onboarding-audio-ux-test-1
 
    ★ 所有可調整的數值與文字都集中在這個檔案：
      選區座標、聚焦暗化、光暈、動畫速度、中央角色、RPG 對話、
@@ -22,7 +22,7 @@
    ========================================================== */
 
 window.MAP_CONFIG = {
-  version: "balloon-v-universe-v0.3.0-unified-player-lobby-test-1",
+  version: "balloon-v-universe-v0.3.1-onboarding-audio-ux-test-1",
 
   /* 正式底圖路徑（不可替換成其他圖片） */
   mapSrc: "assets/universe_map_bg.png",
@@ -184,15 +184,51 @@ window.MAP_CONFIG = {
   },
 
   /* ---------- 首次入園教學（spotlight 聚光燈 + 實際點擊） ---------- */
+  /* 每一步都標明：
+       intro  = 只是介紹 → 唯一正確操作是「紫色箭頭」（文案不暗示現在就按其他按鈕）
+       action = 要玩家實際操作 → 唯一正確操作是指定目標
+     hint  = 顯示在目標旁的短提示（不重複整段對話）
+     wrong = 點錯時的溫和提醒                                                    */
   tutorial: {
-    zones: "這裡有四個遊戲區域：知識學院、音樂舞台、方塊工坊和派對島！",
-    tryZone: "點一下任何一個遊戲區域試試看！",
-    tryPlay: "選好之後，按「開始遊玩」就可以出發囉！",
-    avatars: "下面這一排是這台裝置記住的玩家。點點看你自己的頭像！",
-    avatarsDone: "這就是你！要換其他玩家時點他的頭像，我會先問你要不要切換。按「＋」可以加入新的玩家喔！",
-    info: "右上角是你的玩家資料：ID、稱號和 V幣。",
-    pass: "最後，點「我的通行證」看看你的完整資料吧！",
-    done: "教學完成！現在可以自由探索遊樂園囉！"
+    nextHint: "按紫色箭頭繼續 ▶",
+    wrongIntro: "先看完這個小介紹喔！按紫色箭頭繼續。",
+    steps: {
+      zones:  { type: "intro",  text: "這裡有四個遊戲區域：知識學院、音樂舞台、方塊工坊和派對島！請按紫色箭頭繼續。" },
+      tryZone:{ type: "action", text: "點一下任何一個遊戲區域試試看！", hint: "點一個遊戲區域", wrong: "先點一個遊戲區域試試看喔！" },
+      play:   { type: "intro",  text: "這裡就是遊戲入口！等教學結束後，就可以按「開始遊玩」出發囉。現在請按紫色箭頭繼續。" },
+      avatar: { type: "action", text: "下面是這台裝置記住的玩家。請按一下你自己的頭像！", hint: "這是你！點這裡", wrong: "現在先點自己的頭像喔！",
+                wrongAdd: "現在不是新增玩家喔！先點自己的頭像。", wrongOther: "現在先不要切換玩家喔！先點自己的頭像。" },
+      avatarDone: { type: "intro", text: "這就是你！以後要換其他玩家時點他的頭像，我會先問你要不要切換；按「＋」可以加入新的玩家。請按紫色箭頭繼續。" },
+      info:   { type: "intro",  text: "右上角是你的玩家資料：ID、稱號和 V幣。請按紫色箭頭繼續。" },
+      pass:   { type: "action", text: "最後，請點「我的通行證」看看你的完整資料吧！", hint: "點這裡打開", wrong: "請點「我的通行證」木牌喔！" },
+      passView: { type: "action", text: "這是你的完整通行證！看完後按右上角的 ✕ 關閉。", hint: "看完按 ✕ 關閉", wrong: "看完後按 ✕ 關閉通行證喔！" },
+      done:   { type: "intro",  text: "教學完成！現在可以自由探索遊樂園囉！" }
+    }
+  },
+
+  /* ---------- 音樂與音效（v0.3.1 新增） ----------
+     bgmSrc：使用者上傳的正式大廳 BGM（Suno），原始檔案不壓縮、不改寫
+     bgmVolume：0～1，預設 0.25（25%）
+     crossfadeSec：循環接點交叉淡化秒數（原曲結尾沒有淡出，直接循環會有斷點）
+     duckRatio：RPG 對話時背景音樂暫時降到原音量的比例，讓對話音效更清楚
+     sfxVolume：介面音效音量                                                  */
+  audio: {
+    bgmSrc: "assets/audio/universe_lobby_bgm.mp3",
+    bgmVolume: 0.25,
+    crossfadeSec: 2.5,
+    fadeInSec: 1.5,
+    duckRatio: 0.7,
+    sfxVolume: 0.5,
+    typeSoundEvery: 3,        // 逐字顯示時，每幾個字播一次輕微文字音
+    defaultBgmOn: true,
+    defaultSfxOn: true
+  },
+
+  /* ---------- 身份圖案選擇畫面（v0.3.1） ----------
+     faceZoom：頭像框內真正頭像的放大倍率（頭像原圖臉部周圍有黑色留白）     */
+  picker: {
+    faceZoom: 1.22,
+    facePosY: "38%"
   },
 
   /* ---------- 四個遊戲區域 ----------
