@@ -1,6 +1,6 @@
 /* ==========================================================
    氣球小V遊戲宇宙 — 樣式
-   balloon-v-universe-v0.3.1-onboarding-audio-ux-test-1
+   balloon-v-universe-v0.3.2-lobby-foreground-rpg-animation-test-1
 
    - 可調數值集中在 zones.js；這裡只放外觀
    - 14 張 UI PNG 一律保持原始長寬比（aspect-ratio），不扭曲
@@ -224,15 +224,27 @@ img { -webkit-user-drag: none; user-select: none; }
   pointer-events: none; padding: 0 6px;
 }
 .dock > * { pointer-events: auto; }
+/* v0.3.2：木牌加長腳柱只露出上半段。
+   按鈕本身就是裁切容器（高度 = 原圖高度 × visible），點擊區只有看得到的牌面與短腳柱；
+   原圖完整放在 .sign__img 內等比顯示（不拉伸），容器外的下半段腳柱被隱藏；
+   可見區最下方 legFade 比例做淡出，讓腳柱自然沒入地面。                         */
 .sign {
-  position: relative; width: 15%; aspect-ratio: 1448 / 1086; flex: none;
-  padding: 0; border: 0; cursor: pointer; background: center / contain no-repeat;
-  container-type: inline-size; margin-bottom: -3%;
+  --vis: var(--sign-select-visible, .665); --fade: var(--sign-select-fade, .1); --ratio: var(--sign-select-ratio, 2.005);
+  position: relative; width: 15%; aspect-ratio: var(--ratio, 2); flex: none;
+  padding: 0; border: 0; cursor: pointer; background: none; overflow: hidden;
+  container-type: inline-size;
   filter: drop-shadow(0 6px 8px rgba(43,29,79,.35));
   transition: transform .2s var(--ease);
 }
-.sign--select { background-image: var(--ui-signSelect); }
-.sign--pass { background-image: var(--ui-signPass); }
+.sign--pass { --vis: var(--sign-pass-visible, .69); --fade: var(--sign-pass-fade, .1); --ratio: var(--sign-pass-ratio, 1.932); }
+.sign__img {
+  position: absolute; left: 0; top: 0; width: 100%; aspect-ratio: 1448 / 1086; pointer-events: none;
+  background: center top / 100% 100% no-repeat;
+  -webkit-mask-image: linear-gradient(180deg, #000 0, #000 calc((var(--vis) - var(--fade)) * 100%), transparent calc(var(--vis) * 100%));
+          mask-image: linear-gradient(180deg, #000 0, #000 calc((var(--vis) - var(--fade)) * 100%), transparent calc(var(--vis) * 100%));
+}
+.sign--select .sign__img { background-image: var(--ui-signSelect); }
+.sign--pass .sign__img { background-image: var(--ui-signPass); }
 .sign:hover { transform: translateY(-3px) rotate(-1deg); }
 .sign:active { transform: translateY(1px); }
 .sign__text {
@@ -240,8 +252,9 @@ img { -webkit-user-drag: none; user-select: none; }
   font-size: 10.5cqw; font-weight: 900; color: var(--wood-ink); white-space: nowrap;
   text-shadow: 0 1px 0 rgba(255,255,255,.6);
 }
-.sign--select .sign__text { left: 35%; right: 15%; top: 14%; height: 27%; }
-.sign--pass .sign__text { left: 33%; right: 26%; top: 18%; height: 23%; font-size: 7.8cqw; }
+/* 文字位置換算成裁切後容器的比例（原本相對整張圖：選擇玩家 top 14% / 高 27%；通行證 18% / 23%） */
+.sign--select .sign__text { left: 35%; right: 15%; top: calc(14% / var(--vis)); height: calc(27% / var(--vis)); }
+.sign--pass .sign__text { left: 33%; right: 26%; top: calc(18% / var(--vis)); height: calc(23% / var(--vis)); font-size: 7.8cqw; }
 
 .avatar-row {
   display: flex; align-items: flex-start; gap: 10px; min-width: 0; max-width: 62%;
@@ -522,7 +535,7 @@ body.rpg-open .flow__card:not(.flow__card--pick) { max-height: calc(var(--vvh, 1
 .rpg--top .rpg__wrap { bottom: auto; top: 64px; }
 @keyframes rise { from { transform: translate(-50%, 30px); opacity: 0; } }
 .rpg__box {
-  position: relative; width: 100%; aspect-ratio: 608 / 248; cursor: pointer;
+  position: relative; z-index: 1; width: 100%; aspect-ratio: 608 / 248; cursor: pointer;
   background: var(--ui-panelDialogue) center / contain no-repeat;
   filter: drop-shadow(0 12px 22px rgba(0,0,0,.35));
   container-type: inline-size;
@@ -707,14 +720,21 @@ body:not(.lobby-ready) .entries { opacity: .85; }
   .entry.is-muted { opacity: .7; filter: saturate(.55) drop-shadow(0 3px 5px rgba(43,29,79,.2)); }
 
   .dock {
-    position: static; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px;
-    padding: 0; margin-top: 10px;
+    position: static; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; align-items: end;
+    padding: 0 0 8px; margin-top: 10px;
   }
+  .dock > :not(.foreground) { position: relative; z-index: 1; }
+  .entries { position: relative; z-index: 1; }
   .avatar-row { grid-column: 1 / -1; grid-row: 1; max-width: none; margin: 0; padding: 8px 10px 6px; }
   .av-item { width: 66px; }
   .av-item .av, .av--add { width: 58px; }
   .av-item.is-current .av { width: 62px; }
-  .sign { width: 100%; max-width: 210px; justify-self: center; margin: 0; }
+  .sign { width: 100%; max-width: 200px; justify-self: center; margin: 4px 0 0; }
+  /* 木牌腳下的地面陰影，像真的插在石板平台旁 */
+  .sign::after {
+    content: ""; position: absolute; left: 18%; right: 18%; bottom: 0; height: 8%;
+    background: radial-gradient(ellipse at 50% 100%, rgba(90,55,20,.28), transparent 70%); pointer-events: none;
+  }
 
   .info-panel {
     position: fixed; left: 50%; top: auto; bottom: 0; width: min(100%, 440px);
@@ -784,4 +804,150 @@ body.is-sandbox .flow__card--pick { height: min(760px, calc(var(--vvh, 100dvh) -
 @media (max-width: 899px), (max-aspect-ratio: 1/1) {
   body.is-sandbox .flow__card--pick { height: calc(var(--vvh, 100dvh) - 46px); }
   .sandbox-banner { font-size: 11.5px; padding: 3px 10px; }
+}
+
+
+/* ==========================================================
+   v0.3.2 手機前景：讓遊樂園地圖往下延伸成玩家操作區
+   - 有正式素材（assets/lobby_mobile_foreground_base.png）→ body.fg-ready 使用圖片
+   - 沒有素材 → body.fg-missing 使用保守的雲霧淡化＋石板廣場色調回退畫面
+     （這只是回退畫面，不是正式美術，不宣稱無縫）
+   前景從地圖下緣略為重疊開始（雲霧蓋住接縫），到操作區底部結束，不會無限延伸。
+   ========================================================== */
+.foreground { display: none; }
+@media (max-width: 899px), (max-aspect-ratio: 1/1) {
+  .map-wrap { --map-h: calc((100vw - 16px) / var(--map-ratio)); }
+  .foreground {
+    display: block; position: absolute; z-index: 0; pointer-events: none;
+    left: -8px; right: -8px; top: calc(var(--map-h) - 18px); bottom: -18px;
+    background:
+      linear-gradient(180deg, #fcf1da 0, rgba(252,241,218,.85) 40px, rgba(252,241,218,0) 90px),
+      repeating-linear-gradient(90deg, rgba(150,110,60,.05) 0 1px, transparent 1px 46px),
+      repeating-linear-gradient(0deg, rgba(150,110,60,.05) 0 1px, transparent 1px 30px),
+      linear-gradient(90deg, rgba(120,185,95,.34), rgba(120,185,95,0) 16%, rgba(120,185,95,0) 84%, rgba(120,185,95,.34)),
+      radial-gradient(ellipse 80% 70% at 50% 35%, #fcf1da 0, #f5dfb6 60%, #ecc999 100%);
+  }
+  body.fg-ready .foreground {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0) 0, rgba(255,255,255,0) 26px, transparent 27px),
+      var(--fg-img) var(--fg-pos, center top) / 100% auto no-repeat,
+      #f3dcb2;
+  }
+  /* 接縫雲霧：蓋住地圖下緣與前景上緣，避免一條明顯的水平切割線 */
+  .foreground__mist {
+    position: absolute; left: 0; right: 0; top: -10px; height: 58px;
+    background:
+      radial-gradient(28px 20px at 8% 60%, rgba(255,255,255,.95), transparent 70%),
+      radial-gradient(36px 22px at 22% 45%, rgba(255,255,255,.9), transparent 72%),
+      radial-gradient(30px 18px at 40% 62%, rgba(255,255,255,.85), transparent 72%),
+      radial-gradient(40px 22px at 60% 48%, rgba(255,255,255,.9), transparent 72%),
+      radial-gradient(30px 20px at 78% 60%, rgba(255,255,255,.9), transparent 72%),
+      radial-gradient(34px 20px at 94% 46%, rgba(255,255,255,.95), transparent 72%);
+  }
+  /* 地圖下緣與前景接在一起：下方不再用金色外框把地圖「框成一座孤島」 */
+  .map-stage { border-radius: 16px 16px 0 0; clip-path: inset(-12px -12px 0 -12px round 22px 22px 0 0); }
+  /* 接縫淡化：地圖最下方一小段漸漸融入廣場色調，再由雲霧蓋住，不留一條硬切線 */
+  .map-stage::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 56px; z-index: 3; pointer-events: none;
+    background:
+      radial-gradient(26px 16px at 10% 100%, rgba(255,255,255,.9), transparent 75%),
+      radial-gradient(34px 18px at 30% 100%, rgba(255,255,255,.85), transparent 75%),
+      radial-gradient(30px 16px at 52% 100%, rgba(255,255,255,.85), transparent 75%),
+      radial-gradient(36px 18px at 74% 100%, rgba(255,255,255,.85), transparent 75%),
+      radial-gradient(28px 16px at 92% 100%, rgba(255,255,255,.9), transparent 75%),
+      linear-gradient(180deg, rgba(252,241,218,0) 0, rgba(252,241,218,.6) 55%, #fcf1da 100%);
+  }
+  /* 前景一路鋪到畫面底部：操作區下方不會出現一段空白背景 */
+  .map-wrap { min-height: calc(100svh - var(--topbar-h) - 18px); }
+}
+
+/* ==========================================================
+   v0.3.2 RPG 角色演出（rpg-actor.js）
+   只使用 transform／opacity；角色一律不攔截點擊
+   ========================================================== */
+:root { --actor-bust-h: 168px; --actor-space: calc(var(--actor-bust-h) - var(--rpg-w, 680px) * 0.4079 * 0.30); }
+.actor { position: absolute; pointer-events: none !important; opacity: 0; transition: opacity 180ms ease; }
+.actor * { pointer-events: none !important; }
+.actor.is-shown { opacity: 1; }
+.actor.is-yield { opacity: 0 !important; }        /* 會擋到教學目標時讓位 */
+
+/* 半身像：在對話框圖層後方（box z-index 1），下緣藏在對話框上方 30% 的位置，只露出上半身 */
+.actor--bust {
+  z-index: 0; left: calc(var(--rpg-w) * -0.02);
+  bottom: calc(var(--rpg-w) * 0.4079 * 0.70);
+  height: var(--actor-bust-h); width: calc(var(--actor-bust-h) * 0.95);
+}
+.rpg { --rpg-wv: var(--rpg-w); }
+body:not(.rpg-actor-full) .rpg__box { margin-top: max(0px, calc(var(--actor-bust-h) - var(--rpg-w) * 0.4079 * 0.30)); }
+/* 全身像：桌機重要情境，站在對話框旁（位置由 rpg-actor.js 計算） */
+.actor--full { z-index: 2; }
+body.rpg-actor-full .character-layer { opacity: .55; transition: opacity .3s ease; }   /* 與廣場小V同時出現時，廣場圖層暫時弱化 */
+.character-layer { transition: opacity .3s ease; }
+
+.actor__enter, .actor__motion { position: absolute; inset: 0; transform-origin: 50% 100%; }
+.actor__motion { container-type: size; }
+.actor__img {
+  position: absolute; left: 50%; bottom: 0; height: calc(100% * var(--s, 1)); width: auto; max-width: none;
+  transform: translate(calc(-50% + var(--ox, 0) * 100cqh), calc(var(--oy, 0) * 100cqh));
+  opacity: 0; translate: 0 var(--actor-swap-shift, 6px);
+  transition: opacity var(--actor-swap-ms, 200ms) ease, translate var(--actor-swap-ms, 200ms) ease;
+  filter: drop-shadow(0 6px 10px rgba(43,29,79,.25));
+}
+.actor--full .actor__img { filter: drop-shadow(0 10px 14px rgba(43,29,79,.3)); }
+.actor__img.is-in { opacity: 1; translate: 0 0; }
+.actor__img.is-out { opacity: 0; translate: 0 calc(var(--actor-swap-shift, 6px) * -0.5); }
+.actor__img.no-anim { transition: none; }
+
+/* 登場：從下方稍微滑入，90% → 105% → 100%，彈性緩動 */
+.actor__enter.is-entering { animation: actorEnter var(--actor-enter-ms, 480ms) cubic-bezier(.34, 1.56, .64, 1) both; }
+@keyframes actorEnter {
+  0%   { opacity: 0; transform: translateY(var(--actor-enter-rise, 18px)) scale(.9); }
+  60%  { opacity: 1; transform: translateY(-2px) scale(1.05); }
+  100% { opacity: 1; transform: none; }
+}
+/* 提醒／恭喜：單次較大的反應 */
+.actor__enter.is-react { animation: actorReact var(--actor-react-ms, 320ms) ease-out; }
+@keyframes actorReact { 40% { transform: translateY(-5px) scale(1.06); } 100% { transform: none; } }
+
+/* 說話中：輕微起伏＋約 ±0.8 度傾斜（合計約 1.7 度）＋約 1.5% 縮放 */
+.actor__motion.is-talking { animation: actorTalk var(--actor-talk-ms, 1150ms) ease-in-out infinite alternate; }
+@keyframes actorTalk {
+  from { transform: translateY(0) rotate(calc(var(--actor-talk-tilt, 1.4deg) * -0.6)) scale(1); }
+  to   { transform: translateY(calc(var(--actor-talk-lift, 3px) * -1)) rotate(calc(var(--actor-talk-tilt, 1.4deg) * 0.6)) scale(var(--actor-talk-scale, 1.015)); }
+}
+/* 文字完成／等待下一步：很輕微的呼吸，偶爾輕輕歪頭 */
+.actor__motion.is-waiting { animation: actorWait var(--actor-wait-ms, 6500ms) ease-in-out infinite; }
+@keyframes actorWait {
+  0%, 100% { transform: none; }
+  25% { transform: translateY(-1px) scale(1.006); }
+  50% { transform: none; }
+  75% { transform: translateY(-1px) scale(1.006); }
+  86% { transform: rotate(-1.2deg); }
+  92% { transform: rotate(.8deg); }
+  97% { transform: none; }
+}
+/* 恭喜星光 */
+.actor__fx { position: absolute; inset: 0; overflow: visible; }
+.actor__star {
+  position: absolute; left: 50%; top: 35%; color: #ffd84d; font-size: 22px; line-height: 1;
+  text-shadow: 0 0 6px rgba(255,255,255,.9); opacity: 0;
+  animation: starBurst 900ms ease-out forwards;
+}
+@keyframes starBurst {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(.2); }
+  30%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1); }
+}
+/* 低效能裝置：動畫幅度減半；分頁在背景：暫停 */
+html.low-motion { --actor-talk-lift: 1.5px; --actor-talk-tilt: .7deg; --actor-talk-scale: 1.007; --actor-enter-rise: 10px; }
+html.page-hidden .actor, html.page-hidden .actor * { animation-play-state: paused !important; }
+
+@media (max-width: 899px), (max-aspect-ratio: 1/1) {
+  .actor--bust { left: calc(var(--rpg-w) * -0.025); }
+}
+
+/* 桌機：對話框左側有足夠空間 → 半身像站在對話框左邊外側（臉完整露出），不需要在上方預留空間 */
+@media (min-width: 900px) and (min-aspect-ratio: 1/1) {
+  .actor--bust { left: calc(var(--actor-bust-h) * -0.80); bottom: calc(var(--rpg-w) * 0.4079 * 0.16); }
+  body:not(.rpg-actor-full) .rpg__box { margin-top: 0; }
 }

@@ -1,6 +1,6 @@
 /* ==========================================================
    氣球小V遊戲宇宙 — RPG 對話框元件
-   balloon-v-universe-v0.3.1-onboarding-audio-ux-test-1
+   balloon-v-universe-v0.3.2-lobby-foreground-rpg-animation-test-1
 
    用法（v0.2 / v0.3.0 照常可用）：
      RpgDialogue.play(lines, opts) / RpgDialogue.ask(lines, opts) → Promise<{ choice, skipped }>
@@ -21,6 +21,10 @@
      - 依 visualViewport（含 Android Chrome 工具列與虛擬鍵盤）即時重算
 
    音效：開啟 pop、下一句 tick、逐字每幾個字一次輕微 type、選項 confirm（由 audio.js 播放）
+
+   v0.3.2 角色演出（rpg-actor.js）：
+     每一句可加 actor: { mood, full, enter, sparkle, point }，沒指定時使用 normal 半身像
+     逐字中 → 說話微動；整句顯示完 → 安靜待機；RpgDialogue.react("remind") → 暫時換成提醒表情
    ========================================================== */
 
 (function () {
@@ -30,6 +34,8 @@
   var ACFG = (window.MAP_CONFIG && window.MAP_CONFIG.audio) || {};
   var desktopMQ = window.matchMedia((window.MAP_CONFIG && window.MAP_CONFIG.desktopQuery) || "(min-width: 900px)");
   function sfx(n) { try { if (window.BVAudio) window.BVAudio.sfx(n); } catch (e) {} }
+  var Actor = window.RpgActor || null;
+  function actorCall(fn) { if (!Actor) return; try { fn(Actor); } catch (e) { console.warn("[RpgActor]", e); } }
 
   var el = {
     root: document.getElementById("rpg"),
@@ -59,7 +65,7 @@
     el.root.classList.toggle("rpg--noshield", s.opts.shield === false);
     document.body.classList.add("rpg-open");
     if (window.BVAudio) window.BVAudio.duck(true);
-    if (!wasOpen) sfx("pop");
+    if (!wasOpen && !(Actor && Actor.recentlyVisible())) sfx("pop");
     showLine();
     clearInterval(s.placeTimer);
     s.placeTimer = setInterval(place, 250);
@@ -89,6 +95,7 @@
     s.shown = 0;
     el.text.textContent = "";
     s.typing = true;
+    actorCall(function (A) { A.show(line.actor || { mood: "normal" }, { avoid: s.opts.avoid }); A.talk(true); });
     place();
 
     var speed = CFG.typeSpeedMs == null ? 45 : CFG.typeSpeedMs;
@@ -107,6 +114,7 @@
     clearInterval(s.timer);
     s.timer = 0;
     s.typing = false;
+    actorCall(function (A) { A.talk(false); });
     el.text.textContent = s.chars.join("");
     var line = current();
     if (line.choices && line.choices.length) {
@@ -151,6 +159,7 @@
     el.root.hidden = true;
     el.choices.innerHTML = "";
     document.body.classList.remove("rpg-open");
+    actorCall(function (A) { A.talk(false); A.hide(); });
     var resolve = s.resolve, opts = s.opts;
     s.resolve = null;
     if (silent) { if (resolve) resolve({ choice: null, skipped: true, replaced: true }); return; }
@@ -219,6 +228,7 @@
     top = Math.max(topSafe, Math.min(top, bottomLimit - h));
     el.wrap.style.top = Math.round(top) + "px";
     el.wrap.style.bottom = "auto";
+    actorCall(function (A) { A.layout(el.wrap.getBoundingClientRect(), avoid); });
   }
   window.addEventListener("resize", place);
   if (window.visualViewport) {
@@ -252,6 +262,7 @@
     finishTyping: function () { if (!el.root.hidden && s.typing) finishTyping(); },
     currentLine: function () { return el.root.hidden ? null : current(); },
     nudgeNext: nudgeNext,
+    react: function (mood, ms) { actorCall(function (A) { A.react(mood || "remind", ms); }); },
     reposition: place
   };
 })();

@@ -1,6 +1,6 @@
 /* ==========================================================
    氣球小V遊戲宇宙 — 地圖互動與玩家大廳
-   balloon-v-universe-v0.3.1-onboarding-audio-ux-test-1
+   balloon-v-universe-v0.3.2-lobby-foreground-rpg-animation-test-1
 
    結構：
    1. 地圖（v0.2.1 定案，程式未改）
@@ -878,7 +878,7 @@
     if (!guard("talk")) return;
     var z = zoneById[state.selected];
     if (!z) return;
-    window.RpgDialogue.play([{ speaker: CFG.dialogue.speakerName, text: z.vLine }]);
+    window.RpgDialogue.play([{ speaker: CFG.dialogue.speakerName, text: z.vLine, actor: { mood: "happy" } }]);
   });
 
   els.testOk.addEventListener("click", function () { els.testModal.hidden = true; });
@@ -955,6 +955,36 @@
     els.bubble.style.top = (B.y / CFG.designHeight * 100) + "%";
     els.bubble.style.width = (B.width / CFG.designWidth * 100) + "%";
     els.bubble.style.backgroundImage = "url('" + UI.speechWelcome + "')";
+  })();
+
+  /* ---------- 木牌腳柱裁切比例（zones.js signCrop） ---------- */
+  (function signCrop() {
+    var C = CFG.signCrop;
+    rootStyle.setProperty("--sign-select-visible", C.select.visible);
+    rootStyle.setProperty("--sign-pass-visible", C.pass.visible);
+    rootStyle.setProperty("--sign-select-fade", C.select.legFade);
+    rootStyle.setProperty("--sign-pass-fade", C.pass.legFade);
+    // 裁切後容器長寬比（原圖 1448×1086，只顯示上方 visible 比例）
+    rootStyle.setProperty("--sign-select-ratio", (1448 / (1086 * C.select.visible)).toFixed(4));
+    rootStyle.setProperty("--sign-pass-ratio", (1448 / (1086 * C.pass.visible)).toFixed(4));
+  })();
+
+  /* ---------- 手機前景素材：存在才使用；缺少時用保守的雲霧淡化回退畫面 ---------- */
+  (function mobileForeground() {
+    var F = CFG.mobileForeground;
+    var img = new Image();
+    img.onload = function () {
+      rootStyle.setProperty("--fg-img", "url('" + F.src + "')");
+      rootStyle.setProperty("--fg-pos", F.position || "center top");
+      rootStyle.setProperty("--fg-ratio", (img.naturalWidth / img.naturalHeight).toFixed(4));
+      document.body.classList.add("fg-ready");
+    };
+    img.onerror = function () {
+      document.body.classList.add("fg-missing");
+      console.warn("[Lobby] 缺少手機前景素材：" + F.src + "（使用雲霧淡化回退畫面）");
+      if (DEBUG) { els.assetWarning.textContent = "⚠️ 缺少手機前景素材：" + F.src; els.assetWarning.hidden = false; }
+    };
+    img.src = F.src;
   })();
 
   /* ---------- 啟動地圖 ---------- */

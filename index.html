@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="version" content="balloon-v-universe-v0.3.1-onboarding-audio-ux-test-1">
+  <meta name="version" content="balloon-v-universe-v0.3.2-lobby-foreground-rpg-animation-test-1">
   <title>氣球小V遊戲宇宙</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="style.css?v=0.3.1">
+  <link rel="stylesheet" href="style.css?v=0.3.2">
 </head>
 <body class="is-booting">
 
@@ -18,7 +18,7 @@
     <div class="brand">
       <span class="brand__balloon" aria-hidden="true">🎈</span>
       <h1 class="brand__title">氣球小V遊戲宇宙</h1>
-      <span class="version-tag">v0.3.1 新手與音效測試</span>
+      <span class="version-tag">v0.3.2 前景與角色演出測試</span>
     </div>
   </header>
 
@@ -68,13 +68,17 @@
       <!-- 四個遊戲入口（桌機：在地圖上；手機：地圖下方一排） -->
       <nav class="entries" id="entries" aria-label="遊戲入口"></nav>
 
-      <!-- 下方：選擇玩家木牌、玩家頭像列、我的通行證木牌 -->
+      <!-- 下方：選擇玩家木牌、玩家頭像列、我的通行證木牌
+           手機：放在遊樂園前景區（foreground）上；木牌只露出牌面與上半段腳柱 -->
       <div class="dock" id="dock" hidden>
+        <div class="foreground" id="foreground" aria-hidden="true"><div class="foreground__mist"></div></div>
         <button class="sign sign--select" id="signSelect" type="button" aria-label="選擇玩家">
+          <span class="sign__img"></span>
           <span class="sign__text">選擇玩家</span>
         </button>
         <div class="avatar-row" id="avatarRow" role="list" aria-label="這台裝置記住的玩家"></div>
         <button class="sign sign--pass" id="signPass" type="button" aria-label="我的通行證">
+          <span class="sign__img"></span>
           <span class="sign__text">我的通行證</span>
         </button>
       </div>
@@ -112,8 +116,12 @@
   <!-- ===== RPG 對話框（正式底板 panel_dialogue_idle.png） ===== -->
   <div class="rpg" id="rpg" hidden>
     <div class="rpg__shield" id="rpgShield"></div>
+    <!-- 小V全身像：重要情境才出現在對話框旁（桌機）；不攔截點擊 -->
+    <div class="actor actor--full" id="actorFull" aria-hidden="true"><div class="actor__enter"><div class="actor__motion"><img class="actor__img" alt="" draggable="false"><img class="actor__img" alt="" draggable="false"></div></div><div class="actor__fx" aria-hidden="true"></div></div>
     <div class="rpg__wrap" id="rpgWrap">
       <div class="rpg__choices" id="rpgChoices" hidden></div>
+      <!-- 小V半身像：在對話框圖層後方，只露出上半身；不攔截點擊 -->
+      <div class="actor actor--bust" id="actorBust" aria-hidden="true"><div class="actor__enter"><div class="actor__motion"><img class="actor__img" alt="" draggable="false"><img class="actor__img" alt="" draggable="false"></div></div><div class="actor__fx" aria-hidden="true"></div></div>
       <div class="rpg__box" id="rpgBox" role="dialog" aria-modal="true" aria-labelledby="rpgName">
         <button class="rpg__skip" id="rpgSkip" type="button">略過 ⏭</button>
         <div class="rpg__portrait" id="rpgPortrait" hidden></div>
@@ -167,12 +175,13 @@
 
   <div class="toast" id="toast" role="status" hidden></div>
 
-  <script src="zones.js?v=0.3.1"></script>
-  <script src="audio.js?v=0.3.1"></script>
-  <script src="identity.js?v=0.3.1"></script>
-  <script src="player-store.js?v=0.3.1"></script>
-  <script src="dialogue.js?v=0.3.1"></script>
-  <script src="main.js?v=0.3.1"></script>
-  <script src="onboarding.js?v=0.3.1"></script>
+  <script src="zones.js?v=0.3.2"></script>
+  <script src="audio.js?v=0.3.2"></script>
+  <script src="identity.js?v=0.3.2"></script>
+  <script src="player-store.js?v=0.3.2"></script>
+  <script src="rpg-actor.js?v=0.3.2"></script>
+  <script src="dialogue.js?v=0.3.2"></script>
+  <script src="main.js?v=0.3.2"></script>
+  <script src="onboarding.js?v=0.3.2"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@ Balloon V Game Universe - Player Portal &amp; Game Lobby
 氣球小V遊戲宇宙 — 統一玩家入口
 
 ## 目前版本
-`balloon-v-universe-v0.3.1-onboarding-audio-ux-test-1`（新手體驗、教學防呆、音樂音效整合測試版）
+`balloon-v-universe-v0.3.2-lobby-foreground-rpg-animation-test-1`（手機前景、木牌裁切、小V RPG 角色演出測試版）
 
 ## 檔案
 | 檔案 | 用途 |
@@ -17,10 +17,13 @@ Balloon V Game Universe - Player Portal &amp; Game Lobby
 | `player-store.js` | 玩家資料層：Firebase 讀取、建立新玩家、本機記憶、身份交接介面（v0.3.0 新增） |
 | `onboarding.js` | 新手引導、找回通行證、首次入園教學（v0.3.0 新增） |
 | `dialogue.js` | RPG 對話框元件（正式底板、選項、不可略過的提醒、依目標自動定位） |
+| `rpg-actor.js` | RPG 對話角色演出：登場、說話微動、待機、姿勢交叉淡化、指向方向判斷、避開教學目標（v0.3.2 新增） |
 | `audio.js` | 全域音訊管理：大廳 BGM（循環交叉淡化）、Web Audio 介面音效、聲音設定（v0.3.1 新增） |
 | `assets/universe_map_bg.png` | 正式遊樂園底圖（不可修改） |
 | `assets/universe_lobby_v_dog.png` | 中央廣場小V與氣球小狗（不可修改） |
 | `assets/ui/*.png` | 14 張正式 UI 素材（不可修改） |
+| `assets/rpg/v_bust_*.png`、`v_full_*.png` | 小V 半身 5 張＋全身 5 張角色圖（不可修改、不可鏡像） |
+| `assets/lobby_mobile_foreground_base.png` | 手機前景石板廣場（**尚未提供**；放入後自動使用，未提供時顯示暫代畫面） |
 | `assets/audio/universe_lobby_bgm.mp3` | 正式大廳 BGM（使用者上傳的 Suno 原檔，不可修改） |
 
 ## 玩家資料規則
@@ -36,3 +39,11 @@ Balloon V Game Universe - Player Portal &amp; Game Lobby
 ## 聲音
 - 背景音樂在第一次點擊畫面後才開始播放（瀏覽器自動播放規則）
 - 右上角 🎵 按鈕可分別開關「背景音樂」與「介面音效」，設定存在這台裝置
+
+## 角色演出設定（zones.js → `actor`）
+- 每個姿勢可調 `scale`、`offsetX`、`offsetY`（以角色高度的比例）
+- `timing`：登場、換姿勢、說話微動、待機的時間與幅度
+- 系統設定「減少動態效果」時，角色只淡入、不做動畫；分頁切到背景時動畫暫停
+
+## 手機前景（zones.js → `mobileForeground`）
+- `src`：前景圖路徑；圖片載入成功才會使用，否則使用暫代畫面並在 `?debug=1` 顯示提醒

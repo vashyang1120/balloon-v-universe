@@ -1,6 +1,6 @@
 /* ==========================================================
    氣球小V遊戲宇宙 — 集中設定檔
-   balloon-v-universe-v0.3.1-onboarding-audio-ux-test-1
+   balloon-v-universe-v0.3.2-lobby-foreground-rpg-animation-test-1
 
    ★ 所有可調整的數值與文字都集中在這個檔案：
      選區座標、聚焦暗化、光暈、動畫速度、中央角色、RPG 對話、
@@ -22,7 +22,7 @@
    ========================================================== */
 
 window.MAP_CONFIG = {
-  version: "balloon-v-universe-v0.3.1-onboarding-audio-ux-test-1",
+  version: "balloon-v-universe-v0.3.2-lobby-foreground-rpg-animation-test-1",
 
   /* 正式底圖路徑（不可替換成其他圖片） */
   mapSrc: "assets/universe_map_bg.png",
@@ -193,16 +193,16 @@ window.MAP_CONFIG = {
     nextHint: "按紫色箭頭繼續 ▶",
     wrongIntro: "先看完這個小介紹喔！按紫色箭頭繼續。",
     steps: {
-      zones:  { type: "intro",  text: "這裡有四個遊戲區域：知識學院、音樂舞台、方塊工坊和派對島！請按紫色箭頭繼續。" },
-      tryZone:{ type: "action", text: "點一下任何一個遊戲區域試試看！", hint: "點一個遊戲區域", wrong: "先點一個遊戲區域試試看喔！" },
-      play:   { type: "intro",  text: "這裡就是遊戲入口！等教學結束後，就可以按「開始遊玩」出發囉。現在請按紫色箭頭繼續。" },
-      avatar: { type: "action", text: "下面是這台裝置記住的玩家。請按一下你自己的頭像！", hint: "這是你！點這裡", wrong: "現在先點自己的頭像喔！",
+      zones:  { type: "intro",  actor: { mood: "happy", full: "openArms", enter: true }, text: "這裡有四個遊戲區域：知識學院、音樂舞台、方塊工坊和派對島！請按紫色箭頭繼續。" },
+      tryZone:{ type: "action", actor: { mood: "point", point: true }, text: "點一下任何一個遊戲區域試試看！", hint: "點一個遊戲區域", wrong: "先點一個遊戲區域試試看喔！" },
+      play:   { type: "intro",  actor: { mood: "point", point: true }, text: "這裡就是遊戲入口！等教學結束後，就可以按「開始遊玩」出發囉。現在請按紫色箭頭繼續。" },
+      avatar: { type: "action", actor: { mood: "point", point: true }, text: "下面是這台裝置記住的玩家。請按一下你自己的頭像！", hint: "這是你！點這裡", wrong: "現在先點自己的頭像喔！",
                 wrongAdd: "現在不是新增玩家喔！先點自己的頭像。", wrongOther: "現在先不要切換玩家喔！先點自己的頭像。" },
-      avatarDone: { type: "intro", text: "這就是你！以後要換其他玩家時點他的頭像，我會先問你要不要切換；按「＋」可以加入新的玩家。請按紫色箭頭繼續。" },
-      info:   { type: "intro",  text: "右上角是你的玩家資料：ID、稱號和 V幣。請按紫色箭頭繼續。" },
-      pass:   { type: "action", text: "最後，請點「我的通行證」看看你的完整資料吧！", hint: "點這裡打開", wrong: "請點「我的通行證」木牌喔！" },
+      avatarDone: { type: "intro", actor: { mood: "happy" }, text: "這就是你！以後要換其他玩家時點他的頭像，我會先問你要不要切換；按「＋」可以加入新的玩家。請按紫色箭頭繼續。" },
+      info:   { type: "intro",  actor: { mood: "point", point: true, full: true }, text: "右上角是你的玩家資料：ID、稱號和 V幣。請按紫色箭頭繼續。" },
+      pass:   { type: "action", actor: { mood: "point", point: true }, text: "最後，請點「我的通行證」看看你的完整資料吧！", hint: "點這裡打開", wrong: "請點「我的通行證」木牌喔！" },
       passView: { type: "action", text: "這是你的完整通行證！看完後按右上角的 ✕ 關閉。", hint: "看完按 ✕ 關閉", wrong: "看完後按 ✕ 關閉通行證喔！" },
-      done:   { type: "intro",  text: "教學完成！現在可以自由探索遊樂園囉！" }
+      done:   { type: "intro",  actor: { mood: "congrats", full: "openArms", enter: true, sparkle: true }, text: "教學完成！現在可以自由探索遊樂園囉！" }
     }
   },
 
@@ -222,6 +222,72 @@ window.MAP_CONFIG = {
     typeSoundEvery: 3,        // 逐字顯示時，每幾個字播一次輕微文字音
     defaultBgmOn: true,
     defaultSfxOn: true
+  },
+
+  /* ---------- RPG 角色演出（v0.3.2 新增，rpg-actor.js 使用） ----------
+     風格：B. 活潑但有節奏 —— 登場有活力、說話時微動、重點情緒才有較大反應。
+     ⚠ 這批 PNG 沒有獨立嘴巴／眼睛／手臂圖層：只做整張圖片的微動畫，不是嘴型同步或眨眼。
+
+     每張圖的 scale / offsetX / offsetY：讓不同姿勢切換時頭部與身體不跳位
+       半身像：以 v_bust_normal 為基準，對齊頭部中心與頭頂（依 PNG 像素量測）
+       全身像：以 v_full_wave 為基準，腳底貼齊地面，只對齊身體中心
+       offsetX / offsetY 單位 = 角色容器高度的比例；scale = 相對高度（都等比縮放）
+     point（半身指引）圖中手指向「畫面右側」→ 只用在目標位於角色右方時；
+       目標在左方時改用一般表情＋目標旁箭頭（不鏡像翻轉圖片）                       */
+  actor: {
+    bust: {
+      normal:   { src: "assets/rpg/v_bust_normal.png",   scale: 1.000, offsetX: 0.000,  offsetY: 0.000 },
+      happy:    { src: "assets/rpg/v_bust_happy.png",    scale: 1.027, offsetX: -0.048, offsetY: 0.021 },
+      point:    { src: "assets/rpg/v_bust_point.png",    scale: 0.995, offsetX: 0.054,  offsetY: -0.009, pointsTo: "right" },
+      remind:   { src: "assets/rpg/v_bust_remind.png",   scale: 0.969, offsetX: -0.025, offsetY: -0.032 },
+      congrats: { src: "assets/rpg/v_bust_congrats.png", scale: 1.038, offsetX: -0.058, offsetY: 0.035 }
+    },
+    full: {
+      wave:         { src: "assets/rpg/v_full_wave.png",        scale: 1, offsetX: 0.000,  offsetY: 0 },
+      pointLeft:    { src: "assets/rpg/v_full_point_left.png",  scale: 1, offsetX: -0.090, offsetY: 0, pointsTo: "left" },
+      pointRight:   { src: "assets/rpg/v_full_point_right.png", scale: 1, offsetX: 0.110,  offsetY: 0, pointsTo: "right" },
+      openArms:     { src: "assets/rpg/v_full_open_arms.png",   scale: 1, offsetX: 0.064,  offsetY: 0 },
+      gentleRemind: { src: "assets/rpg/v_full_remind.png",      scale: 1, offsetX: 0.020,  offsetY: 0 }
+    },
+    /* 情緒 → 預設全身姿勢（只有標記 full: true 的重要句子才用全身像） */
+    fullFor: { happy: "wave", congrats: "openArms", remind: "gentleRemind", normal: "wave" },
+    /* 大小（桌機／手機分開；手機空間不足時只用半身像） */
+    bustHeight: { desktop: 168, mobile: 96 },       // px
+    fullHeight: { desktop: 330, minDesktop: 220 },  // px，全身像只在桌機使用
+    /* 動畫時間（毫秒）與幅度 */
+    timing: {
+      enterMs: 480,          // 登場：從下方滑入 + 90% → 105% → 100%
+      enterRise: 18,         // 登場滑入距離（px）
+      swapMs: 200,           // 換姿勢：交叉淡化 + 輕微位移
+      swapShift: 6,          // 換姿勢時的位移（px）
+      talkPeriodMs: 1150,    // 說話微動一個來回
+      talkLift: 3,           // 說話上下起伏（px）
+      talkTilt: 1.4,         // 說話傾斜（度）
+      talkScale: 0.015,      // 說話縮放（1.5%）
+      idlePeriodMs: 3400,    // 文字完成後的呼吸
+      waitTiltEveryMs: 6500, // 等待下一步時偶爾輕微傾斜
+      reactMs: 320           // 提醒／恭喜時的較大反應
+    },
+    /* 和中央廣場的小V＋小狗同時出現時，廣場圖層暫時降低存在感（不修改原圖） */
+    plazaDimWhenFull: 0.55
+  },
+
+  /* ---------- 手機前景（v0.3.2） ----------
+     src：正式手機前景素材路徑。檔案不存在時自動使用保守的雲霧淡化回退畫面，
+          其他功能不受影響；?debug=1 會顯示缺少素材提示。                         */
+  mobileForeground: {
+    src: "assets/lobby_mobile_foreground_base.png",
+    position: "center top",
+    mist: true                // 地圖與前景接縫處的雲霧過渡
+  },
+
+  /* ---------- 木牌加長腳柱裁切（v0.3.2） ----------
+     visible：只顯示 PNG 上方這個比例（牌面＋上半段腳柱），下半段藏入地面；圖片本身不變。
+     依像素量測：選擇玩家牌面與裝飾到 54.24%，我的通行證到 56.91%，各再露出約 12% 腳柱。
+     legFade：可見區最下方多少比例做淡出（腳柱自然沒入地面，不是一刀切）            */
+  signCrop: {
+    select: { visible: 0.665, legFade: 0.10 },
+    pass:   { visible: 0.690, legFade: 0.10 }
   },
 
   /* ---------- 身份圖案選擇畫面（v0.3.1） ----------
