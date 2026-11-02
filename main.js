@@ -1,6 +1,6 @@
 /* ==========================================================
    氣球小V遊戲宇宙 — 地圖互動與玩家大廳
-   balloon-v-universe-v0.3.2-lobby-foreground-rpg-animation-test-1
+   balloon-v-universe-v0.3.3-rpg-ux-polish-test-1
 
    結構：
    1. 地圖（v0.2.1 定案，程式未改）
@@ -586,7 +586,7 @@
     return '<div class="pass">' +
       '<img class="pass__bg" src="' + UI.panelPass + '" alt="" draggable="false">' +
       '<span class="pass__face">' + (ID.avatarSrc(p.baseAvatarKey) ? '<img src="' + ID.avatarSrc(p.baseAvatarKey) + '" alt="" onerror="this.style.visibility=\'hidden\'">' : "") + "</span>" +
-      '<span class="pass__ribbon">' + escapeHtml(p.id) + "</span>" +
+      '<span class="pass__ribbon"><span>' + escapeHtml(p.id) + "</span></span>" +
       '<span class="pass__main">' +
         '<span class="pass__label">玩家 ID</span>' +
         '<span class="pass__id">' + escapeHtml(p.id) + "</span>" +
@@ -599,6 +599,60 @@
   /* ==========================================================
      玩家狀態與畫面
      ========================================================== */
+
+  /* ---------- v0.3.3 依實際長度決定 ID 字級與換行（不裁切、不改 ID 本身） ----------
+     先在一行內縮小字級（max → min）；還放不下就改成最多 maxLines 行並平均分配（text-wrap: balance，
+     避免最後一個字孤單落到下一行）；再放不下才繼續縮小到 floor。完整 ID 也放在 title 提示。 */
+  function fitText(node, o) {
+    if (!node || !node.isConnected || !node.clientWidth) return;
+    var size = o.max;
+    node.style.whiteSpace = "nowrap";
+    node.classList.remove("is-wrapped");
+    node.style.fontSize = size + "px";
+    while (node.scrollWidth > node.clientWidth + 1 && size > o.min) { size -= 0.5; node.style.fontSize = size + "px"; }
+    if (node.scrollWidth <= node.clientWidth + 1) return;
+    node.style.whiteSpace = "normal";
+    node.classList.add("is-wrapped");
+    var lh = o.lineHeight || 1.15;
+    for (size = o.min + 3; size >= (o.floor || o.min); size -= 0.5) {
+      node.style.fontSize = size + "px";
+      if (node.scrollHeight <= size * lh * (o.maxLines || 2) + 2 && node.scrollWidth <= node.clientWidth + 1) return;
+    }
+  }
+  function fitCardId() {
+    var mob = !desktopMQ.matches;
+    els.cardId.title = els.cardId.textContent;
+    els.card.classList.remove("is-longid");
+    fitText(els.cardId, mob ? { max: 13, min: 11, floor: 10, maxLines: 2, lineHeight: 1.1 } : { max: 19, min: 14, floor: 12, maxLines: 2, lineHeight: 1.12 });
+    els.card.classList.toggle("is-longid", els.cardId.classList.contains("is-wrapped"));
+    if (els.card.classList.contains("is-longid")) fitText(els.cardId, mob ? { max: 13, min: 11, floor: 10, maxLines: 2, lineHeight: 1.1 } : { max: 19, min: 14, floor: 12, maxLines: 2, lineHeight: 1.12 });
+  }
+  /* 通行證（我的通行證視窗、建立完成畫面共用） */
+  function fitPass(scope) {
+    (scope || document).querySelectorAll(".pass").forEach(function (pass) {
+      var w = pass.clientWidth;
+      if (!w) return;
+      var id = pass.querySelector(".pass__id"), rb = pass.querySelector(".pass__ribbon span");
+      if (id) {
+        id.title = id.textContent;
+        pass.classList.remove("is-tight");
+        fitText(id, { max: w * 0.074, min: w * 0.04, floor: w * 0.036, maxLines: 2, lineHeight: 1.12 });
+        // 整個資訊區（標籤＋ID＋身份圖案）都要留在奶油色區內：放不下就再縮小 ID
+        var main = pass.querySelector(".pass__main");
+        var size = parseFloat(id.style.fontSize) || w * 0.05;
+        while (main && main.scrollHeight > main.clientHeight + 1 && size > w * 0.034) { size -= 0.5; id.style.fontSize = size + "px"; }
+        // 極長的 ID（例如 40 個字）：身份圖案文字改放到提示，讓 ID 完整顯示
+        if (main && main.scrollHeight > main.clientHeight + 1) pass.classList.add("is-tight");
+      }
+      if (rb) {
+        // 緞帶只是裝飾性的名字：一行顯示，先縮小，仍太長才用「…」（旁邊的主資訊區一定顯示完整 ID）
+        rb.title = rb.textContent;
+        var rs = w * 0.044; rb.style.fontSize = rs + "px";
+        while (rb.scrollWidth > rb.clientWidth + 1 && rs > w * 0.03) { rs -= 0.5; rb.style.fontSize = rs + "px"; }
+      }
+    });
+  }
+  window.addEventListener("resize", function () { fitCardId(); fitPass(); });
 
   function current() { return state.player.data; }
 
@@ -614,6 +668,7 @@
       els.cardId.textContent = e.id || "";
       els.cardTitle.textContent = "載入中…";
       els.cardCoins.textContent = "載入中…";
+      fitCardId();
       return;
     }
     if (p.error && !p.data) {
@@ -622,6 +677,7 @@
       els.cardId.textContent = en.id || "";
       els.cardTitle.textContent = "讀取失敗";
       els.cardCoins.textContent = "點這裡重試";
+      fitCardId();
       return;
     }
     var d = p.data;
@@ -630,6 +686,7 @@
     els.cardId.textContent = d.id;
     els.cardTitle.textContent = d.title ? d.title.name : "未裝備";
     els.cardCoins.textContent = String(d.balance);
+    fitCardId();
   }
 
   function renderAvatarRow() {
@@ -796,6 +853,7 @@
     els.passPanel.innerHTML = passPanelHtml(d, "full");
     setPassTab("basic");
     els.passModal.hidden = false;
+    fitPass(els.passPanel);
     els.passClose.focus();
     emit("passOpened");
   }
@@ -969,15 +1027,37 @@
     rootStyle.setProperty("--sign-pass-ratio", (1448 / (1086 * C.pass.visible)).toFixed(4));
   })();
 
-  /* ---------- 手機前景素材：存在才使用；缺少時用保守的雲霧淡化回退畫面 ---------- */
+  /* ---------- 手機前景素材：存在才使用；缺少時用保守的雲霧淡化回退畫面 ----------
+     v0.3.3：正式素材（941×1672）上方是一座小浮島與天空雲層、下方是主廣場。
+     依 cropTop 從雲層開始顯示（地圖浮島 → 天空雲霧 → 前方廣場），木牌站在廣場石板上；
+     螢幕較高、圖片不夠長時，自動把起點往上移，讓圖片剛好鋪到畫面底部（不拉伸、不重複）。 */
   (function mobileForeground() {
     var F = CFG.mobileForeground;
     var img = new Image();
+    var fgEl = document.getElementById("foreground");
+    function fit() {
+      if (!fgEl || !img.naturalWidth) return;
+      var w = fgEl.offsetWidth, h = fgEl.offsetHeight;
+      if (!w || !h) return;
+      var want = F.cropTop || 0;
+      var imgH = w * img.naturalHeight / img.naturalWidth;
+      // 圖片不夠長時先等比放大（最多 maxScale 倍，左右平均裁掉一點），仍不夠才把起點往上移
+      var scale = Math.min(F.maxScale || 1, Math.max(1, h / ((1 - want) * imgH)));
+      imgH *= scale;
+      var crop = Math.max(0, Math.min(want, 1 - h / imgH));
+      rootStyle.setProperty("--fg-size", (w * scale).toFixed(1) + "px");
+      rootStyle.setProperty("--fg-shift", (-crop * imgH).toFixed(1) + "px");
+      fgEl.dataset.crop = crop.toFixed(3);
+      fgEl.dataset.scale = scale.toFixed(3);
+    }
     img.onload = function () {
       rootStyle.setProperty("--fg-img", "url('" + F.src + "')");
-      rootStyle.setProperty("--fg-pos", F.position || "center top");
       rootStyle.setProperty("--fg-ratio", (img.naturalWidth / img.naturalHeight).toFixed(4));
+      rootStyle.setProperty("--fg-blend", (F.blendPx || 44) + "px");
       document.body.classList.add("fg-ready");
+      fit();
+      window.addEventListener("resize", fit);
+      if (window.ResizeObserver && fgEl) new ResizeObserver(fit).observe(fgEl);
     };
     img.onerror = function () {
       document.body.classList.add("fg-missing");
@@ -1010,6 +1090,7 @@
     setLobbyVisible: setLobbyVisible,
     avatarHtml: avatarHtml,
     passPanelHtml: passPanelHtml,
+    fitPass: fitPass,
     escapeHtml: escapeHtml,
     openPass: openPass,
     closePass: closePass,

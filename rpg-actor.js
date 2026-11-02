@@ -1,15 +1,22 @@
 /* ==========================================================
-   氣球小V遊戲宇宙 — RPG 角色演出元件（v0.3.2 新增）
-   balloon-v-universe-v0.3.2-lobby-foreground-rpg-animation-test-1
+   氣球小V遊戲宇宙 — RPG 角色演出元件（v0.3.2 新增，v0.3.3 重新排版）
+   balloon-v-universe-v0.3.3-rpg-ux-polish-test-1
 
    由 dialogue.js 呼叫，各畫面只需要在對話句子上標註演出狀態：
-     { text, actor: { mood: "happy", full: true, enter: true, sparkle: true, point: true } }
-       mood   ：normal / happy / point / remind / congrats（半身像）；沒指定 = normal
-       full   ：true 或姿勢名稱（wave / pointLeft / pointRight / openArms / gentleRemind）
-                只在桌機、有足夠空間、不會蓋到目標時使用；否則自動改用半身像
+     { text, actor: { mood: "happy", full: "wave", enter: true, sparkle: true, gesture: "point" } }
+       mood   ：normal / happy / remind / congrats（半身像）；沒指定 = normal
+       full   ：姿勢名稱（wave / openArms / gentleRemind）；桌機站在對話框旁；放不下時改用半身像
        enter  ：完整登場（只用在第一次歡迎、新場景、通行證完成等特別情境）
        sparkle：星光
-       point  ：依目標實際位置決定指向（pointLeft／pointRight 或半身 point）
+       gesture："point" 只用在「真的要玩家點某一個目標」的句子；
+                而且要圖片中手指的方向實際對得到目標（依 PNG 量到的指尖位置與方向計算），
+                才會換成指向姿勢；對不到就用 mood 的一般表情，由原本的聚光燈／箭頭指引。
+                一般說明句一律不指向。圖片不鏡像翻轉。
+
+   v0.3.3 半身像位置：站在對話框「後面」說話
+     圖層：背景／暗化 → 半身小V → 對話框美術 → 名牌、文字、按鈕
+     站在名牌上方（避開左右城堡塔），臉與肩膀露在對話框上緣之上，下半身藏在對話框後面；
+     大小依對話框高度與可視高度計算（不是固定 96px）。
 
    演出規則（風格 B：活潑但有節奏）：
      登場     從下方滑入 + 90% → 105% → 100%，約 480ms，彈性緩動
@@ -91,7 +98,7 @@
     });
   });
 
-  var state = { spec: null, mode: "bust", lastVisibleAt: 0, hideTimer: 0, reactTimer: 0, baseMood: "normal", talking: false, avoid: null };
+  var state = { spec: null, mode: "bust", lastVisibleAt: 0, hideTimer: 0, reactTimer: 0, baseMood: "normal", talking: false, avoid: null, pointing: false, lastAim: null };
 
   function setPose(actor, pose, animate) {
     if (!pose) return;
@@ -160,12 +167,13 @@
     state.avoid = (ctx && ctx.avoid) || null;
     state.baseMood = spec.mood || "normal";
     state.mode = spec.full && desktopMQ.matches ? "full" : "bust";
+    if (state.baseMood === "point") state.baseMood = "happy";   // 「指向」不是情緒：由 gesture 與實際目標決定
     document.body.classList.toggle("rpg-actor-full", state.mode === "full");
 
     // 姿勢先依情緒決定；指向類在 layout() 依目標位置再修正
     setPose(bust, bustPose(state.baseMood), !fresh);
     if (state.mode === "full") {
-      var fname = typeof spec.full === "string" ? spec.full : (AC.fullFor[state.baseMood] || "wave");
+      var fname = typeof spec.full === "string" && !/^point/.test(spec.full) ? spec.full : (AC.fullFor[state.baseMood] || "wave");
       setPose(full, fullPose(fname), !fresh);
       showActor(full, true); showActor(bust, false);
     } else {
@@ -197,9 +205,9 @@
     playReact(a);
     state.reactTimer = setTimeout(function () {
       state.reacting = false;
-      if (a === full) setPose(full, fullPose(typeof (state.spec || {}).full === "string" ? state.spec.full : (AC.fullFor[state.baseMood] || "wave")), true);
+      if (a === full) setPose(full, fullPose(typeof (state.spec || {}).full === "string" && !/^point/.test(state.spec.full) ? state.spec.full : (AC.fullFor[state.baseMood] || "wave")), true);
       else setPose(bust, bustPose(state.baseMood), true);
-      if (state.spec && state.spec.point) layout(null, state.lastRects || []);
+      layout(null, state.lastRects || []);
     }, ms || 1600);
   }
 
@@ -215,59 +223,135 @@
 
   function rectsOverlap(a, b) { return !(a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top); }
 
-  /* ---------- 版面：由 dialogue.js 在每次定位後呼叫 ----------
-     wrapRect：對話框目前位置；avoidRects：教學目標（優先保留可見） */
-  function layout(wrapRect, avoidRects) {
-    avoidRects = avoidRects || [];
-    state.lastRects = avoidRects;
-    var spec = state.spec || {};
-    var target = avoidRects[0] || null;
-    var W = window.innerWidth, H = window.innerHeight;
-
-    // 半身像大小：手機較小；螢幕很矮時再縮小
-    var bh = desktopMQ.matches ? AC.bustHeight.desktop : AC.bustHeight.mobile;
-    if (H < 680) bh = Math.round(bh * 0.88);
+  /* ---------- 半身像大小：依對話框高度與可視高度 ----------
+     由 dialogue.js 在每一句開始與視窗改變時呼叫（要在定位對話框之前，才能預留上方空間） */
+  var BL = AC.bustLayout, ART = AC.boxArt;
+  function size() {
+    var box = document.getElementById("rpgBox");
+    var Hb = box ? box.offsetHeight : 0;
+    if (!Hb) return;
+    var mob = !desktopMQ.matches;
+    var vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    var bh = Math.round(Math.max(BL.minPx, Math.min(Hb * BL.sizeVsBox, vh * (mob ? BL.maxVh.mobile : BL.maxVh.desktop))));
+    var foot = typeof BL.footY === "object" ? (mob ? BL.footY.mobile : BL.footY.desktop) : BL.footY;
+    var vis = Math.max(0, Math.round(bh - (foot - ART.edgeTop) * Hb));
     root.style.setProperty("--actor-bust-h", bh + "px");
+    root.style.setProperty("--actor-bust-vis", vis + "px");
+    root.style.setProperty("--actor-bust-cx", BL.centerX);
+    root.style.setProperty("--actor-bust-foot", foot);
+    state.bh = bh; state.Hb = Hb;
+  }
 
-    if (state.mode === "full" && wrapRect) {
+  /* ---------- 指向判斷：依 PNG 量到的指尖位置與方向 ---------- */
+  function poseRect(containerRect, pose, natural) {
+    // 與 CSS 相同：高度 = 容器高 × scale，水平置中＋offsetX，底部對齊＋offsetY（單位：容器高）
+    var ch = containerRect.bottom - containerRect.top;
+    var h = ch * (pose.scale || 1), w = h * natural.w / natural.h;
+    var cx = (containerRect.left + containerRect.right) / 2 + (pose.offsetX || 0) * ch;
+    var bottom = containerRect.bottom + (pose.offsetY || 0) * ch;
+    return { left: cx - w / 2, top: bottom - h, width: w, height: h };
+  }
+  function aimOk(handKey, imgRect, target) {
+    var hand = AC.hands[handKey];
+    if (!hand || !target) return false;
+    var hx = imgRect.left + hand.x * imgRect.width, hy = imgRect.top + hand.y * imgRect.height;
+    var tx = (target.left + target.right) / 2, ty = (target.top + target.bottom) / 2;
+    var ang = Math.atan2(-(ty - hy), tx - hx) * 180 / Math.PI;           // 0 = 右、90 = 上
+    var diff = Math.abs(((ang - hand.dir) % 360 + 540) % 360 - 180);
+    state.lastAim = { hand: handKey, angle: Math.round(ang), dir: hand.dir, diff: Math.round(diff), hx: Math.round(hx), hy: Math.round(hy) };
+    return diff <= (AC.aimTolerance || 40);
+  }
+  /* 原圖尺寸：已預載就用實際值，否則用設定檔中量好的尺寸 */
+  var HAND_SRC = { "assets/rpg/v_bust_point.png": "bust:point", "assets/rpg/v_full_point_left.png": "full:pointLeft", "assets/rpg/v_full_point_right.png": "full:pointRight" };
+  function naturalOf(src) {
+    if (loaded[src]) return loaded[src];
+    var h = AC.hands[HAND_SRC[src]];
+    return h ? { w: h.w, h: h.h } : { w: 1, h: 1 };
+  }
+  /* 指尖被對話框美術（名牌、城堡塔、上緣）擋住時也不算對得到 */
+  function handVisible(handKey, imgRect, boxRect) {
+    var hand = AC.hands[handKey];
+    var hx = imgRect.left + hand.x * imgRect.width, hy = imgRect.top + hand.y * imgRect.height;
+    var W = boxRect.right - boxRect.left, H = boxRect.bottom - boxRect.top;
+    var fx = (hx - boxRect.left) / W, fy = (hy - boxRect.top) / H;
+    if (fy >= ART.edgeTop) return false;                                    // 在對話框上緣之下
+    if (fx >= ART.plate[0] && fx <= ART.plate[1] && fy >= ART.plateTop) return false;
+    return !ART.towers.some(function (t) { return fx >= t[0] && fx <= t[1] && fy >= t[2]; });
+  }
+
+  /* ---------- 版面：由 dialogue.js 在每次定位後呼叫 ----------
+     boxRect：對話框（美術）目前位置；avoidRects：教學目標（優先保留可見） */
+  function layout(boxRect, avoidRects, lopts) {
+    avoidRects = avoidRects || [];
+    if (lopts) state.yieldToTargets = lopts.yieldToTargets !== false;
+    state.lastRects = avoidRects;
+    state.lastBox = boxRect || state.lastBox;
+    boxRect = state.lastBox;
+    var spec = state.spec || {};
+    var target = avoidRects.length === 1 ? avoidRects[0] : null;   // 只有「單一目標」才可能指向
+    var wantPoint = spec.gesture === "point" && !!target && !state.reacting;
+    var fallbackMood = spec.mood && spec.mood !== "point" ? spec.mood : "happy";
+    var W = window.innerWidth, H = window.innerHeight;
+    state.pointing = false;
+    state.lastAim = null;
+
+    if (state.mode === "full" && boxRect) {
       var fh = Math.min(AC.fullHeight.desktop, Math.round(H * 0.42));
       var ok = fh >= AC.fullHeight.minDesktop;
       var fw = fh * 0.8;
-      var side = "left";
-      if (spec.point && target) side = (target.left + target.right) / 2 < (wrapRect.left + wrapRect.right) / 2 ? "left" : "right";
-      function rectFor(sd) {
-        var left = sd === "left" ? wrapRect.left - fw * 0.72 : wrapRect.right - fw * 0.28;
-        return { left: left, right: left + fw, top: wrapRect.bottom - fh, bottom: wrapRect.bottom };
+      var rectFor = function (sd) {
+        var left = sd === "left" ? boxRect.left - fw * 0.72 : boxRect.right - fw * 0.28;
+        return { left: left, right: left + fw, top: boxRect.bottom - fh, bottom: boxRect.bottom };
+      };
+      var bad = function (rr) { return rr.left < 4 || rr.right > W - 4 || rr.top < 4 || avoidRects.some(function (t) { return rectsOverlap(rr, t); }); };
+      var choice = null;
+      if (wantPoint) {
+        // 兩側都試：位置放得下、而且指尖方向真的對得到目標，才用指向姿勢
+        ["left", "right"].some(function (sd) {
+          var r = rectFor(sd);
+          if (!ok || bad(r)) return false;
+          return ["pointLeft", "pointRight"].some(function (pn) {
+            var p = fullPose(pn);
+            if (aimOk("full:" + pn, poseRect(r, p, naturalOf(p.src)), target)) { choice = { side: sd, rect: r, pose: pn }; return true; }
+            return false;
+          });
+        });
       }
-      var r = rectFor(side);
-      function bad(rr) { return rr.left < 4 || rr.right > W - 4 || rr.top < 4 || avoidRects.some(function (t) { return rectsOverlap(rr, t); }); }
-      if (ok && bad(r)) { side = side === "left" ? "right" : "left"; r = rectFor(side); }
-      if (!ok || bad(r)) {
-        // 空間不夠或會擋到目標：改用半身像
+      if (!choice) {
+        var fname = typeof spec.full === "string" && !/^point/.test(spec.full) ? spec.full : (AC.fullFor[state.baseMood] || "wave");
+        var side = spec.side || "left";
+        var r0 = rectFor(side);
+        if (ok && bad(r0)) { side = side === "left" ? "right" : "left"; r0 = rectFor(side); }
+        if (ok && !bad(r0) && (!wantPoint || spec.full)) choice = { side: side, rect: r0, pose: fname };
+      }
+      if (!choice) {
+        // 空間不夠、會擋到目標、或要指向但對不到：改用半身像
         state.mode = "bust";
         document.body.classList.remove("rpg-actor-full");
         showActor(full, false); showActor(bust, true);
       } else {
-        Object.assign(full.el.style, { left: Math.round(r.left) + "px", top: Math.round(r.top) + "px", width: Math.round(fw) + "px", height: Math.round(fh) + "px" });
-        full.el.dataset.side = side;
-        if (spec.point && target && !state.reacting) {
-          var cx = (r.left + r.right) / 2, tx = (target.left + target.right) / 2;
-          setPose(full, fullPose(tx < cx ? "pointLeft" : "pointRight"), true);
-        }
+        var rr = choice.rect;
+        Object.assign(full.el.style, { left: Math.round(rr.left) + "px", top: Math.round(rr.top) + "px", width: Math.round(fw) + "px", height: Math.round(fh) + "px" });
+        full.el.dataset.side = choice.side;
+        if (!state.reacting) setPose(full, fullPose(choice.pose), true);
+        state.pointing = /^point/.test(choice.pose);
       }
     }
 
     if (state.mode === "bust" && bust.visible) {
-      // 半身指引圖只指向右方：目標在角色右邊才用，否則用一般表情（目標旁另有箭頭提示）
-      if (spec.point && !state.reacting) {
-        var br = bust.el.getBoundingClientRect();
-        var bx = (br.left + br.right) / 2;
-        var useP = target && (target.left + target.right) / 2 > bx + 20;
-        setPose(bust, bustPose(useP ? "point" : (spec.mood && spec.mood !== "point" ? spec.mood : "normal")), true);
+      if (!state.reacting) {
+        var usePoint = false;
+        if (wantPoint && boxRect) {
+          var bpose = bustPose("point");
+          var ir = poseRect(bust.el.getBoundingClientRect(), bpose, naturalOf(bpose.src));
+          usePoint = handVisible("bust:point", ir, boxRect) && aimOk("bust:point", ir, target);
+        }
+        setPose(bust, bustPose(usePoint ? "point" : fallbackMood), true);
+        state.pointing = usePoint;
       }
-      // 教學目標優先：角色會蓋到目標時暫時隱藏
+      // 教學目標優先：角色會蓋到目標時暫時讓位（對話框位置已先避開目標，通常不會發生）
       var b = bust.el.getBoundingClientRect();
-      var hit = b.width && avoidRects.some(function (t) { return rectsOverlap(b, t); });
+      var hit = state.yieldToTargets !== false && b.width && avoidRects.some(function (t) { return rectsOverlap(b, t); });
       bust.el.classList.toggle("is-yield", !!hit);
     }
   }
@@ -279,11 +363,13 @@
     react: react,
     hide: hide,
     layout: layout,
+    size: size,
     recentlyVisible: function () { return bust.visible || full.visible || Date.now() - state.lastVisibleAt < 1500; },
     state: function () {
       return { mode: state.mode, bust: { shown: bust.visible, pose: bust.el.dataset.pose || "", yield: bust.el.classList.contains("is-yield") },
                full: { shown: full.visible, pose: full.el.dataset.pose || "", side: full.el.dataset.side || "" },
-               talking: state.talking, loaded: Object.keys(loaded).length, failed: Object.keys(failed) };
+               talking: state.talking, pointing: !!state.pointing, aim: state.lastAim || null, bustHeight: state.bh || 0,
+               loaded: Object.keys(loaded).length, failed: Object.keys(failed) };
     }
   };
 

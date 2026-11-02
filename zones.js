@@ -1,6 +1,6 @@
 /* ==========================================================
    氣球小V遊戲宇宙 — 集中設定檔
-   balloon-v-universe-v0.3.2-lobby-foreground-rpg-animation-test-1
+   balloon-v-universe-v0.3.3-rpg-ux-polish-test-1
 
    ★ 所有可調整的數值與文字都集中在這個檔案：
      選區座標、聚焦暗化、光暈、動畫速度、中央角色、RPG 對話、
@@ -22,7 +22,7 @@
    ========================================================== */
 
 window.MAP_CONFIG = {
-  version: "balloon-v-universe-v0.3.2-lobby-foreground-rpg-animation-test-1",
+  version: "balloon-v-universe-v0.3.3-rpg-ux-polish-test-1",
 
   /* 正式底圖路徑（不可替換成其他圖片） */
   mapSrc: "assets/universe_map_bg.png",
@@ -86,6 +86,7 @@ window.MAP_CONFIG = {
   dialogue: {
     speakerName: "氣球小V",
     typeSpeedMs: 45,
+    focusHint: "按紫色箭頭繼續 ▶",   // 對話專注時，字打完後在紫色箭頭旁顯示
     portrait: null           // 正式 RPG 半身像（尚未指定，先不顯示）
   },
 
@@ -158,28 +159,37 @@ window.MAP_CONFIG = {
   },
 
   /* ---------- 新手引導文案 ---------- */
+  /* 台詞可用關鍵字強調（rpg-text.js）：{t:操作目標} 紫色、{i:身份名詞} 粉紅、{n:重要提醒} 金橘色。
+     每句只強調必要的字。…Ask：有選項時最後一頁的短問句（選項放在它下面）。
+     {id}、{avatar} 會換成玩家的 ID 與圖案名稱（會先跳脫，玩家輸入的大括號不會變成強調）。 */
   onboarding: {
     welcome: [
       "歡迎來到氣球小V遊樂園！我是小V！",
-      "要進入遊樂園，需要一張專屬通行證喔。你是第一次來玩嗎？"
+      "要進入遊樂園，需要一張{i:專屬通行證}喔！"
     ],
+    welcomeAsk: "你是第一次來玩嗎？",
     addPlayerPrompt: "要幫誰加入通行證呢？",
-    newStart: "太好了！我們一起來做一張你的專屬通行證吧！",
+    newStart: "太好了！我們一起來做一張你的{i:專屬通行證}吧！",
     askId: "先告訴我你的玩家 ID 吧！",
-    reminder1: "這個圖案會和你的玩家 ID 組成專屬身份，要記住你選的圖案喔！",
+    reminder1: "這個圖案會和你的{i:玩家 ID}組成{i:專屬身份}，{n:要記住}你選的圖案喔！",
     reminder2: [
-      "請再確認一次：玩家 ID「{id}」加上這個「{avatar}」圖案，就是你的專屬身份。",
-      "這個圖案建立後就會固定用來認出你。以後換裝置、或進入其他遊戲，都要記得同一個 ID 和這個圖案喔！",
-      "之後就算更換展示頭像，這個專屬身份圖案也不會改變。確定要用這個圖案嗎？"
+      "請再確認一次：玩家 ID「{i:{id}}」加上這個「{i:{avatar}}」圖案，就是你的{i:專屬身份}。",
+      "這個圖案建立後就會{n:固定用來認出你}。以後換裝置、或進入其他遊戲，都要{n:記得同一個 ID 和這個圖案}喔！",
+      "之後就算更換展示頭像，這個專屬身份圖案也不會改變。"
     ],
-    reminder2Short: "再確認一次：ID「{id}」＋「{avatar}」圖案會固定成為你的專屬身份，以後要記得這兩樣喔！之後換展示頭像也不會改變它。確定嗎？",
-    duplicate: "咦？這張通行證已經有人使用了耶！\n如果這是你以前的通行證，可以選擇『我玩過了』；如果不是，就換個 ID 或專屬圖案吧！",
+    reminder2Ask: "確定要用這個圖案嗎？",
+    reminder2Short: "再確認一次：ID「{i:{id}}」＋「{i:{avatar}}」圖案會{n:固定成為你的專屬身份}，以後{n:要記得這兩樣}喔！之後換展示頭像也不會改變它。",
+    reminder2ShortAsk: "確定嗎？",
+    duplicate: "咦？這張通行證已經有人使用了耶！\n如果這是你以前的通行證，可以選擇{t:我玩過了}；如果不是，就換個 ID 或專屬圖案吧！",
+    duplicateAsk: "要怎麼做呢？",
     creating: "正在幫你製作通行證…",
-    created: "完成了！這是你的專屬通行證！",
-    createFailed: "哎呀，連線出了點問題，通行證還沒有建立成功。要再試一次嗎？",
+    created: "完成了！這是你的{i:專屬通行證}！",
+    createFailed: "哎呀，連線出了點問題，通行證還沒有建立成功。",
+    createFailedAsk: "要再試一次嗎？",
     returningAsk: "歡迎回來！請輸入你的玩家 ID，再選你當初選的專屬圖案。",
-    returningNotFound: "咦？找不到這張通行證耶…請確認 ID 和圖案是不是和當初一樣。",
-    returningFound: "找到了！歡迎回來，{id}！",
+    returningNotFound: "咦？找不到這張通行證耶…請確認 {i:ID} 和{i:圖案}是不是和當初一樣。",
+    returningNotFoundAsk: "要{t:再試一次}，還是{t:建立新玩家}？",
+    returningFound: "找到了！歡迎回來，{i:{id}}！",
     loadFailed: "哎呀，資料讀取失敗了，請檢查網路後再試一次。"
   },
 
@@ -192,15 +202,17 @@ window.MAP_CONFIG = {
   tutorial: {
     nextHint: "按紫色箭頭繼續 ▶",
     wrongIntro: "先看完這個小介紹喔！按紫色箭頭繼續。",
+    /* actor.gesture: "point" 只用在「要玩家點某一個目標」的步驟；
+       一般介紹（intro）、可以點多個目標的步驟都不指向，由聚光燈／箭頭指引。 */
     steps: {
-      zones:  { type: "intro",  actor: { mood: "happy", full: "openArms", enter: true }, text: "這裡有四個遊戲區域：知識學院、音樂舞台、方塊工坊和派對島！請按紫色箭頭繼續。" },
-      tryZone:{ type: "action", actor: { mood: "point", point: true }, text: "點一下任何一個遊戲區域試試看！", hint: "點一個遊戲區域", wrong: "先點一個遊戲區域試試看喔！" },
-      play:   { type: "intro",  actor: { mood: "point", point: true }, text: "這裡就是遊戲入口！等教學結束後，就可以按「開始遊玩」出發囉。現在請按紫色箭頭繼續。" },
-      avatar: { type: "action", actor: { mood: "point", point: true }, text: "下面是這台裝置記住的玩家。請按一下你自己的頭像！", hint: "這是你！點這裡", wrong: "現在先點自己的頭像喔！",
+      zones:  { type: "intro",  actor: { mood: "happy", full: "openArms", enter: true }, text: "這裡有四個遊戲區域：知識學院、音樂舞台、方塊工坊和派對島！請按{t:紫色箭頭}繼續。" },
+      tryZone:{ type: "action", actor: { mood: "happy" }, text: "點一下{t:任何一個遊戲區域}試試看！", hint: "點一個遊戲區域", wrong: "先點一個遊戲區域試試看喔！" },
+      play:   { type: "intro",  actor: { mood: "happy" }, text: "這裡就是{t:遊戲入口}！等教學結束後，就可以按{t:開始遊玩}出發囉。現在請按{t:紫色箭頭}繼續。" },
+      avatar: { type: "action", actor: { mood: "happy", gesture: "point" }, text: "下面是這台裝置記住的玩家。請按一下{t:你自己的頭像}！", hint: "這是你！點這裡", wrong: "現在先點自己的頭像喔！",
                 wrongAdd: "現在不是新增玩家喔！先點自己的頭像。", wrongOther: "現在先不要切換玩家喔！先點自己的頭像。" },
-      avatarDone: { type: "intro", actor: { mood: "happy" }, text: "這就是你！以後要換其他玩家時點他的頭像，我會先問你要不要切換；按「＋」可以加入新的玩家。請按紫色箭頭繼續。" },
-      info:   { type: "intro",  actor: { mood: "point", point: true, full: true }, text: "右上角是你的玩家資料：ID、稱號和 V幣。請按紫色箭頭繼續。" },
-      pass:   { type: "action", actor: { mood: "point", point: true }, text: "最後，請點「我的通行證」看看你的完整資料吧！", hint: "點這裡打開", wrong: "請點「我的通行證」木牌喔！" },
+      avatarDone: { type: "intro", actor: { mood: "happy" }, text: "這就是你！以後要換其他玩家時點他的頭像，我會先問你要不要切換；按「＋」可以加入新的玩家。" },
+      info:   { type: "intro",  actor: { mood: "happy" }, text: "右上角是你的{i:玩家資料}：ID、稱號和 V幣。請按{t:紫色箭頭}繼續。" },
+      pass:   { type: "action", actor: { mood: "happy", gesture: "point" }, text: "最後，請點{t:我的通行證}看看你的完整資料吧！", hint: "點這裡打開", wrong: "請點「我的通行證」木牌喔！" },
       passView: { type: "action", text: "這是你的完整通行證！看完後按右上角的 ✕ 關閉。", hint: "看完按 ✕ 關閉", wrong: "看完後按 ✕ 關閉通行證喔！" },
       done:   { type: "intro",  actor: { mood: "congrats", full: "openArms", enter: true, sparkle: true }, text: "教學完成！現在可以自由探索遊樂園囉！" }
     }
@@ -232,27 +244,41 @@ window.MAP_CONFIG = {
        半身像：以 v_bust_normal 為基準，對齊頭部中心與頭頂（依 PNG 像素量測）
        全身像：以 v_full_wave 為基準，腳底貼齊地面，只對齊身體中心
        offsetX / offsetY 單位 = 角色容器高度的比例；scale = 相對高度（都等比縮放）
-     point（半身指引）圖中手指向「畫面右側」→ 只用在目標位於角色右方時；
-       目標在左方時改用一般表情＋目標旁箭頭（不鏡像翻轉圖片）                       */
+     v0.3.3 指向規則：「指向」不是情緒，只有 gesture: "point"（要玩家點某一個目標）才考慮；
+       而且依下面 hands 的指尖位置與方向，實際對得到目標、指尖沒有被對話框美術擋住，才換成指向圖。
+       對不到 → 用一般表情＋原本的聚光燈／箭頭。圖片不鏡像翻轉。                    */
   actor: {
     bust: {
       normal:   { src: "assets/rpg/v_bust_normal.png",   scale: 1.000, offsetX: 0.000,  offsetY: 0.000 },
       happy:    { src: "assets/rpg/v_bust_happy.png",    scale: 1.027, offsetX: -0.048, offsetY: 0.021 },
-      point:    { src: "assets/rpg/v_bust_point.png",    scale: 0.995, offsetX: 0.054,  offsetY: -0.009, pointsTo: "right" },
+      point:    { src: "assets/rpg/v_bust_point.png",    scale: 0.995, offsetX: 0.054,  offsetY: -0.009 },
       remind:   { src: "assets/rpg/v_bust_remind.png",   scale: 0.969, offsetX: -0.025, offsetY: -0.032 },
       congrats: { src: "assets/rpg/v_bust_congrats.png", scale: 1.038, offsetX: -0.058, offsetY: 0.035 }
     },
     full: {
       wave:         { src: "assets/rpg/v_full_wave.png",        scale: 1, offsetX: 0.000,  offsetY: 0 },
-      pointLeft:    { src: "assets/rpg/v_full_point_left.png",  scale: 1, offsetX: -0.090, offsetY: 0, pointsTo: "left" },
-      pointRight:   { src: "assets/rpg/v_full_point_right.png", scale: 1, offsetX: 0.110,  offsetY: 0, pointsTo: "right" },
+      pointLeft:    { src: "assets/rpg/v_full_point_left.png",  scale: 1, offsetX: -0.090, offsetY: 0 },
+      pointRight:   { src: "assets/rpg/v_full_point_right.png", scale: 1, offsetX: 0.110,  offsetY: 0 },
       openArms:     { src: "assets/rpg/v_full_open_arms.png",   scale: 1, offsetX: 0.064,  offsetY: 0 },
       gentleRemind: { src: "assets/rpg/v_full_remind.png",      scale: 1, offsetX: 0.020,  offsetY: 0 }
     },
-    /* 情緒 → 預設全身姿勢（只有標記 full: true 的重要句子才用全身像） */
+    /* 指尖位置（圖片寬高比例，依 PNG 像素量測）與手指方向（度：0 = 往右、90 = 往上、180 = 往左） */
+    hands: {
+      "bust:point":      { x: 0.951, y: 0.558, dir: 36,  w: 367, h: 362 },
+      "full:pointLeft":  { x: 0.044, y: 0.358, dir: 166, w: 366, h: 469 },
+      "full:pointRight": { x: 0.947, y: 0.290, dir: 18,  w: 339, h: 469 }
+    },
+    aimTolerance: 40,         // 目標方向和手指方向相差 40 度以內才算「對得到」
+    /* 情緒 → 預設全身姿勢（只有標記 full 的重要句子才用全身像） */
     fullFor: { happy: "wave", congrats: "openArms", remind: "gentleRemind", normal: "wave" },
-    /* 大小（桌機／手機分開；手機空間不足時只用半身像） */
-    bustHeight: { desktop: 168, mobile: 96 },       // px
+    /* v0.3.3 半身像：站在對話框後面說話
+       centerX：半身像中心在對話框寬度的位置（名牌上方，避開左右城堡塔）
+       footY：半身像下緣在對話框高度的位置（藏在名牌與奶油色底板後面）
+       sizeVsBox：半身像高度 = 對話框高度 × 這個倍數；maxVh：最多佔可視高度的比例    */
+    bustLayout: { centerX: 0.31, footY: { mobile: 0.45, desktop: 0.38 }, sizeVsBox: 1.18, maxVh: { mobile: 0.24, desktop: 0.28 }, minPx: 120 },
+    /* panel_dialogue_idle.png（608×248）不透明輪廓（依像素量測，對話框寬高比例）：
+       上緣 y 23%；名牌 x 15.9–47.5%、頂端 y 11.3%；左塔 x 5–13%、頂端 y 0.4%；右塔 x 83–91%、頂端 y 4.8% */
+    boxArt: { edgeTop: 0.23, plateTop: 0.113, plate: [0.159, 0.475], towers: [[0.05, 0.13, 0.004], [0.83, 0.91, 0.048]] },
     fullHeight: { desktop: 330, minDesktop: 220 },  // px，全身像只在桌機使用
     /* 動畫時間（毫秒）與幅度 */
     timing: {
@@ -277,7 +303,9 @@ window.MAP_CONFIG = {
           其他功能不受影響；?debug=1 會顯示缺少素材提示。                         */
   mobileForeground: {
     src: "assets/lobby_mobile_foreground_base.png",
-    position: "center top",
+    cropTop: 0.28,            // 從圖片高度 28%（上方小浮島下的雲層）開始顯示
+    maxScale: 1.25,           // 螢幕較高、圖片不夠長時：先等比放大（最多 1.25 倍），仍不夠才把起點往上移
+    blendPx: 44,              // 地圖下緣與前景交叉淡化的高度（px）
     mist: true                // 地圖與前景接縫處的雲霧過渡
   },
 

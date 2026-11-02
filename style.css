@@ -1,6 +1,6 @@
 /* ==========================================================
    氣球小V遊戲宇宙 — 樣式
-   balloon-v-universe-v0.3.2-lobby-foreground-rpg-animation-test-1
+   balloon-v-universe-v0.3.3-rpg-ux-polish-test-1
 
    - 可調數值集中在 zones.js；這裡只放外觀
    - 14 張 UI PNG 一律保持原始長寬比（aspect-ratio），不扭曲
@@ -195,15 +195,17 @@ img { -webkit-user-drag: none; user-select: none; }
   filter: drop-shadow(0 8px 14px rgba(43,29,79,.3));
   container-type: inline-size;
 }
-.player-card__avatar { position: absolute; left: 50%; top: 13%; width: 38%; transform: translateX(-50%); }
+.player-card__avatar { position: absolute; left: 50%; top: 12%; width: 34%; transform: translateX(-50%); }
+.player-card.is-longid .player-card__avatar { top: 10%; width: 29%; }
+.player-card.is-longid .player-card__info { top: 45%; height: 36%; }
 .player-card__avatar .av { width: 100%; }
 .player-card__info {
-  position: absolute; left: 17%; right: 15%; top: 51%; height: 26%;
+  position: absolute; left: 16%; right: 15%; top: 52%; height: 28%;
   display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 1.5cqw;
 }
 .player-card__id {
-  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  font-size: 9cqw; font-weight: 900; color: var(--purple-dark); line-height: 1.15;
+  display: block; width: 100%; text-align: center; white-space: nowrap; overflow-wrap: anywhere; text-wrap: balance;
+  font-size: 9cqw; font-weight: 900; color: var(--purple-dark); line-height: 1.12;
 }
 .player-card__row { display: flex; gap: 2.5cqw; align-items: baseline; max-width: 100%; font-size: 6.4cqw; font-weight: 800; line-height: 1.2; }
 .player-card__row > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -387,12 +389,23 @@ img { -webkit-user-drag: none; user-select: none; }
 .pass__ribbon {
   position: absolute; left: 11%; width: 29%; top: 77.5%; height: 12%;
   display: flex; align-items: center; justify-content: center; padding: 0 2%;
-  color: #fff; font-size: 4.4cqw; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  color: #fff; font-size: 4.4cqw; font-weight: 900; white-space: nowrap; overflow: hidden;
 }
-.pass__main { position: absolute; left: 44%; right: 13%; top: 25%; height: 33%; display: flex; flex-direction: column; justify-content: center; gap: .6cqw; }
-.pass__label { font-size: 3.4cqw; font-weight: 800; color: var(--pink-dark); letter-spacing: .1em; }
-.pass__id { font-size: 7.4cqw; font-weight: 900; color: var(--purple-dark); line-height: 1.1; word-break: break-all; }
-.pass__base { font-size: 3.6cqw; font-weight: 800; color: var(--ink-soft); }
+.pass__ribbon > span { display: block; max-width: 100%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* v0.3.3 依 PNG 奶油色資訊區實測：上方 x 43–88%、y 27–58%；虛線 y 60–68%；下方 y 70–83%
+   標籤放在奶油色區內（不壓在紫色框上），ID 是主要資訊；長 ID 先縮小、再最多兩行平均換行 */
+.pass__main { position: absolute; left: 45%; right: 12.5%; top: 28.5%; height: 30%; display: flex; flex-direction: column; justify-content: flex-start; gap: .7cqw; overflow: hidden; }
+.pass__label {
+  align-self: flex-start; padding: .3cqw 1.8cqw; border-radius: 999px;
+  background: #ffe0ee; color: #a3124f; box-shadow: inset 0 0 0 1px rgba(199,51,122,.35);
+  font-size: 3.3cqw; font-weight: 900; letter-spacing: .08em; line-height: 1.25;
+}
+.pass__id {
+  display: block; width: 100%; font-size: 7.4cqw; font-weight: 900; color: var(--purple-dark); line-height: 1.12;
+  white-space: nowrap; overflow-wrap: anywhere; text-wrap: balance;
+}
+.pass__base { font-size: 3.6cqw; font-weight: 800; color: var(--ink-soft); white-space: nowrap; }
+.pass.is-tight .pass__base { display: none; }
 .pass__lower { position: absolute; left: 44%; right: 12%; top: 63%; height: 22%; display: flex; flex-wrap: wrap; align-content: center; gap: 1cqw 3cqw; }
 .pass__stat { font-size: 3.9cqw; font-weight: 800; white-space: nowrap; }
 .pass__stat b { margin-right: 1.4cqw; padding: .2cqw 1.6cqw; border-radius: 999px; background: var(--purple); color: #fff; font-size: 3.2cqw; }
@@ -547,11 +560,24 @@ body.rpg-open .flow__card:not(.flow__card--pick) { max-height: calc(var(--vvh, 1
   font-size: 4.1cqw; line-height: 1; font-weight: 900; letter-spacing: .12em; color: #fff;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+/* v0.3.3 正文安全範圍：依 PNG 奶油色區域實測（不是整張 PNG）
+   奶油色：y 34.7%–84%；名牌壓住左上（y 41% 以上只有右半是奶油色）；左下雲朵在 y 77% 以下佔到 x 12.7–16.4%；
+   紫色箭頭在右下（x 82% 以右、y 67% 以下）→ 正文：x 12.5%–82%、y 40%–83.5%
+   放不下時由 rpg-text.js 自動分頁；不縮小字、不捲動、不裁切 */
 .rpg__text {
-  position: absolute; left: 9.5%; right: 17%; top: 36%; bottom: 12%; margin: 0;
-  overflow-y: auto; white-space: pre-line;
-  font-size: clamp(15px, 3.6cqw, 24px); line-height: 1.55; font-weight: 800; color: var(--ink);
+  position: absolute; left: 12.5%; right: 18%; top: 40%; bottom: 16.5%; margin: 0;
+  overflow: hidden; white-space: pre-line; overflow-wrap: anywhere; text-wrap: pretty;   /* 避免最後一個字孤單落到下一行 */
+  font-size: clamp(15px, 4.15cqw, 22px); line-height: 1.34; font-weight: 800; color: var(--ink);
 }
+/* 關鍵字強調（rpg-text.js）：每句只強調必要的字 */
+.rpg-hl-keep { white-space: nowrap; }
+.rpg-hl-t { color: #6a2bd6; font-weight: 900; }                        /* 操作目標：紫色 */
+.rpg-hl-i { color: #c81f66; font-weight: 900; }                        /* 身份重要名詞：粉紅 */
+.rpg-hl-n { color: #bf5600; font-weight: 900;                          /* 重要提醒：金橘色＋淡淡的螢光底線 */
+            background: linear-gradient(transparent 62%, rgba(255,190,60,.45) 62%); }
+.rpg-hl-g { color: #a87400; font-weight: 900; }                        /* 相容派對島大作戰：金色道具 */
+.rpg-hl-r { color: #d93a4a; font-weight: 900; }                        /*                  紅色危險 */
+.rpg-hl-b { color: #1f72c4; font-weight: 900; }                        /*                  藍色提示 */
 /* 點擊熱區：與 PNG 圓鈕同心（translate -50%），比可見圓（9.2%）略大（12%）；
    CSS 不另畫第二個圓，只有一圈與 PNG 圓鈕同大小的發光（::after，9.2/12 = 76.7%） */
 .rpg__next {
@@ -570,14 +596,39 @@ body.rpg-open .flow__card:not(.flow__card--pick) { max-height: calc(var(--vvh, 1
 .rpg--nudge .rpg__next { animation: nudge .5s ease 2; }
 @keyframes nudge { 25% { transform: translate(-50%, -50%) scale(1.18); } 60% { transform: translate(-50%, -50%) scale(.95); } }
 .rpg__nexthint {
-  position: absolute; right: calc(100% - 87.75% + 7.5%); top: 76.21%; transform: translateY(-50%);
+  position: absolute; right: calc(100% - 87.75% + 7%); top: 91.5%; transform: translateY(-50%);
   padding: .6cqw 2cqw; border-radius: 999px; background: var(--gold); color: var(--ink);
   font-size: clamp(12px, 2.7cqw, 16px); font-weight: 900; white-space: nowrap; pointer-events: none;
   box-shadow: 0 0 0 2px #fff, 0 3px 8px rgba(43,29,79,.25);
 }
 .rpg--nudge .rpg__nexthint { animation: nudgeX .5s ease 2; }
 @keyframes nudgeX { 30% { transform: translate(-6px, -50%); } 60% { transform: translate(3px, -50%); } }
+.rpg__nexthint:not([hidden]) { animation: hintIn .25s ease; }
+@keyframes hintIn { from { opacity: 0; transform: translate(6px, -50%); } }
+/* ---------- v0.3.3 對話專注：只要按紫色箭頭／選選項時 ----------
+   背景變暗＋降低彩度、不可操作（保護層接住點擊 → 溫和提醒）；對話框正常亮度；箭頭明顯發光 */
+.rpg__dim { position: absolute; inset: 0; pointer-events: none; display: none; }
+.rpg__dim > i {
+  position: absolute; display: block; background: rgba(26,14,54,.46);
+  -webkit-backdrop-filter: saturate(.42); backdrop-filter: saturate(.42);
+}
+.rpg--focus .rpg__dim { display: block; animation: fadeIn .25s ease; }
+.rpg--focus .rpg__shield { display: block; background: transparent; pointer-events: auto; animation: none; }
+html.low-motion .rpg__dim > i { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(26,14,54,.52); }
+.rpg-keep { box-shadow: 0 0 0 3px rgba(255,216,77,.9), 0 0 26px 6px rgba(255,216,77,.45) !important; }
+.rpg--focus.rpg--ready:not(.rpg--choosing) .rpg__next::after { animation: nextStrong .9s ease-in-out infinite; }
+
 .rpg--wait .rpg__next, .rpg--choosing .rpg__next { visibility: hidden; }
+/* 選項顯示時：PNG 上畫好的紫色箭頭用「？」圓章暫時蓋住，不和選項搶注意力（不可點） */
+.rpg__box::after {
+  content: "？"; position: absolute; left: 87.75%; top: 76.21%; width: 10%; aspect-ratio: 1; border-radius: 50%;
+  transform: translate(-50%, -50%) scale(.6); opacity: 0; pointer-events: none;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 40% 35%, #fffaf0, #fdecd2); box-shadow: 0 0 0 3px #ffd84d, 0 0 0 5px #fff;
+  color: #c81f66; font-weight: 900; font-size: clamp(14px, 4.4cqw, 26px); line-height: 1;
+  transition: opacity .18s ease, transform .18s ease;
+}
+.rpg--choosing.rpg--ready .rpg__box::after { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 .rpg--wait .rpg__next::after, .rpg--choosing .rpg__next::after { animation: none; }
 .rpg__choices.is-nudge { animation: nudgeY .45s ease 2; }
 @keyframes nudgeY { 40% { transform: translateY(-6px); } }
@@ -588,11 +639,18 @@ body.rpg-open .flow__card:not(.flow__card--pick) { max-height: calc(var(--vvh, 1
   font-size: 14px; font-weight: 900; cursor: pointer;
 }
 .rpg__portrait { position: absolute; left: -16%; bottom: 0; width: 22%; aspect-ratio: 3 / 4; background: center bottom / contain no-repeat; }
-.rpg__choices { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 8px; }
+/* v0.3.3 選項：在對話框內、正文下方（奶油色區域底部）；顯示選項時紫色箭頭隱藏 */
+.rpg__choices {
+  position: absolute; left: 11.5%; right: 17.5%; bottom: 15.5%;   /* 右邊停在紫色箭頭（？圓章）左側 */
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 10px; z-index: 2;
+}
+.rpg__choices.is-pending { visibility: hidden; }
+/* 太窄排不下一列：改放在對話框正下方（緊貼對話框，不會跑到畫面上方） */
+.rpg__choices.is-tray { top: calc(100% + 6px); bottom: auto; left: 4%; right: 4%; }
 .rpg__choice {
-  min-height: 52px; padding: 0 22px; border: 3px solid #fff; border-radius: 18px;
-  background: #fff; color: var(--purple-dark); font-size: 18px; font-weight: 900; cursor: pointer;
-  box-shadow: 0 0 0 3px var(--purple), 0 6px 14px rgba(43,29,79,.3);
+  min-height: 46px; padding: 0 20px; border: 3px solid #fff; border-radius: 16px;
+  background: #fff; color: var(--purple-dark); font-size: 18px; font-weight: 900; cursor: pointer; line-height: 1.1;
+  box-shadow: 0 0 0 3px var(--purple), 0 5px 12px rgba(43,29,79,.28);
 }
 .rpg__choice--primary { background: linear-gradient(180deg, #ff8cc4, var(--pink)); color: #fff; box-shadow: 0 0 0 3px var(--pink-dark), 0 6px 14px rgba(199,51,122,.35); }
 .rpg__choice:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
@@ -706,7 +764,17 @@ body:not(.lobby-ready) .entries { opacity: .85; }
   }
   .player-card__avatar { position: static; width: 44px; transform: none; flex: none; }
   .player-card__info { position: static; height: auto; align-items: flex-start; gap: 0; min-width: 0; }
-  .player-card__id { font-size: 13px; max-width: 40vw; line-height: 1.1; }
+  .player-card__id { font-size: 13px; width: auto; max-width: 40vw; text-align: left; line-height: 1.1; }
+  .player-card.is-longid .player-card__avatar { top: auto; width: 44px; }
+  .player-card.is-longid .player-card__info { top: auto; height: auto; }
+  /* 測試沙盒提示：手機改成畫面最上方一條細橫幅，整個畫面往下讓出位置，不蓋住玩家卡 */
+  body.is-sandbox { padding-top: 20px; }
+  body.is-sandbox .sandbox-banner {
+    top: 0; left: 0; right: 0; transform: none; max-width: none; border-radius: 0;
+    padding: 2px 8px; font-size: 11px; line-height: 16px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,.2);
+  }
+  body.is-sandbox .player-card { top: 25px; }
+  body.is-sandbox .map-wrap { min-height: calc(100svh - var(--topbar-h) - 38px); }
   .player-card__row { font-size: 10.5px; gap: 4px; line-height: 1.25; max-width: 40vw; }
   .player-card__label { font-size: 9.5px; padding: 0 5px; }
 
@@ -777,8 +845,11 @@ body:not(.lobby-ready) .entries { opacity: .85; }
   .rpg { --rpg-w: 96vw; }
   .rpg__wrap { bottom: max(8px, env(safe-area-inset-bottom)); }
   .rpg--top .rpg__wrap { top: 56px; }
-  .rpg__text { font-size: clamp(14px, 4.3cqw, 19px); line-height: 1.45; }
-  .rpg__choice { min-height: 48px; padding: 0 16px; font-size: 16px; }
+  .rpg__choice { min-height: 40px; padding: 0 11px; font-size: 15px; border-width: 2px; border-radius: 13px; box-shadow: 0 0 0 2px var(--purple), 0 4px 10px rgba(43,29,79,.25); }
+  .rpg__choices { gap: 6px 8px; }
+  .rpg__choice--primary { box-shadow: 0 0 0 2px var(--pink-dark), 0 4px 10px rgba(199,51,122,.3); }
+  .rpg__choices.is-many { gap: 6px 5px; }
+  .rpg__choices.is-many .rpg__choice { padding: 0 8px; font-size: 14px; letter-spacing: -.01em; }
   body { --rpg-space: calc(96vw * 248 / 608 + 92px); }
 
   .kv__k { width: 82px; }
@@ -827,11 +898,27 @@ body.is-sandbox .flow__card--pick { height: min(760px, calc(var(--vvh, 100dvh) -
       linear-gradient(90deg, rgba(120,185,95,.34), rgba(120,185,95,0) 16%, rgba(120,185,95,0) 84%, rgba(120,185,95,.34)),
       radial-gradient(ellipse 80% 70% at 50% 35%, #fcf1da 0, #f5dfb6 60%, #ecc999 100%);
   }
+  /* 正式前景：等比、寬度鋪滿；起點由 main.js 依 cropTop 與畫面高度計算（--fg-shift） */
   body.fg-ready .foreground {
+    top: calc(var(--map-h) - var(--fg-blend, 44px));
+    background: var(--fg-img) center var(--fg-shift, 0px) / var(--fg-size, 100%) auto no-repeat, #f1dcb6;
+  }
+  /* 地圖最下方一段漸漸變透明，直接露出後面的前景（真正的交叉淡化，不是蓋一條白帶） */
+  body.fg-ready .map-stage {
+    z-index: 1; background: transparent;
+    -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - var(--fg-blend, 44px)), rgba(0,0,0,.35) calc(100% - var(--fg-blend, 44px) * .35), transparent 100%);
+            mask-image: linear-gradient(180deg, #000 calc(100% - var(--fg-blend, 44px)), rgba(0,0,0,.35) calc(100% - var(--fg-blend, 44px) * .35), transparent 100%);
+  }
+  /* 正式前景時，接縫改成「地圖下緣 → 白色雲霧 → 前景天空雲層」，不是奶油色 */
+  body.fg-ready .map-stage::after { display: none; }
+  /* 接縫上只留幾團小雲（不是整條白帶） */
+  body.fg-ready .foreground__mist {
+    top: calc(var(--fg-blend, 44px) - 22px); height: 40px; z-index: 2;
     background:
-      linear-gradient(180deg, rgba(255,255,255,0) 0, rgba(255,255,255,0) 26px, transparent 27px),
-      var(--fg-img) var(--fg-pos, center top) / 100% auto no-repeat,
-      #f3dcb2;
+      radial-gradient(30px 14px at 6% 55%, rgba(255,255,255,.85), transparent 72%),
+      radial-gradient(36px 15px at 31% 62%, rgba(255,255,255,.6), transparent 72%),
+      radial-gradient(34px 14px at 69% 58%, rgba(255,255,255,.6), transparent 72%),
+      radial-gradient(30px 14px at 95% 52%, rgba(255,255,255,.85), transparent 72%);
   }
   /* 接縫雲霧：蓋住地圖下緣與前景上緣，避免一條明顯的水平切割線 */
   .foreground__mist {
@@ -865,20 +952,23 @@ body.is-sandbox .flow__card--pick { height: min(760px, calc(var(--vvh, 100dvh) -
    v0.3.2 RPG 角色演出（rpg-actor.js）
    只使用 transform／opacity；角色一律不攔截點擊
    ========================================================== */
-:root { --actor-bust-h: 168px; --actor-space: calc(var(--actor-bust-h) - var(--rpg-w, 680px) * 0.4079 * 0.30); }
+:root { --actor-bust-h: 160px; }
 .actor { position: absolute; pointer-events: none !important; opacity: 0; transition: opacity 180ms ease; }
 .actor * { pointer-events: none !important; }
 .actor.is-shown { opacity: 1; }
 .actor.is-yield { opacity: 0 !important; }        /* 會擋到教學目標時讓位 */
 
-/* 半身像：在對話框圖層後方（box z-index 1），下緣藏在對話框上方 30% 的位置，只露出上半身 */
+/* v0.3.3 半身像：站在對話框「後面」說話（名牌上方，避開左右城堡塔）
+   圖層：背景／暗化 → 半身小V（z 0）→ 對話框美術（z 1）→ 名牌、正文、選項、紫色箭頭（對話框內）
+   大小由 rpg-actor.js 依對話框高度與可視高度計算（--actor-bust-h）；
+   --actor-bust-vis = 露出在對話框上緣之上的高度 → 對話框上方預留這個空間，定位時一起避開教學目標 */
 .actor--bust {
-  z-index: 0; left: calc(var(--rpg-w) * -0.02);
-  bottom: calc(var(--rpg-w) * 0.4079 * 0.70);
-  height: var(--actor-bust-h); width: calc(var(--actor-bust-h) * 0.95);
+  z-index: 0;
+  height: var(--actor-bust-h, 160px); width: calc(var(--actor-bust-h, 160px) * 0.94);
+  left: calc(var(--rpg-w) * var(--actor-bust-cx, .31) - var(--actor-bust-h, 160px) * 0.47);
+  bottom: calc(var(--rpg-w) * 0.4079 * (1 - var(--actor-bust-foot, .45)));
 }
-.rpg { --rpg-wv: var(--rpg-w); }
-body:not(.rpg-actor-full) .rpg__box { margin-top: max(0px, calc(var(--actor-bust-h) - var(--rpg-w) * 0.4079 * 0.30)); }
+body:not(.rpg-actor-full) .rpg__wrap { padding-top: var(--actor-bust-vis, 0px); }
 /* 全身像：桌機重要情境，站在對話框旁（位置由 rpg-actor.js 計算） */
 .actor--full { z-index: 2; }
 body.rpg-actor-full .character-layer { opacity: .55; transition: opacity .3s ease; }   /* 與廣場小V同時出現時，廣場圖層暫時弱化 */
@@ -942,12 +1032,4 @@ body.rpg-actor-full .character-layer { opacity: .55; transition: opacity .3s eas
 html.low-motion { --actor-talk-lift: 1.5px; --actor-talk-tilt: .7deg; --actor-talk-scale: 1.007; --actor-enter-rise: 10px; }
 html.page-hidden .actor, html.page-hidden .actor * { animation-play-state: paused !important; }
 
-@media (max-width: 899px), (max-aspect-ratio: 1/1) {
-  .actor--bust { left: calc(var(--rpg-w) * -0.025); }
-}
 
-/* 桌機：對話框左側有足夠空間 → 半身像站在對話框左邊外側（臉完整露出），不需要在上方預留空間 */
-@media (min-width: 900px) and (min-aspect-ratio: 1/1) {
-  .actor--bust { left: calc(var(--actor-bust-h) * -0.80); bottom: calc(var(--rpg-w) * 0.4079 * 0.16); }
-  body:not(.rpg-actor-full) .rpg__box { margin-top: 0; }
-}

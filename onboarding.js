@@ -1,6 +1,6 @@
 /* ==========================================================
    氣球小V遊戲宇宙 — 新手引導、找回通行證、首次入園教學（v0.3.0 新增）
-   balloon-v-universe-v0.3.2-lobby-foreground-rpg-animation-test-1
+   balloon-v-universe-v0.3.3-rpg-ux-polish-test-1
 
    啟動規則：
    - 本機沒有記住任何玩家 → 小V歡迎 →「建立新玩家」或「我玩過了」
@@ -28,15 +28,23 @@
   var card = document.getElementById("flowCard");
   var V = CFG.dialogue.speakerName;
 
-  /* 新手流程中的對話：不用保護層、不可略過，並避開目前顯示的操作卡片（依實際位置計算） */
-  function FLOW_OPTS() {
-    return { shield: false, allowSkip: false, avoid: function () { return flow.hidden || card.hidden ? [] : [card]; } };
+  /* 新手流程中的對話：不可略過，並避開目前顯示的操作卡片（依實際位置計算）
+     v0.3.3：只要按紫色箭頭／選選項時進入「對話專注」：背景卡片變暗、不可操作；
+     keepCard: true → 卡片保持亮度（例如確認身份、剛做好的通行證），但一樣不能按 */
+  function FLOW_OPTS(keepCard) {
+    return {
+      shield: false, allowSkip: false,
+      avoid: function () { return flow.hidden || card.hidden ? [] : [card]; },
+      keep: keepCard ? function () { return flow.hidden || card.hidden ? [] : [card]; } : null
+    };
   }
   function err(id, msg) { var e = document.getElementById(id); if (e) e.textContent = msg; L.sfx("error"); }
 
   function say(text, extra) { return Object.assign({ speaker: V, text: text }, extra || {}); }
+  /* 玩家輸入的 ID 先跳脫，避免大括號被當成強調標記 */
+  var RT = window.RpgText;
   function fill(s, draft) {
-    return s.replace("{id}", draft.id || "").replace("{avatar}", ID.avatarLabel(draft.base) || "");
+    return s.replace("{id}", RT.escape(draft.id || "")).replace("{avatar}", RT.escape(ID.avatarLabel(draft.base) || ""));
   }
 
   /* ---------- 操作卡片 ---------- */
@@ -106,9 +114,9 @@
     ];
     if (fromLobby) choices.push({ label: "取消", value: "cancel" });
     var lines = fromLobby
-      ? [say(T.addPlayerPrompt, { choices: choices, actor: { mood: "happy" } })]
+      ? [say("", { ask: T.addPlayerPrompt, choices: choices, actor: { mood: "happy" } })]
       : [say(T.welcome[0], { actor: { mood: "happy", full: "wave", enter: true, sparkle: true } }),
-         say(T.welcome[1], { choices: choices, actor: { mood: "happy" } })];
+         say(T.welcome[1], { ask: T.welcomeAsk, choices: choices, actor: { mood: "happy" } })];
     D.ask(lines, FLOW_OPTS()).then(function (r) {
       if (r.replaced) return;
       if (r.choice === "new") newPlayer({ fromLobby: fromLobby });
@@ -160,7 +168,7 @@
       '<div class="flow__head">' +
         '<div class="flow__step">建立通行證 · 2 / 3</div>' +
         '<h2 class="flow__title">選擇你的專屬身份圖案</h2>' +
-        '<p class="flow__notice">⚠️ ' + esc(T.reminder1) + "</p>" +
+        '<p class="flow__notice">⚠️ ' + esc(RT.plain(T.reminder1)) + "</p>" +
       "</div>" +
       '<div class="flow__body">' + avatarGrid(draft.base) + "</div>" +
       pickFoot("上一步", "fNext", "確認這個圖案"), "flow__card--pick");
@@ -187,16 +195,16 @@
     showFlow(previewCard(draft), "flow__card--confirm");
     var choices = [
       { label: "確認建立", value: "ok", primary: true },
-      { label: "重新選擇圖案", value: "avatar" },
+      { label: "重選圖案", value: "avatar" },
       { label: "修改 ID", value: "id" }
     ];
     // 第二次完整提醒：不可省略。重選後再確認時使用較短但內容完整的版本
     var lines = draft.seenR2
-      ? [say(fill(T.reminder2Short, draft), { noSkip: true, choices: choices, actor: { mood: "remind" } })]
+      ? [say(fill(T.reminder2Short, draft), { noSkip: true, ask: T.reminder2ShortAsk, choices: choices, actor: { mood: "remind" } })]
       : [say(fill(T.reminder2[0], draft), { noSkip: true, actor: { mood: "normal" } }),
          say(fill(T.reminder2[1], draft), { noSkip: true, actor: { mood: "remind" } }),
-         say(fill(T.reminder2[2], draft), { noSkip: true, choices: choices, actor: { mood: "normal" } })];
-    D.ask(lines, FLOW_OPTS()).then(function (r) {
+         say(fill(T.reminder2[2], draft), { noSkip: true, ask: T.reminder2Ask, choices: choices, actor: { mood: "normal" } })];
+    D.ask(lines, FLOW_OPTS(true)).then(function (r) {
       if (r.replaced) return;
       draft.seenR2 = true;
       if (r.choice === "ok") create(draft);
@@ -210,10 +218,10 @@
     Store.createPlayer(draft.id, draft.base).then(function (res) {
       if (res.status === "duplicate") {
         showFlow(previewCard(draft), "flow__card--confirm");
-        return D.ask([say(T.duplicate, { actor: { mood: "remind", full: "gentleRemind" }, choices: [
+        return D.ask([say(T.duplicate, { ask: T.duplicateAsk, actor: { mood: "remind", full: "gentleRemind" }, choices: [
           { label: "我玩過了", value: "returning", primary: true },
           { label: "重新選擇", value: "retry" }
-        ] })], FLOW_OPTS()).then(function (r) {
+        ] })], FLOW_OPTS(true)).then(function (r) {
           if (r.choice === "returning") returning({ fromLobby: draft.fromLobby, prefill: { id: draft.id, base: draft.base } });
           else stepId(draft);   // 保留已輸入的 ID 與圖案，讓玩家修改
         });
@@ -225,7 +233,7 @@
     }).catch(function (err) {
       console.warn("[Onboarding] 建立失敗：", err && err.message);
       showFlow(previewCard(draft), "flow__card--confirm");
-      D.ask([say(T.createFailed, { actor: { mood: "remind" }, choices: [
+      D.ask([say(T.createFailed, { ask: T.createFailedAsk, actor: { mood: "remind" }, choices: [
         { label: "再試一次", value: "retry", primary: true },
         { label: "返回修改", value: "back" }
       ] })], FLOW_OPTS()).then(function (r) {
@@ -243,8 +251,9 @@
       '<p class="flow__hint">記住你的玩家 ID「' + esc(entry.id) + "」和這個「" + esc(ID.avatarLabel(entry.baseAvatarKey)) + "」圖案，下次就能找回這張通行證。</p>" +
       '<div class="flow__buttons"><button class="btn btn--primary btn--big" id="fEnter" type="button">進入遊樂園 ▶</button></div>',
       "flow__card--pass");
+    L.fitPass(card);
     L.sfx("pass");
-    D.ask([say(T.created, { actor: { mood: "congrats", full: "openArms", enter: true, sparkle: true } })], FLOW_OPTS());
+    D.ask([say(T.created, { actor: { mood: "congrats", full: "openArms", enter: true, sparkle: true } })], FLOW_OPTS(true));
     document.getElementById("fEnter").addEventListener("click", function () {
       if (D.isOpen()) D.close();
       enterLobby(entry, { tutorial: true, transition: true });
@@ -261,7 +270,7 @@
       L.loadPlayer(entry).then(function (r) {
         if (r.status !== "ok") return;
         if (opts.tutorial && !Store.tutorialDone(r.data.playerKey)) setTimeout(runTutorial, 400);
-        else if (opts.welcomeBack) D.ask([say(T.returningFound.replace("{id}", r.data.id), { actor: { mood: "happy", enter: true } })]);
+        else if (opts.welcomeBack) D.ask([say(T.returningFound.replace("{id}", RT.escape(r.data.id)), { actor: { mood: "happy", enter: true } })]);
       });
     }
     if (opts.transition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -320,11 +329,15 @@
       btn.textContent = "尋找中…";
       Store.loadPlayerData(key, { id: id, baseAvatarKey: sel.base }).then(function (res) {
         if (res.status !== "ok") {
-          return D.ask([say(T.returningNotFound, { actor: { mood: "remind" }, choices: [
+          // 查詢已經結束：立刻解除「尋找中…」，不保留假的載入狀態
+          btn.disabled = false;
+          btn.textContent = "找回通行證";
+          return D.ask([say(T.returningNotFound, { ask: T.returningNotFoundAsk, actor: { mood: "remind" }, choices: [
             { label: "再試一次", value: "retry", primary: true },
             { label: "建立新玩家", value: "new" }
           ] })], FLOW_OPTS()).then(function (r) {
-            if (r.choice === "new") newPlayer({ fromLobby: opts.fromLobby });
+            if (r.replaced) return;
+            if (r.choice === "new") { showFlow(null); newPlayer({ fromLobby: opts.fromLobby }); }   // 停止找回流程：舊卡片先收起來
             else returning({ fromLobby: opts.fromLobby, prefill: { id: id, base: sel.base } });
           });
         }
@@ -469,7 +482,8 @@
         return false;
       });
       return D.ask([say(cfg.text, { nextHint: TU.nextHint, actor: cfg.actor })], {
-        shield: false, allowSkip: true,
+        shield: false, allowSkip: true, focus: false,      // 教學有自己的聚光燈與防呆
+
         avoid: function () { return (targets || []).filter(function (t) { return t && rectOf([t]) && (rectOf([t]).bottom - rectOf([t]).top) < window.innerHeight * 0.6; }); }
       }).then(function (r) { if (r && r.skipped && !r.replaced) end(); });
     }
@@ -490,7 +504,7 @@
         });
         if (!extra.noDialog) {
           D.ask([say(cfg.text, { waitAction: true, actor: cfg.actor })], {
-            shield: false, allowSkip: true,
+            shield: false, allowSkip: true, focus: false,
             avoid: function () { return targetsFn().concat([hint]); },
             onWaitClick: function () { wrongFeedback(cfg.wrong); }
           }).then(function (r) {
