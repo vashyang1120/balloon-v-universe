@@ -32,6 +32,8 @@ export class ApiError extends Error {
    * @param {object} [opts.details]  給使用者看的補充（例如哪個欄位錯）
    * @param {string} [opts.internal] 只寫進伺服器記錄的原因（會再經過遮罩）
    * @param {object} [opts.headers]  額外回應標頭（例如 Allow）
+   * @param {string} [opts.reason]   安全的原因代碼（英文大寫，例如 FIREBASE_PERMISSION_DENIED），
+   *                                 不含任何機密，可以給管理員診斷頁顯示
    */
   constructor(code, opts = {}) {
     const def = ERROR_CODES[code] || ERROR_CODES.INTERNAL;
@@ -42,6 +44,7 @@ export class ApiError extends Error {
     this.details = opts.details;
     this.internal = opts.internal;
     this.headers = opts.headers;
+    this.reason = opts.reason;
   }
 }
 

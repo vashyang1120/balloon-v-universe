@@ -77,11 +77,11 @@ export function createFirebaseClient(o) {
       clearTimeout(timer);
       if (e && e.name === "AbortError") {
         log?.warn("firebase timeout", { method, timeoutMs });
-        throw new ApiError("UPSTREAM_TIMEOUT", { internal: "firebase request timeout" });
+        throw new ApiError("UPSTREAM_TIMEOUT", { reason: "FIREBASE_TIMEOUT", internal: "firebase request timeout" });
       }
       if (idempotent) return send(method, path, { body, query, headers, retryAuth, idempotent: false });
       log?.warn("firebase network error", { method });
-      throw new ApiError("UPSTREAM_UNAVAILABLE", { internal: "firebase network error" });
+      throw new ApiError("UPSTREAM_UNAVAILABLE", { reason: "FIREBASE_NETWORK", internal: "firebase network error" });
     }
     clearTimeout(timer);
 
@@ -91,7 +91,7 @@ export function createFirebaseClient(o) {
       return send(method, path, { body, query, headers, retryAuth: false, idempotent });
     }
     if (res.status === 412) {
-      const err = new ApiError("CONFLICT", { internal: "firebase etag precondition failed" });
+      const err = new ApiError("CONFLICT", { reason: "FIREBASE_ETAG_MISMATCH", internal: "firebase etag precondition failed" });
       err.currentEtag = res.headers.get("etag"); // 只給伺服器程式重試用，不會放進回應
       throw err;
     }
@@ -101,17 +101,23 @@ export function createFirebaseClient(o) {
     if (!res.ok) {
       // 只記錄狀態碼，不記錄 Firebase 回應內容（可能包含資料）
       log?.warn("firebase error status", { method, status: res.status });
-      if (res.status === 401 || res.status === 403) {
-        throw new ApiError("UPSTREAM_UNAVAILABLE", { internal: `firebase auth rejected (${res.status})` });
+      if (res.status === 401) {
+        throw new ApiError("UPSTREAM_UNAVAILABLE", { reason: "FIREBASE_UNAUTHORIZED", internal: "firebase auth rejected (401)" });
       }
-      if (res.status === 400) throw new ApiError("INTERNAL", { internal: "firebase rejected request (400)" });
-      throw new ApiError("UPSTREAM_UNAVAILABLE", { internal: `firebase status ${res.status}` });
+      if (res.status === 403) {
+        throw new ApiError("UPSTREAM_UNAVAILABLE", { reason: "FIREBASE_PERMISSION_DENIED", internal: "firebase auth rejected (403)" });
+      }
+      if (res.status === 404) {
+        throw new ApiError("UPSTREAM_UNAVAILABLE", { reason: "FIREBASE_DATABASE_NOT_FOUND", internal: "firebase status 404" });
+      }
+      if (res.status === 400) throw new ApiError("INTERNAL", { reason: "FIREBASE_BAD_REQUEST", internal: "firebase rejected request (400)" });
+      throw new ApiError("UPSTREAM_UNAVAILABLE", { reason: "FIREBASE_ERROR_STATUS", internal: `firebase status ${res.status}` });
     }
 
     const text = await res.text();
     let value = null;
     if (text) {
-      try { value = JSON.parse(text); } catch { throw new ApiError("UPSTREAM_UNAVAILABLE", { internal: "firebase returned non-JSON" }); }
+      try { value = JSON.parse(text); } catch { throw new ApiError("UPSTREAM_UNAVAILABLE", { reason: "FIREBASE_BAD_RESPONSE", internal: "firebase returned non-JSON" }); }
     }
     return { value, etag: res.headers.get("etag") };
   }

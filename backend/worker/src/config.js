@@ -4,8 +4,8 @@
  * 這裡只回報「有沒有設定」，絕不回傳私密值本身。
  */
 export const SERVICE_NAME = "balloon-v-universe-api";
-export const API_VERSION = "0.1.0";
-export const RELEASE = "universe-backend-v0.1.0-test-1";
+export const API_VERSION = "0.2.0";
+export const RELEASE = "universe-backend-v0.2.0-admin-auth-test-1";
 
 const DB_URL = /^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)*\.(firebaseio\.com|firebasedatabase\.app)$/;
 const PROJECT_ID = /^[a-z][a-z0-9-]{4,28}[a-z0-9]$/;

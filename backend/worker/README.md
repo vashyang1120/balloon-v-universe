@@ -1,11 +1,14 @@
 # 氣球小V遊戲宇宙 後端 API（Cloudflare Worker）
 
-版本：**universe-backend-v0.1.0-test-1**（API 0.1.0）
+版本：**universe-backend-v0.2.0-admin-auth-test-1**（API 0.2.0）
 Worker 名稱：`balloon-v-universe-api`
 公開網址：https://balloon-v-universe-api.vashyang1120.workers.dev
 
-這是遊戲宇宙所有遊戲共用的後端「基礎工程」。v0.1.0 只提供健康檢查、統一格式、錯誤處理、CORS、
-Firebase 伺服器端連線模組與管理員驗證；玩家、V幣、成績、排行榜等功能只預留路由，一律回 `501`。
+這是遊戲宇宙所有遊戲共用的後端「基礎工程」。目前提供健康檢查、統一格式、錯誤處理、CORS、
+Firebase 伺服器端連線模組、管理員驗證與 Firebase 只讀連線診斷；玩家、V幣、成績、排行榜等功能只預留路由，一律回 `501`。
+
+v0.2.0 新增：診斷 API 回報「卡在哪一步＋安全原因代碼＋中文排除建議」，以及配套的管理員測試頁
+（Repository 根目錄的 `admin-test/`，見該資料夾 README）。
 
 > 這個資料夾和大廳網站完全獨立：大廳是 GitHub Pages 靜態網頁，這裡是 Cloudflare Worker。
 > 大廳的任何檔案都沒有引用這裡的程式。
@@ -118,10 +121,15 @@ Firebase 主控台 → 齒輪「專案設定」→「一般」→ **專案 ID**�
 3. 確認儲存成功後，**刪除電腦上下載的 JSON 檔**。
 4. 日後若懷疑外流：回到 Google Cloud 該服務帳戶的「金鑰」頁刪除舊金鑰，再建一把新的、重新貼上。
 
-### 4.4 設定管理員 UID（可以之後再做）
-管理員必須用 Google 登入 Firebase 一次才會有 UID。等之後的管理後台版本完成、Vash 用 Google 登入一次後：
-Firebase 主控台 → Authentication →「使用者」→ 找到該 Google 帳號 → 複製「使用者 UID」→
-Cloudflare 新增 Secret `ADMIN_UIDS`，值貼上 UID。
+### 4.4 設定管理員 UID
+管理員必須先用 Google 登入一次才會有 UID：
+1. 開管理員測試頁 `https://vashyang1120.github.io/balloon-v-universe/admin-test/`（需先完成該頁 README 的 Firebase 網頁設定）。
+2. 用 Google 登入 → 按「複製 UID」。
+   （也可以在 Firebase 主控台 → Authentication →「使用者」找到該 Google 帳號的「使用者 UID」。）
+3. Cloudflare → `balloon-v-universe-api` → Settings → Variables and Secrets → Add：
+   Type **Secret**、Name `ADMIN_UIDS`、Value 貼上 UID → 儲存。
+4. 格式：多位管理員用逗號（或空白）分隔，例如 `UID甲,UID乙`。每個 UID 只接受英數字與 `:_-`，最長 128 字。
+5. 沒設定時，所有管理 API 一律回 503（任何 Google 帳號都不會被當成管理員）。
 
 ### 4.5 資料庫安全規則
 **維持現在的「全部拒絕」不用改**：
@@ -160,8 +168,10 @@ Cloudflare 後台 → `balloon-v-universe-api` →「設定」→「建置（Bui
 
 1. 開 https://balloon-v-universe-api.vashyang1120.workers.dev/health → 看到 `"status":"ok"`、`"version":"0.1.0"`。
    這只代表 Worker 正常，**不代表 Firebase 已連線**（`dependencies.firebase` 是 `not_checked`）。
-2. Firebase 是否真的連得上，要等管理員 UID 設定好之後，用管理員 Token 呼叫
-   `GET /v1/admin/diagnostics/firebase`，看到 `"connected": true` 才算成功（只讀，不寫入資料）。
+2. Firebase 是否真的連得上：管理員在測試頁按「測試 Firebase 連線」（呼叫 `GET /v1/admin/diagnostics/firebase`），
+   看到 `"connected": true` 才算成功。只讀，不寫入資料；空資料庫回 `readResult: "null"` 是正常的。
+   失敗時回傳 `stage`（config／token／database）、`reason`（安全原因代碼）與 `hint`（中文排除建議），
+   不含 Token、私鑰、服務帳戶內容或資料庫內容。
 
 ---
 
