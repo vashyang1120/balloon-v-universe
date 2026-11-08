@@ -54,7 +54,9 @@
 - 提交成績時，信封內的 gameId／gameVersion 必須和標頭一致。
 - 這是「自稱」資訊，只用於記錄與相容性判斷，不作為安全依據。
 
-## 5. 玩家身份（下一版實作的設計）
+## 5. 玩家身份（v0.3.0 已實作，完整規格見 PLAYERS.md）
+> 以下為 v0.1.0 時的設計草案；實作細節（identityKey 雜湊、NFKC、冪等鍵、修復流程）以 [PLAYERS.md](PLAYERS.md) 為準。
+
 - **playerId**：伺服器產生、永不改變（`p_` + 20 碼）。所有玩家資料都掛在 playerId 下。
 - **身份鍵**：`identities/{encode(玩家ID)}__{baseAvatarKey}` → playerId。同一個 ID 搭配不同固定圖案是不同玩家。
 - **baseAvatarKey** 用於身份識別，建立後不可改；**displayAvatarKey** 只用於展示，換頭像不改身份。

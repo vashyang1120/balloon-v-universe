@@ -24,8 +24,10 @@ import { healthRoute } from "./routes/health.js";
 import { metaRoute } from "./routes/meta.js";
 import { adminRoutes } from "./routes/admin.js";
 import { reservedRoutes } from "./routes/reserved.js";
+import { playerRoutes } from "./routes/players.js";
 
-const ROUTES = compile([healthRoute(), metaRoute(), ...adminRoutes(), ...reservedRoutes()]);
+// 順序重要：明確的路由在前，預留分類的萬用路由（/v1/<分類>/*）在最後
+const ROUTES = compile([healthRoute(), metaRoute(), ...adminRoutes(), ...playerRoutes(), ...reservedRoutes()]);
 
 /**
  * @param {object} [deps] 測試時注入：fetch、jwks、now、logSink
