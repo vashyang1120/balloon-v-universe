@@ -174,3 +174,11 @@ Cloudflare 後台 → `balloon-v-universe-api` →「設定」→「建置（Bui
 - 本資料夾的程式會隨 GitHub Pages 公開（例如 `/backend/worker/README.md` 可被瀏覽），所以**這裡永遠不放私密資料**；`npm run check` 會掃描整個 Repository。
 
 更多設計細節見 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
+
+---
+
+## 8. 部署驗證紀錄
+
+| 版本 | 日期 | 目的 | 正式 Worker | 部署來源 |
+|---|---|---|---|---|
+| v0.1.0-deploy-test-1 | 2026-11-09 | 驗證 Cloudflare GitHub Builds 自動部署流程（不含新功能） | `balloon-v-universe-api` | `main` / `backend/worker` |
