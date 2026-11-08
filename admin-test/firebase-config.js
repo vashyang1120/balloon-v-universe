@@ -13,7 +13,7 @@
  * 服務帳戶 JSON、管理員 UID 名單「絕對不可」寫在這裡。
  */
 export const FIREBASE_WEB_CONFIG = {
-  apiKey: "AIzaSyDpcG7svud91fj7EKlOc3NU3LdcsmTdu-8",
+  apiKey: "AIzaSyDpcG7svud91fj7EKlOc3NU3LdcsnTdu-8",
   authDomain: "balloon-v-universe.firebaseapp.com",
   databaseURL: "https://balloon-v-universe-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "balloon-v-universe",
