@@ -17,7 +17,7 @@ https://vashyang1120.github.io/balloon-v-universe/admin-test/
 |---|---|
 | `index.html` | 頁面（不使用大廳的 RPG 美術） |
 | `admin-test.js` | 登入、權限確認、連線測試 |
-| `firebase-config.js` | 新 Firebase 專案的**公開**網頁設定（目前是範本，尚待填入） |
+| `firebase-config.js` | 新 Firebase 專案（balloon-v-universe）的**公開**網頁設定（2026-11-09 已填入） |
 
 ## 一次性設定（Firebase 主控台）
 
