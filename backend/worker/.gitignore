@@ -1,0 +1,22 @@
+# 套件與建置產物
+node_modules/
+.wrangler/
+dist/
+
+# 本機私密設定（絕對不能提交）
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+.env
+.env.*
+
+# 服務帳戶金鑰檔（如果不小心下載到這個資料夾）
+*service-account*.json
+*-firebase-adminsdk-*.json
+*.pem
+*.p12
+*.key
+
+# 系統檔
+.DS_Store
+npm-debug.log*

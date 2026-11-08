@@ -1,0 +1,42 @@
+// 氣球小V遊戲宇宙 後端 API — Cloudflare Worker 設定
+// 專案根目錄：backend/worker/（所有 wrangler 指令都在這個資料夾執行）
+//
+// ⚠ 這個檔案會提交到 GitHub，所以「只能放公開設定」。
+//   私密資料（Firebase 服務帳戶 JSON、管理員 UID 名單）一律放 Cloudflare Secrets，
+//   見 README.md「Secrets」一節。不要把任何私密值寫進這裡。
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+
+  // Worker 名稱固定，必須和 Cloudflare 上已建立的 Worker 一致
+  "name": "balloon-v-universe-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+
+  // 使用 *.workers.dev 公開網址；不開預覽網址，避免多出未受控的公開入口
+  "workers_dev": true,
+  "preview_urls": false,
+
+  // Workers Logs（免費方案可用，有每日上限）。程式只輸出已遮罩的結構化記錄
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+
+  // 公開設定（非私密）
+  "vars": {
+    "SERVICE_ENV": "production",
+
+    // 允許呼叫 API 的網站來源（只比對「來源」，不含路徑；多個用逗號分隔）。
+    // 四款遊戲與大廳都在 vashyang1120.github.io，所以一個來源就涵蓋全部。
+    "ALLOWED_ORIGINS": "https://vashyang1120.github.io",
+
+    // Firebase 專案 ID：由資料庫網址 balloon-v-universe-default-rtdb 推得，
+    // 部署前請到 Firebase 主控台「專案設定 → 一般 → 專案 ID」確認完全相同。
+    // 填錯不會開放權限，只會讓所有管理員 Token 驗證失敗（fail closed）。
+    "FIREBASE_PROJECT_ID": "balloon-v-universe",
+    "FIREBASE_DATABASE_URL": "https://balloon-v-universe-default-rtdb.asia-southeast1.firebasedatabase.app",
+
+    // 呼叫 Firebase 的超時（毫秒）
+    "FIREBASE_TIMEOUT_MS": "8000"
+  }
+}
