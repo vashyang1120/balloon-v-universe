@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>遊戲宇宙 管理員連線測試</title>
+  <!-- universe-backend-v0.2.0-admin-auth-test-1：管理員專用測試工具，不是正式管理後台 -->
+  <style>
+    :root {
+      --bg: #f6f3fb; --card: #ffffff; --ink: #2b2140; --muted: #6e6485; --line: #e3dcef;
+      --brand: #7b4fd6; --ok: #1e8a4c; --ok-bg: #e8f6ee; --warn: #9a6200; --warn-bg: #fff4dc;
+      --bad: #b3261e; --bad-bg: #fdecea; --idle-bg: #f1eef7;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink);
+      font: 16px/1.6 system-ui, -apple-system, "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif; }
+    main { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+    h1 { font-size: 1.5rem; margin: 0 0 4px; }
+    .sub { color: var(--muted); margin: 0 0 20px; font-size: .95rem; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 16px; margin-bottom: 16px; }
+    .card h2 { font-size: 1.08rem; margin: 0 0 10px; display: flex; gap: 10px; align-items: center; }
+    .step { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%;
+      background: var(--brand); color: #fff; font-size: .9rem; flex: none; }
+    .status { border-radius: 10px; padding: 10px 12px; margin: 10px 0; background: var(--idle-bg); color: var(--muted); }
+    .status.ok { background: var(--ok-bg); color: var(--ok); }
+    .status.warn { background: var(--warn-bg); color: var(--warn); }
+    .status.bad { background: var(--bad-bg); color: var(--bad); }
+    .status strong { display: block; color: inherit; }
+    .status small { display: block; margin-top: 4px; color: var(--ink); opacity: .8; }
+    dl { display: grid; grid-template-columns: 7.5em 1fr; gap: 6px 10px; margin: 10px 0 0; }
+    dt { color: var(--muted); }
+    dd { margin: 0; overflow-wrap: anywhere; }
+    code.uid { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--idle-bg);
+      padding: 2px 6px; border-radius: 6px; font-size: .95rem; }
+    .row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    button { font: inherit; border: 0; border-radius: 10px; padding: 10px 16px; cursor: pointer;
+      background: var(--brand); color: #fff; min-height: 44px; }
+    button.secondary { background: #ece6f8; color: var(--ink); }
+    button:disabled { background: #d9d3e5; color: #8d859e; cursor: not-allowed; }
+    button:focus-visible { outline: 3px solid #b99bf0; outline-offset: 2px; }
+    ol { padding-left: 1.3em; margin: 8px 0 0; }
+    .note { font-size: .9rem; color: var(--muted); margin-top: 10px; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>遊戲宇宙 管理員連線測試</h1>
+  <p class="sub">這是管理員專用的測試工具。一般玩家不需要、也不會用到 Google 登入。</p>
+
+  <section class="card" aria-labelledby="h-env">
+    <h2 id="h-env">目前狀態</h2>
+    <div id="configStatus" class="status">正在檢查 Firebase 網頁設定…</div>
+    <div id="workerStatus" class="status">正在檢查後端 Worker…</div>
+  </section>
+
+  <section class="card" aria-labelledby="h-login">
+    <h2 id="h-login"><span class="step">1</span>Google 登入</h2>
+    <div id="loginStatus" class="status">尚未登入</div>
+    <dl id="userInfo" class="hidden">
+      <dt>Google 帳號</dt><dd id="userEmail"></dd>
+      <dt>登入方式</dt><dd id="userProvider"></dd>
+      <dt>Firebase UID</dt><dd><code class="uid" id="userUid"></code></dd>
+    </dl>
+    <div class="row">
+      <button id="btnLogin" disabled>使用 Google 登入</button>
+      <button id="btnCopyUid" class="secondary hidden">複製 UID</button>
+      <button id="btnLogout" class="secondary hidden">登出</button>
+    </div>
+    <p class="note">UID 是你在這個 Firebase 專案的帳號編號，不是密碼。只有 UID 也無法登入或取得管理權限。為了安全，關閉或重新整理這個分頁就會自動登出。</p>
+  </section>
+
+  <section class="card" aria-labelledby="h-admin">
+    <h2 id="h-admin"><span class="step">2</span>管理員權限（由伺服器判斷）</h2>
+    <div id="adminStatus" class="status">登入後會自動向伺服器確認</div>
+    <div id="adminSetup" class="hidden">
+      <p class="note" style="color:var(--ink)">把你的 UID 設定成管理員：</p>
+      <ol>
+        <li>按上面的「複製 UID」。</li>
+        <li>開 Cloudflare → Workers &amp; Pages → <b>balloon-v-universe-api</b> → Settings → Variables and Secrets。</li>
+        <li>按「Add」，Type 選 <b>Secret</b>，Name 填 <b>ADMIN_UIDS</b>，Value 貼上 UID，儲存。</li>
+        <li>回到這頁按「重新確認權限」。</li>
+      </ol>
+    </div>
+    <div class="row">
+      <button id="btnCheckAdmin" class="secondary" disabled>重新確認權限</button>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="h-diag">
+    <h2 id="h-diag"><span class="step">3</span>測試 Firebase 連線（只讀）</h2>
+    <div id="diagStatus" class="status">伺服器確認你是管理員後才能測試</div>
+    <div class="row">
+      <button id="btnDiag" disabled>測試 Firebase 連線</button>
+    </div>
+    <p class="note">這個測試只會「讀取」資料庫中一個固定的測試位置，不會新增、修改或刪除任何資料。資料庫目前是空的，讀到「空（null）」是正常的。</p>
+  </section>
+</main>
+<script type="module" src="./admin-test.js"></script>
+</body>
+</html>

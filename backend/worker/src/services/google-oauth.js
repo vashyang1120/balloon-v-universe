@@ -25,13 +25,13 @@ const REFRESH_MARGIN_S = 300;
 /** 解析並檢查服務帳戶 JSON；失敗只回報「設定錯誤」，不回傳內容 */
 export function parseServiceAccount(raw, expectedProjectId) {
   if (typeof raw !== "string" || !raw.trim()) {
-    throw new ApiError("SERVICE_NOT_CONFIGURED", { internal: "FIREBASE_SERVICE_ACCOUNT_JSON missing" });
+    throw new ApiError("SERVICE_NOT_CONFIGURED", { reason: "SERVICE_ACCOUNT_MISSING", internal: "FIREBASE_SERVICE_ACCOUNT_JSON missing" });
   }
   let sa;
   try {
     sa = JSON.parse(raw);
   } catch {
-    throw new ApiError("SERVICE_NOT_CONFIGURED", { internal: "service account JSON is not valid JSON" });
+    throw new ApiError("SERVICE_NOT_CONFIGURED", { reason: "SERVICE_ACCOUNT_INVALID_JSON", internal: "service account JSON is not valid JSON" });
   }
   const problems = [];
   if (sa.type !== "service_account") problems.push("type");
@@ -40,7 +40,8 @@ export function parseServiceAccount(raw, expectedProjectId) {
   if (sa.token_uri != null && sa.token_uri !== GOOGLE_TOKEN_URI) problems.push("token_uri");
   if (expectedProjectId && sa.project_id && sa.project_id !== expectedProjectId) problems.push("project_id_mismatch");
   if (problems.length) {
-    throw new ApiError("SERVICE_NOT_CONFIGURED", { internal: "service account fields invalid: " + problems.join(",") });
+    const reason = problems.includes("project_id_mismatch") ? "SERVICE_ACCOUNT_PROJECT_MISMATCH" : "SERVICE_ACCOUNT_INVALID_FIELDS";
+    throw new ApiError("SERVICE_NOT_CONFIGURED", { reason, internal: "service account fields invalid: " + problems.join(",") });
   }
   return {
     clientEmail: sa.client_email,
@@ -79,7 +80,7 @@ export function createServiceAccountTokenProvider(o) {
         .importKey("pkcs8", pemToDer(account().privateKeyPem), { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"])
         .catch(() => {
           keyPromise = null;
-          throw new ApiError("SERVICE_NOT_CONFIGURED", { internal: "service account private key could not be imported" });
+          throw new ApiError("SERVICE_NOT_CONFIGURED", { reason: "SERVICE_ACCOUNT_KEY_UNREADABLE", internal: "service account private key could not be imported" });
         });
     }
     return keyPromise;
@@ -108,8 +109,8 @@ export function createServiceAccountTokenProvider(o) {
         signal: ctrl.signal,
       });
     } catch (e) {
-      if (e && e.name === "AbortError") throw new ApiError("UPSTREAM_TIMEOUT", { internal: "google token endpoint timeout" });
-      throw new ApiError("UPSTREAM_UNAVAILABLE", { internal: "google token endpoint network error" });
+      if (e && e.name === "AbortError") throw new ApiError("UPSTREAM_TIMEOUT", { reason: "GOOGLE_TOKEN_TIMEOUT", internal: "google token endpoint timeout" });
+      throw new ApiError("UPSTREAM_UNAVAILABLE", { reason: "GOOGLE_TOKEN_NETWORK", internal: "google token endpoint network error" });
     } finally {
       clearTimeout(timer);
     }
@@ -118,7 +119,7 @@ export function createServiceAccountTokenProvider(o) {
     if (!res.ok || !body || typeof body.access_token !== "string") {
       // 只記錄 Google 回傳的錯誤「代碼」，不記錄內容
       const code = body && typeof body.error === "string" ? body.error.slice(0, 40) : "no_error_code";
-      throw new ApiError("UPSTREAM_UNAVAILABLE", { internal: `google token endpoint rejected (${res.status} ${code})` });
+      throw new ApiError("UPSTREAM_UNAVAILABLE", { reason: "GOOGLE_TOKEN_REJECTED", internal: `google token endpoint rejected (${res.status} ${code})` });
     }
     const ttl = Number.isFinite(body.expires_in) ? body.expires_in : 3600;
     cached = { token: body.access_token, expiresAt: now() + Math.max(ttl - REFRESH_MARGIN_S, 60) * 1000 };

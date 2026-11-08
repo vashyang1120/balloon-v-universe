@@ -4,6 +4,7 @@ import { app, req, baseEnv, captureLogs, fakeServiceAccount } from "./helpers.js
 import { toApiError } from "../src/app.js";
 import { fail } from "../src/utils/response.js";
 import { createLogger } from "../src/utils/logger.js";
+import { API_VERSION } from "../src/config.js";
 
 test("/health 回傳 service、version、status、timestamp", async () => {
   const res = await app().fetch(req("/health"), baseEnv());
@@ -11,7 +12,8 @@ test("/health 回傳 service、version、status、timestamp", async () => {
   assert.match(res.headers.get("content-type"), /application\/json/);
   const body = await res.json();
   assert.equal(body.service, "balloon-v-universe-api");
-  assert.equal(body.version, "0.1.0");
+  assert.equal(body.version, API_VERSION);
+  assert.equal(API_VERSION, "0.2.0");
   assert.equal(body.status, "ok");
   assert.ok(!Number.isNaN(Date.parse(body.timestamp)), "timestamp 必須是 ISO-8601");
   assert.ok(Math.abs(Date.parse(body.timestamp) - Date.now()) < 5000, "timestamp 由伺服器即時產生");
@@ -49,7 +51,7 @@ test("不存在的路由 → 404 統一格式", async () => {
   assert.equal(body.ok, false);
   assert.equal(body.error.code, "NOT_FOUND");
   assert.ok(body.meta.requestId);
-  assert.equal(body.meta.version, "0.1.0");
+  assert.equal(body.meta.version, API_VERSION);
 });
 
 test("方法不對 → 405 並附 Allow", async () => {
