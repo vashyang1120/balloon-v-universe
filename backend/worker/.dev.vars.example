@@ -1,0 +1,12 @@
+# 本機開發用設定範例（wrangler dev 會讀取同資料夾的 .dev.vars）
+# 使用方式：複製成 .dev.vars 後填入。 .dev.vars 已被 .gitignore 排除，不會提交。
+# 這個範例檔本身不得填入任何真實值。
+
+SERVICE_ENV=development
+ALLOWED_ORIGINS=https://vashyang1120.github.io,http://localhost:8000
+
+# Firebase 服務帳戶 JSON（整份內容放在同一行；本機測試才需要）
+FIREBASE_SERVICE_ACCOUNT_JSON=
+
+# 管理員 Firebase UID（多個用逗號分隔）
+ADMIN_UIDS=
