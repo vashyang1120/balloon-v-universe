@@ -171,14 +171,15 @@ test("讀取公開資料：存在 → 公開欄位；格式錯誤或不存在 �
   assert.equal((await call("GET", `/v1/players/p_${"b".repeat(20)}`)).body.error.code, "PLAYER_NOT_FOUND");
 });
 
-test("固定身份圖案清單：17 款，順序固定，不含未開放與展示用頭像", async () => {
+test("固定身份圖案清單：33 款（前 17 款順序不變），不含未開放與展示用頭像", async () => {
   const { db, call } = setup();
   const r = await call("GET", "/v1/avatars/base");
   assert.equal(r.status, 200);
   const keys = r.body.data.avatars.map((a) => a.key);
-  assert.deepEqual(keys, ["boy1", "girl1", "boy2", "girl2", "cat1", "cat2", "fat1", "girl3", "curl1", "boy3", "girl4", "girl5", "curl2", "dog1", "dog2", "dog3", "dog4"]);
+  assert.deepEqual(keys.slice(0, 17), ["boy1", "girl1", "boy2", "girl2", "cat1", "cat2", "fat1", "girl3", "curl1", "boy3", "girl4", "girl5", "curl2", "dog1", "dog2", "dog3", "dog4"]);
+  assert.equal(keys.length, 33);
   assert.ok(!keys.includes("xiaov_base"));
-  assert.equal(r.body.data.catalogVersion, 1);
+  assert.equal(r.body.data.catalogVersion, 2, "目錄改變時版本號遞增");
   assert.equal(db.log.length, 0, "清單不讀資料庫");
 });
 

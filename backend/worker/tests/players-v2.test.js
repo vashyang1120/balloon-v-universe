@@ -107,8 +107,8 @@ test("英文大小寫、保留字規則與 test-1 相同", async () => {
   assert.equal((await create(call, " 玩家 ")).body.error.details.errors[0].issue, "ID_RESERVED");
 });
 
-test("17 款身份圖案鍵值與順序不變，且全部 active", () => {
-  assert.deepEqual(BASE_AVATARS.map((a) => a.key), ["boy1", "girl1", "boy2", "girl2", "cat1", "cat2", "fat1", "girl3", "curl1", "boy3", "girl4", "girl5", "curl2", "dog1", "dog2", "dog3", "dog4"]);
+test("原有 17 款身份圖案鍵值與順序不變，且全部 active", () => {
+  assert.deepEqual(BASE_AVATARS.slice(0, 17).map((a) => a.key), ["boy1", "girl1", "boy2", "girl2", "cat1", "cat2", "fat1", "girl3", "curl1", "boy3", "girl4", "girl5", "curl2", "dog1", "dog2", "dog3", "dog4"]);
   assert.ok(BASE_AVATARS.every((a) => a.status === "active"));
 });
 

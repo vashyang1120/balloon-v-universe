@@ -140,9 +140,9 @@
   $("btnVersion").onclick = async () => {
     const h = await api("GET", "/health");
     const m = await api("GET", "/v1/meta");
-    const ok = h.status === 200 && h.json && h.json.version === "0.3.0" && m.status === 200;
+    const ok = h.status === 200 && h.json && ["0.3.0","0.3.4"].includes(h.json.version) && m.status === 200;
     const players = m.json && m.json.ok ? m.json.data.categories.find((c) => c.name === "players") : null;
-    const text = `後端版本：${h.json ? h.json.version : "?"}（預期 0.3.0）\nrelease：${m.json && m.json.ok ? m.json.data.release : "?"}\nplayers 分類：${players ? players.status : "?"}（預期 partial）`;
+    const text = `後端版本：${h.json ? h.json.version : "?"}（預期 0.3.0 以上）\nrelease：${m.json && m.json.ok ? m.json.data.release : "?"}\nplayers 分類：${players ? players.status : "?"}（預期 partial）`;
     show("outVersion", ok, (ok ? "✅ " : "❌ ") + text);
     log("檢查版本", h.status, text.replace(/\n/g, "；"));
   };
