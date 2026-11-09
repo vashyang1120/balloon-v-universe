@@ -1,6 +1,6 @@
 # 氣球小V遊戲宇宙 後端 API（Cloudflare Worker）
 
-版本：**universe-backend-v0.3.0-player-foundation-test-1**（API 0.3.0）
+版本：**universe-backend-v0.3.0-player-foundation-test-2**（API 0.3.0）
 Worker 名稱：`balloon-v-universe-api`
 公開網址：https://balloon-v-universe-api.vashyang1120.workers.dev
 
@@ -81,6 +81,9 @@ backend/worker/
     check-syntax.mjs         node --check 全部檔案
     scan-secrets.mjs         掃描整個 Repository 有沒有私鑰或 Token
   docs/ARCHITECTURE.md       API 規格、資料一致性、安全與免費方案設計
+  docs/PLAYERS.md            共用玩家身份系統規格
+  docs/ACCEPTANCE_v0.3.0.md  v0.3.0 真實 Firebase 驗收計畫
+  acceptance/                驗收工具頁（只呼叫公開玩家 API；驗收後可刪除）
   wrangler.jsonc             Worker 設定（只放公開設定）
   .dev.vars.example          本機私密設定範例（不含真實值）
 ```
@@ -151,16 +154,12 @@ Worker 使用服務帳戶連線，不受這份規則限制；瀏覽器則完全�
 
 ---
 
-## 4.6 （選用）啟用 Cloudflare Rate Limiting binding
-玩家 API 目前用「單一 Worker 實例記憶體計數」限流（基本防護）。若確認你的 Cloudflare 方案可使用
-Rate Limiting binding，可在 `wrangler.jsonc` 加入下列設定（尚未加入，避免方案不支援時自動部署失敗）：
-```jsonc
-"ratelimits": [
-  { "name": "RL_PLAYER_CREATE", "namespace_id": "1001", "simple": { "limit": 30, "period": 60 } },
-  { "name": "RL_PLAYER_LOOKUP", "namespace_id": "1002", "simple": { "limit": 120, "period": 60 } }
-]
-```
-程式會自動偵測；沒有設定時退回記憶體計數。
+## 4.6 Cloudflare Rate Limiting binding（test-2 已加入 wrangler.jsonc）
+玩家 API 的限流設定在 `wrangler.jsonc` 的 `ratelimits`（`RL_CREATE_IP`、`RL_CREATE_GLOBAL`、`RL_LOOKUP_IP`），
+數字與 `src/middleware/rate-limit.js` 的 `RULES` 一致（測試會檢查）。
+- Cloudflare 文件沒有說明 Workers Free 是否包含此功能；若正式部署失敗並提到 ratelimits，刪除該區塊即可，
+  程式會自動退回「單一 Worker 實例記憶體計數」。
+- binding 是近似限流、各機房分開計數，不是無法繞過的安全機制。詳見 docs/PLAYERS.md 第 9 節。
 
 ## 5. Cloudflare GitHub 自動部署
 

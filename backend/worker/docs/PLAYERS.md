@@ -1,6 +1,6 @@
 # 共用玩家身份系統（v0.3.0）
 
-版本：universe-backend-v0.3.0-player-foundation-test-1
+版本：universe-backend-v0.3.0-player-foundation-test-2
 狀態：**程式開發與測試完成；尚未部署、尚未對正式 Firebase 寫入。**
 
 ---
@@ -90,11 +90,16 @@ identityKey = "i1_" + base64url( SHA-256( "bv-identity-v1" ␀ displayId ␀ bas
 2. Unicode **NFKC** 正規化：全形英數→半形（「ＡＢＣ１」→「ABC1」）、組合字統一、全形空白→空白。
    ⚠ 會讓少數符號變形，例如「①」→「1」、「㈱」→「(株)」。**不改變英文大小寫**。
 3. 所有空白類字元（含換行、全形空白）→ 一般空白；連續空白合併為一個；去除頭尾空白。
-4. 拒絕：控制字元、隱形格式字元（零寬字元、文字方向控制、組合用 ZWJ）、私用區、未定義字元、以組合符號開頭。
-   因為拒絕 ZWJ，「👨‍👩‍👧」這種組合 emoji 不能用；單一 emoji（含膚色）可以。
-5. 長度以「看得到的字數」（grapheme）計算：**2～16 字**；另限 UTF-8 128 bytes。
-6. 保留字：「玩家」（舊系統預設名稱）。
+4. 拒絕：控制字元、隱形格式字元（零寬字元、文字方向控制）、私用區、未定義字元、以組合符號開頭。
+   例外：組成 emoji 必要的隱形字元可以用——家庭 👨‍👩‍👧、職業 👩🏽‍💻、彩虹旗 🏳️‍🌈、地區旗 🏴󠁧󠁢󠁳󠁣󠁴󠁿（大廳 v0.3.3 允許輸入它們）。
+   拆開或放在一般文字中間的隱形連接字元（例如「小‍明」）仍會被拒絕。
+5. 長度以「看得到的字數」（grapheme）計算：**1～20 字**（test-2 起與大廳 v0.3.3 相同）；
+   另限 64 個碼位、UTF-8 200 bytes（防止用大量組合字元塞爆單一字）。
+6. 保留字：「玩家」（與大廳相同）。
 7. 錯誤代碼（`details.errors[0].issue`）：`ID_EMPTY`、`ID_TOO_SHORT`、`ID_TOO_LONG`、`ID_INVALID_CHAR`、`ID_RESERVED`、`ID_NOT_TEXT`，訊息為繁體中文。
+8. **顯示值**：正規化後的 displayId 就是正式顯示的 ID。若和玩家輸入（去掉頭尾空白後）不同，
+   建立與找回的回應會帶 `displayIdChanged: true`，大廳應顯示回傳的 `player.displayId`
+   （例如孩子用全形輸入「測試Ａ」，畫面應告訴他「你的 ID 是 測試A」）。之後用全形或半形輸入都找得回。
 
 ## 6. 固定身份圖案（`src/players/base-avatars.js`）
 - 沿用大廳 v0.3.3 的 17 款識別鍵：boy1、girl1、boy2、girl2、cat1、cat2、fat1、girl3、curl1、boy3、girl4、girl5、curl2、dog1、dog2、dog3、dog4。
@@ -115,7 +120,7 @@ identityKey = "i1_" + base64url( SHA-256( "bv-identity-v1" ␀ displayId ␀ bas
 { "displayId": "小明", "baseAvatarKey": "boy1", "createRequestId": "3f0c2c9e-6a4e-4a8f-9a37-0b8f3c1d2e44" }
 
 // 201 Created
-{ "ok": true, "data": { "status": "created", "replayed": false,
+{ "ok": true, "data": { "status": "created", "replayed": false, "displayIdChanged": false,
   "player": { "playerId": "p_k3x7q2m9a4bz6c8d1e5f", "displayId": "小明", "baseAvatarKey": "boy1",
               "displayAvatarKey": "boy1", "createdAt": "2026-11-09T05:00:00.000Z" } }, "meta": {…} }
 
@@ -130,7 +135,7 @@ identityKey = "i1_" + base64url( SHA-256( "bv-identity-v1" ␀ displayId ␀ bas
 ### POST /v1/players/resolve — 找回
 ```json
 { "displayId": "小明", "baseAvatarKey": "boy1" }
-// 200 { "ok": true, "data": { "status": "found", "player": { …同上… } } }
+// 200 { "ok": true, "data": { "status": "found", "displayIdChanged": false, "player": { …同上… } } }
 // 404 { "ok": false, "error": { "code": "IDENTITY_NOT_FOUND", "message": "找不到這位玩家，請確認玩家 ID 和當初選的身份圖案" } }
 ```
 
@@ -172,16 +177,30 @@ identityKey = "i1_" + base64url( SHA-256( "bv-identity-v1" ␀ displayId ␀ bas
 
 ---
 
-## 9. 濫用防護與免費方案
+## 9. 濫用防護與免費方案（test-2 修訂）
 
-| 項目 | 作法 | 限制 |
+| 動作 | 規則 | 用途 |
 |---|---|---|
-| 建立限流 | 每 IP 每分鐘 30 次 | 學校共用 IP 時一整班同時建立可能接近上限 |
-| 查詢限流（找回、讀取） | 每 IP 每分鐘 120 次 | |
-| 限流機制 | 有 `RL_PLAYER_CREATE`／`RL_PLAYER_LOOKUP` binding 時用 Cloudflare Rate Limiting；否則用單一 Worker 實例記憶體計數 | 記憶體計數不跨實例，只是基本防護；**目前 wrangler.jsonc 未啟用 binding**（見 README） |
-| 請求大小 | 玩家 API 最多 2 KB | |
-| 列舉 | playerId 不可猜；索引鍵不含 ID 原文；無列表 API | 找回 API 本質上能確認「某組 ID＋圖案是否存在」，只能靠限流降低 |
-| 機器人批次建立 | 限流＋每次只寫 2 筆小資料 | 沒有 CAPTCHA；分散 IP 的攻擊無法完全阻擋 |
+| 建立玩家 | ① 每 IP 每分鐘 60 次 | 一班 30～40 人同一個學校 IP 各建立一次、部分重按都不會被擋；單一來源機器人每分鐘最多 60 個 |
+| 建立玩家 | ② 全體（每個 Cloudflare 機房）每分鐘 300 次 | 攻擊者換很多 IP 時，仍限制寫入總量，保護 Firebase 免費額度 |
+| 找回＋讀取公開資料 | ③ 每 IP 每分鐘 300 次 | 只讀取；全班同時找回、重試都足夠 |
+| 身份圖案清單 | 不限流 | 靜態內容、不讀資料庫 |
+
+- 建立和找回分開計數：建立額度用完仍可找回。
+- 不用玩家 ID 或 createRequestId 當限流鍵（使用者自填，換一個就能繞過）。
+- **實作**：`wrangler.jsonc` 已設定 Cloudflare Rate Limiting binding（`RL_CREATE_IP`、`RL_CREATE_GLOBAL`、`RL_LOOKUP_IP`）；
+  沒有 binding 或 binding 故障時，自動退回單一 Worker 實例記憶體計數。
+- ⚠ Cloudflare 官方說明 binding 是**近似值、各機房分開計數、最終一致**，不是無法繞過的安全機制。
+- ⚠ Cloudflare 文件**沒有說明 Workers Free 是否包含**此功能，要在正式部署時確認（見 ACCEPTANCE_v0.3.0.md 第 2 節）。
+  本機 `wrangler dev` 已確認會模擬 binding（記錄顯示 `layer: "binding"`）。
+
+可能誤擋的情境：
+- 大型活動或整個學校（同一個對外 IP）在同一分鐘內有超過 60 人建立身份 → 部分人要等 1 分鐘再按。
+- 同一個機房在同一分鐘內全體超過 300 次建立（正常情況下不會發生）。
+- 需要時可調整 `src/middleware/rate-limit.js` 的 `RULES` 與 `wrangler.jsonc` 的 `ratelimits`（兩邊數字要一致，測試會檢查）。
+
+仍無法完全防止：大量分散 IP 的機器人（只能被全體上限壓住總量）；找回 API 能確認某組 ID＋圖案是否存在（只能靠限流降低試探速度）。
+不合法的請求在連線 Firebase 之前就被拒絕，不會產生資料庫操作。
 
 Firebase Spark：每次建立約 2 次讀＋2 次寫，資料量約 1 KB／玩家。
 
@@ -191,8 +210,12 @@ Firebase Spark：每次建立約 2 次讀＋2 次寫，資料量約 1 KB／玩�
 
 | 項目 | 大廳 v0.3.3 現況 | 新後端 | 差異與最小相容方案 |
 |---|---|---|---|
-| ID 長度 | 1～20 個字（`Array.from` 計算碼位），輸入框 maxlength 40 | 2～16 個字（grapheme） | **衝突**。方案 A：大廳 `identity.js` 的 `validateNewId` 改成 2～16（一行設定，會改變輸入體驗，需使用者同意）；方案 B：後端改成 1～20（改 `ID_RULES` 一行）。請使用者決定 |
-| 空白 | 只去頭尾 | 去頭尾＋合併連續空白＋NFKC | 大廳不必改；後端回傳正規化後的 displayId，大廳以回傳值顯示 |
+| ID 長度 | 1～20 個字（`Array.from` 計算碼位），輸入框 maxlength 40 | 1～20 個字（grapheme）＋64 碼位上限 | **test-2 已改為相容**：大廳接受的長度後端一定接受（20 碼位一定 ≤ 20 字） |
+| 空白 | 只去頭尾 | 去頭尾＋合併連續空白（含全形空白、換行） | 例如「小  明」存成「小 明」；回應 `displayIdChanged: true`，大廳顯示回傳值 |
+| Unicode 正規化 | 無 | NFKC（全形→半形、組合字統一） | 例如「Ａｍｙ」存成「Amy」；之後全形或半形都找得回；大廳顯示回傳值 |
+| emoji | 以碼位計算長度，全部接受 | 以看得到的字數計算；組合 emoji（家庭、職業、旗幟）可用 | 相容；只有拆開或夾在文字中的隱形連接字元會被拒絕 |
+| 隱形／控制字元 | 接受 | 拒絕（ID_INVALID_CHAR） | 刻意保留的安全檢查；大廳接入後應把後端的中文錯誤訊息顯示給孩子 |
+| 英文大小寫 | 區分 | 區分 | 一致 |
 | 保留字 | 「玩家」 | 「玩家」 | 一致 |
 | 身份圖案 | 17 款 builtinAvatars | 相同 17 款 | 一致；未來可改讀 `GET /v1/avatars/base` |
 | 身份鍵 | `playerKey`（舊編碼） | `playerId`＋`identityKey` | 大廳本機記住的改為 playerId；舊 playerKey 不再當正式身份 |
@@ -202,16 +225,12 @@ Firebase Spark：每次建立約 2 次讀＋2 次寫，資料量約 1 KB／玩�
 | 切換玩家 | 切換 playerKey | 切換 playerId | 切換時清掉上一位玩家在記憶體中的資料，避免混用 |
 | 進入遊戲交接 | `?bvPlayerKey=` | 改傳 playerId | 遊戲改版時一併處理（不在本版範圍） |
 
-最小修改點：`player-store.js`（建立、找回、讀取三個函式＋Firebase 換成呼叫 API）、
-`identity.js` 的長度規則（依決定）、`zones.js` 的 API 網址設定。畫面、動畫、對話不需要改。
+最小修改點：`player-store.js`（建立、找回、讀取三個函式＋Firebase 換成呼叫 API，並以回傳的 `player.displayId` 顯示）、
+`zones.js` 的 API 網址設定。ID 長度規則已相容，`identity.js` 不必改。畫面、動畫、對話不需要改。
 
 ---
 
-## 11. 真實 Firebase 寫入驗收計畫（**尚未執行，等使用者確認**）
+## 11. 真實 Firebase 寫入驗收計畫
 
-1. 只建立 3～5 個專用測試身份，ID 統一以「測試」開頭（例如「測試甲」＋boy1）。
-2. 寫入位置與正式相同（`identities/`、`players/`），因為目前資料庫是空的、尚無正式玩家；
-   每個測試身份的 playerId 記錄在驗收報告。
-3. 驗收項目：建立 → 換瀏覽器找回 → 同組合再建立得到 409 → 讀取公開資料 → 在 Firebase 主控台確認只有預期的節點。
-4. 不做清空、不批次寫入、不改 Rules。
-5. 結束後由使用者決定：保留測試身份，或在 Firebase 主控台**只**刪除這幾個節點。
+完整步驟見 [ACCEPTANCE_v0.3.0.md](ACCEPTANCE_v0.3.0.md)（**尚未執行，等使用者確認**）。
+重點：只建立 4 組以「測試」開頭的身份；不清空、不批次寫入、不改 Rules；有問題可在 Cloudflare 一鍵回滾。

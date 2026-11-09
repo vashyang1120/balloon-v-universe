@@ -5,7 +5,7 @@
  */
 export const SERVICE_NAME = "balloon-v-universe-api";
 export const API_VERSION = "0.3.0";
-export const RELEASE = "universe-backend-v0.3.0-player-foundation-test-1";
+export const RELEASE = "universe-backend-v0.3.0-player-foundation-test-2";
 
 const DB_URL = /^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)*\.(firebaseio\.com|firebasedatabase\.app)$/;
 const PROJECT_ID = /^[a-z][a-z0-9-]{4,28}[a-z0-9]$/;

@@ -49,10 +49,11 @@ export function toPublicProfile(p) {
   };
 }
 
+/** @returns {{ value: string, changed: boolean }} */
 function validateDisplayId(raw) {
   const r = normalizeDisplayId(raw);
   if (!r.ok) throw new ApiError("VALIDATION_FAILED", { message: r.message, details: { errors: [{ field: "displayId", issue: r.code }] } });
-  return r.value;
+  return { value: r.value, changed: r.changed };
 }
 
 function integrity(internal) {
@@ -127,10 +128,11 @@ export function createPlayerService(deps) {
      * 建立玩家
      * @param {{displayId:string, baseAvatarKey:string, createRequestId:string}} input
      * @param {{gameId?:string, gameVersion?:string, sdkVersion?:string}|null} client
-     * @returns {Promise<{status:"created", replayed:boolean, player:object}>}
+     * @returns {Promise<{status:"created", replayed:boolean, displayIdChanged:boolean, player:object}>}
+     *   displayIdChanged：伺服器正規化後的 displayId 和玩家輸入的樣子不同（大廳應顯示回傳值）
      */
     async create(input, client) {
-      const displayId = validateDisplayId(input.displayId);
+      const { value: displayId, changed: displayIdChanged } = validateDisplayId(input.displayId);
       if (!isActiveBaseAvatar(input.baseAvatarKey)) {
         throw new ApiError("VALIDATION_FAILED", { message: "請選擇一個身份圖案", details: { errors: [{ field: "baseAvatarKey", issue: "AVATAR_NOT_AVAILABLE" }] } });
       }
@@ -146,7 +148,7 @@ export function createPlayerService(deps) {
           if (rec.createRequestId && rec.createRequestId === input.createRequestId) {
             // 同一個建立請求重送（重複點擊、逾時重試）：回傳同一位玩家，順便補齊 profile
             const profile = await ensureProfile({ ...rec, __repair: true }, identityKey);
-            return { status: "created", replayed: true, player: toPublicProfile(profile) };
+            return { status: "created", replayed: true, displayIdChanged, player: toPublicProfile(profile) };
           }
           throw new ApiError("IDENTITY_EXISTS", { details: { canResolve: true } });
         }
@@ -173,14 +175,14 @@ export function createPlayerService(deps) {
         }
         const profile = await ensureProfile(record, identityKey);
         log?.info("player created", { playerId: record.playerId, client: record.source.gameId });
-        return { status: "created", replayed: false, player: toPublicProfile(profile) };
+        return { status: "created", replayed: false, displayIdChanged, player: toPublicProfile(profile) };
       }
       throw new ApiError("CONFLICT", { internal: "identity claim kept conflicting" });
     },
 
     /** 用 ID＋身份圖案找回既有玩家（低信任：知道這組資訊就能找回） */
     async resolve(input) {
-      const displayId = validateDisplayId(input.displayId);
+      const { value: displayId, changed: displayIdChanged } = validateDisplayId(input.displayId);
       if (!isKnownBaseAvatar(input.baseAvatarKey)) {
         throw new ApiError("VALIDATION_FAILED", { message: "請選擇當初的身份圖案", details: { errors: [{ field: "baseAvatarKey", issue: "AVATAR_UNKNOWN" }] } });
       }
@@ -189,7 +191,7 @@ export function createPlayerService(deps) {
       if (!value) throw new ApiError("IDENTITY_NOT_FOUND");
       const rec = checkIdentityRecord(value, displayId, input.baseAvatarKey);
       const profile = await ensureProfile({ ...rec, __repair: true }, identityKey);
-      return { status: "found", player: toPublicProfile(profile) };
+      return { status: "found", displayIdChanged, player: toPublicProfile(profile) };
     },
 
     /** 讀取公開基本資料 */

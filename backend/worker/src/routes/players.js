@@ -42,7 +42,7 @@ export function playerRoutes() {
       auth: "public",
       summary: "用 ID＋身份圖案找回玩家",
       handler: async (ctx) => {
-        await enforceRateLimit(ctx, "player-lookup");
+        await enforceRateLimit(ctx, "lookup");
         const body = assertValid(await readJson(ctx.request, MAX_PLAYER_BODY), RESOLVE_SCHEMA);
         return ok(ctx, await service(ctx).resolve(body));
       },
@@ -53,7 +53,7 @@ export function playerRoutes() {
       auth: "public",
       summary: "建立玩家",
       handler: async (ctx) => {
-        await enforceRateLimit(ctx, "player-create");
+        await enforceRateLimit(ctx, "create");
         // 不接受 playerId、displayAvatarKey 等其他欄位（assertValid 會拒絕多餘欄位）
         const body = assertValid(await readJson(ctx.request, MAX_PLAYER_BODY), CREATE_SCHEMA);
         const result = await service(ctx).create(body, ctx.client);
@@ -66,7 +66,7 @@ export function playerRoutes() {
       auth: "public",
       summary: "讀取玩家公開基本資料",
       handler: async (ctx) => {
-        await enforceRateLimit(ctx, "player-lookup");
+        await enforceRateLimit(ctx, "lookup");
         return ok(ctx, await service(ctx).getPublic(ctx.params.playerId));
       },
     },

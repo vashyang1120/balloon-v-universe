@@ -22,6 +22,16 @@
     "head_sampling_rate": 1
   },
 
+  // 限流（Cloudflare Rate Limiting binding，v0.3.0-test-2 加入）
+  // 數字需與 src/middleware/rate-limit.js 的 RULES 一致；period 只能是 10 或 60（秒）。
+  // ⚠ Cloudflare 文件沒有說明 Workers Free 是否包含此功能，需在正式部署時確認：
+  //   若部署失敗並提到 ratelimits，刪除這個區塊即可，程式會自動退回記憶體計數。
+  "ratelimits": [
+    { "name": "RL_CREATE_IP",     "namespace_id": "1001", "simple": { "limit": 60,  "period": 60 } },
+    { "name": "RL_CREATE_GLOBAL", "namespace_id": "1002", "simple": { "limit": 300, "period": 60 } },
+    { "name": "RL_LOOKUP_IP",     "namespace_id": "1003", "simple": { "limit": 300, "period": 60 } }
+  ],
+
   // 公開設定（非私密）
   "vars": {
     "SERVICE_ENV": "production",

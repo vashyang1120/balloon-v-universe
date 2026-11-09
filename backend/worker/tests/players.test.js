@@ -93,11 +93,11 @@ test("中文、emoji ID 可使用；長度以「看得到的字數」計算", as
   const { call } = setup();
   assert.equal((await create(call, "氣球小V的好朋友", "dog2")).status, 201);
   assert.equal((await create(call, "🎈🎈", "dog3")).status, 201, "2 個 emoji = 2 個字");
-  assert.equal((await create(call, "王".repeat(16), "dog4")).status, 201);
-  const long = await create(call, "王".repeat(17), "dog4");
+  assert.equal((await create(call, "王".repeat(20), "dog4")).status, 201);
+  const long = await create(call, "王".repeat(21), "dog4");
   assert.equal(long.status, 400);
   assert.equal(long.body.error.details.errors[0].issue, "ID_TOO_LONG");
-  assert.equal((await create(call, "👍🏽".repeat(16), "fat1")).status, 201, "帶膚色 emoji 也算 1 個字");
+  assert.equal((await create(call, "👍🏽".repeat(20), "fat1")).status, 201, "帶膚色 emoji 也算 1 個字");
 });
 
 test("英文大小寫視為不同 ID", async () => {
@@ -108,10 +108,10 @@ test("英文大小寫視為不同 ID", async () => {
   assert.equal((await resolve(call, "AMY", "girl2")).status, 404);
 });
 
-test("空白、太短、保留字、控制字元、零寬字元、方向控制字元都被拒絕，訊息為中文", async () => {
+test("空白、保留字、控制字元、零寬字元、方向控制字元都被拒絕，訊息為中文", async () => {
   const { db, call } = setup();
   const cases = [
-    ["", "ID_EMPTY"], ["   ", "ID_EMPTY"], ["A", "ID_TOO_SHORT"], ["玩家", "ID_RESERVED"],
+    ["", "ID_EMPTY"], ["   ", "ID_EMPTY"], ["玩家", "ID_RESERVED"],
     ["小\u0000明", "ID_INVALID_CHAR"], ["小​明", "ID_INVALID_CHAR"], ["小‮明", "ID_INVALID_CHAR"],
     ["小\n明", null], ["́ab", "ID_INVALID_CHAR"], ["ab", "ID_INVALID_CHAR"],
   ];
@@ -332,11 +332,11 @@ async function a_raw(call) {
   return (await call("POST", "/v1/players/resolve", undefined, { "content-type": "text/plain" })).status;
 }
 
-test("限流：同一個 IP 一分鐘建立超過 30 次 → 429（記憶體備援層）", async () => {
+test("限流：同一個 IP 一分鐘建立超過 60 次 → 429（記憶體備援層）", async () => {
   const { call } = setup();
   const results = [];
-  for (let i = 0; i < 32; i++) results.push((await create(call, `限流${i}號`, "boy1", rid(), { ip: "203.0.113.9" })).status);
-  assert.equal(results.filter((s) => s === 201).length, 30);
+  for (let i = 0; i < 60; i++) results.push((await create(call, `限流${i}號`, "boy1", rid(), { ip: "203.0.113.9" })).status);
+  assert.equal(results.filter((s) => s === 201).length, 60);
   const last = await create(call, "限流X", "boy1", rid(), { ip: "203.0.113.9" });
   assert.equal(last.status, 429);
   assert.equal(last.headers.get("retry-after"), "60");
@@ -346,10 +346,10 @@ test("限流：同一個 IP 一分鐘建立超過 30 次 → 429（記憶體備�
 test("限流：有 Cloudflare binding 時使用 binding", async () => {
   const seen = [];
   const binding = { limit: async ({ key }) => { seen.push(key); return { success: seen.length <= 1 }; } };
-  const { call } = setup({ RL_PLAYER_LOOKUP: binding });
+  const { call } = setup({ RL_LOOKUP_IP: binding });
   assert.equal((await resolve(call, "不存在的人", "boy1")).status, 404);
   assert.equal((await resolve(call, "不存在的人", "boy1")).status, 429);
-  assert.ok(seen[0].startsWith("player-lookup:"));
+  assert.ok(seen[0].startsWith("lookup-ip:"));
 });
 
 test("玩家 API 不能取得管理資料、不提供修改或刪除玩家", async () => {
@@ -401,6 +401,6 @@ test("異常請求不會讓 Worker 崩潰（隨機內容）", async () => {
 
 test("輸入驗證在連線 Firebase 之前：Firebase 未設定時，錯誤輸入仍回 400", async () => {
   const a = app({ fetch: createFakeRtdb().fetch });
-  const res = await a.fetch(req("/v1/players", { method: "POST", headers: { origin: ORIGIN, "content-type": "application/json" }, body: JSON.stringify({ displayId: "A", baseAvatarKey: "boy1", createRequestId: rid() }) }), baseEnv());
+  const res = await a.fetch(req("/v1/players", { method: "POST", headers: { origin: ORIGIN, "content-type": "application/json" }, body: JSON.stringify({ displayId: "玩家", baseAvatarKey: "boy1", createRequestId: rid() }) }), baseEnv());
   assert.equal(res.status, 400);
 });

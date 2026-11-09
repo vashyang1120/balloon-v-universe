@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>玩家 API 驗收工具</title>
+  <!-- universe-backend-v0.3.0-player-foundation-test-2：v0.3.0 正式 Firebase 驗收專用，驗收完成後可刪除 -->
+  <style>
+    :root { --bg:#f6f3fb; --card:#fff; --ink:#2b2140; --muted:#6e6485; --line:#e3dcef; --brand:#7b4fd6;
+            --ok:#1e8a4c; --ok-bg:#e8f6ee; --bad:#b3261e; --bad-bg:#fdecea; --idle:#f1eef7; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink);
+      font:16px/1.6 system-ui,-apple-system,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; }
+    main { max-width:780px; margin:0 auto; padding:24px 16px 48px; }
+    h1 { font-size:1.4rem; margin:0 0 4px; }
+    .sub { color:var(--muted); margin:0 0 16px; font-size:.95rem; }
+    .warn { background:#fff4dc; color:#7a4d00; border-radius:10px; padding:10px 12px; margin-bottom:16px; font-size:.95rem; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:14px; }
+    .card h2 { font-size:1.05rem; margin:0 0 8px; }
+    label { display:block; font-size:.9rem; color:var(--muted); margin:8px 0 4px; }
+    input, select { font:inherit; width:100%; padding:10px; border:1px solid var(--line); border-radius:10px; min-height:44px; }
+    .row { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    button { font:inherit; border:0; border-radius:10px; padding:10px 14px; min-height:44px; cursor:pointer; background:var(--brand); color:#fff; }
+    button.secondary { background:#ece6f8; color:var(--ink); }
+    button:disabled { background:#d9d3e5; color:#8d859e; cursor:not-allowed; }
+    .result { border-radius:10px; padding:10px 12px; margin-top:10px; background:var(--idle); white-space:pre-wrap; overflow-wrap:anywhere; font-size:.92rem; }
+    .result.ok { background:var(--ok-bg); color:var(--ok); }
+    .result.bad { background:var(--bad-bg); color:var(--bad); }
+    #log { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.82rem; max-height:280px; overflow:auto; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>玩家 API 驗收工具</h1>
+  <p class="sub">v0.3.0 共用玩家身份系統的正式 Firebase 驗收用。只呼叫公開的玩家 API，不需要登入。</p>
+  <div class="warn">這個工具會在<b>正式資料庫</b>建立玩家。玩家 ID 必須以「測試」開頭，總數請控制在 3～5 組。驗收步驟見 docs/ACCEPTANCE_v0.3.0.md。</div>
+
+  <section class="card">
+    <h2>步驟 1：確認後端版本</h2>
+    <div class="row"><button id="btnVersion">檢查版本</button></div>
+    <div id="outVersion" class="result">尚未檢查</div>
+  </section>
+
+  <section class="card">
+    <h2>步驟 2：測試身份</h2>
+    <label for="inId">玩家 ID（必須以「測試」開頭）</label>
+    <input id="inId" value="測試甲" maxlength="40" autocomplete="off">
+    <label for="inAvatar">固定身份圖案</label>
+    <select id="inAvatar"><option value="boy1">boy1</option></select>
+    <div class="row">
+      <button id="btnCreate">建立</button>
+      <button id="btnResolve" class="secondary">找回</button>
+      <button id="btnCreateAgain" class="secondary">同組合再建立一次（應被拒絕）</button>
+      <button id="btnRace" class="secondary">兩個請求同時建立（只能成功一個）</button>
+    </div>
+    <div id="outPlayer" class="result">尚未操作</div>
+  </section>
+
+  <section class="card">
+    <h2>步驟 3：讀取公開資料</h2>
+    <label for="inPid">playerId（建立或找回後會自動帶入）</label>
+    <input id="inPid" placeholder="p_..." autocomplete="off">
+    <div class="row"><button id="btnGet" class="secondary">讀取</button></div>
+    <div id="outGet" class="result">尚未讀取</div>
+  </section>
+
+  <section class="card">
+    <h2>步驟 4：限流檢查（只讀，不寫入資料）</h2>
+    <p class="sub" style="margin:0">連續送出 320 次「讀取不存在的玩家」，預期大約第 301 次開始回 429。只會讀取資料庫，不會建立任何資料。做完要等 1 分鐘，額度才會恢復。</p>
+    <div class="row"><button id="btnLimit" class="secondary">開始限流檢查</button></div>
+    <div id="outLimit" class="result">尚未檢查</div>
+  </section>
+
+  <section class="card">
+    <h2>驗收紀錄</h2>
+    <div class="row">
+      <button id="btnCopy" class="secondary">複製全部紀錄</button>
+    </div>
+    <div id="log" class="result">（尚無紀錄）</div>
+  </section>
+</main>
+<script type="module">
+  const API = "https://balloon-v-universe-api.vashyang1120.workers.dev";
+  const $ = (id) => document.getElementById(id);
+  const lines = [];
+
+  function log(step, status, summary) {
+    const t = new Date().toLocaleString("zh-TW", { hour12: false });
+    lines.push(`[${t}] ${step}｜HTTP ${status}｜${summary}`);
+    $("log").textContent = lines.join("\n");
+  }
+  function show(id, ok, text) {
+    const el = $(id);
+    el.className = "result " + (ok ? "ok" : "bad");
+    el.textContent = text;
+  }
+  async function api(method, path, body) {
+    const init = { method, headers: { accept: "application/json" }, cache: "no-store", credentials: "omit", referrerPolicy: "no-referrer" };
+    if (body !== undefined) { init.headers["content-type"] = "application/json"; init.body = JSON.stringify(body); }
+    try {
+      const res = await fetch(API + path, init);
+      let json = null; try { json = await res.json(); } catch {}
+      return { status: res.status, json };
+    } catch { return { status: 0, json: null }; }
+  }
+  function input() {
+    const displayId = $("inId").value;
+    if (!displayId.trim().startsWith("測試")) {
+      show("outPlayer", false, "為了不影響正式玩家，驗收用的玩家 ID 必須以「測試」開頭。");
+      return null;
+    }
+    return { displayId, baseAvatarKey: $("inAvatar").value };
+  }
+  function describe(r) {
+    if (r.status === 0) return "無法連到後端";
+    if (r.json && r.json.ok) {
+      const d = r.json.data, p = d.player;
+      if (p) return `${d.status || "ok"}｜playerId=${p.playerId}｜displayId=${p.displayId}｜身份圖案=${p.baseAvatarKey}` +
+        (d.replayed ? "｜重送" : "") + (d.displayIdChanged ? "｜ID 已正規化" : "");
+      return JSON.stringify(d);
+    }
+    const e = r.json && r.json.error;
+    return e ? `${e.code}｜${e.message}` : "回應格式異常";
+  }
+  function remember(r) {
+    const p = r.json && r.json.ok && r.json.data && r.json.data.player;
+    if (p) $("inPid").value = p.playerId;
+  }
+
+  $("btnVersion").onclick = async () => {
+    const h = await api("GET", "/health");
+    const m = await api("GET", "/v1/meta");
+    const ok = h.status === 200 && h.json && h.json.version === "0.3.0" && m.status === 200;
+    const players = m.json && m.json.ok ? m.json.data.categories.find((c) => c.name === "players") : null;
+    const text = `後端版本：${h.json ? h.json.version : "?"}（預期 0.3.0）\nrelease：${m.json && m.json.ok ? m.json.data.release : "?"}\nplayers 分類：${players ? players.status : "?"}（預期 partial）`;
+    show("outVersion", ok, (ok ? "✅ " : "❌ ") + text);
+    log("檢查版本", h.status, text.replace(/\n/g, "；"));
+  };
+  $("btnCreate").onclick = async () => {
+    const b = input(); if (!b) return;
+    const r = await api("POST", "/v1/players", { ...b, createRequestId: crypto.randomUUID() });
+    show("outPlayer", r.status === 201, describe(r)); remember(r);
+    log(`建立 ${b.displayId}+${b.baseAvatarKey}`, r.status, describe(r));
+  };
+  $("btnResolve").onclick = async () => {
+    const b = input(); if (!b) return;
+    const r = await api("POST", "/v1/players/resolve", b);
+    show("outPlayer", r.status === 200, describe(r)); remember(r);
+    log(`找回 ${b.displayId}+${b.baseAvatarKey}`, r.status, describe(r));
+  };
+  $("btnCreateAgain").onclick = async () => {
+    const b = input(); if (!b) return;
+    const r = await api("POST", "/v1/players", { ...b, createRequestId: crypto.randomUUID() });
+    const ok = r.status === 409 && r.json && r.json.error.code === "IDENTITY_EXISTS";
+    show("outPlayer", ok, (ok ? "✅ 正確拒絕：" : "❌ 預期 409 IDENTITY_EXISTS：") + describe(r));
+    log(`重複建立 ${b.displayId}+${b.baseAvatarKey}`, r.status, describe(r));
+  };
+  $("btnRace").onclick = async () => {
+    const b = input(); if (!b) return;
+    const [r1, r2] = await Promise.all([
+      api("POST", "/v1/players", { ...b, createRequestId: crypto.randomUUID() }),
+      api("POST", "/v1/players", { ...b, createRequestId: crypto.randomUUID() }),
+    ]);
+    const codes = [r1.status, r2.status].sort();
+    const ok = (codes[0] === 201 && codes[1] === 409) || (codes[0] === 409 && codes[1] === 409);
+    const text = `請求 A：${describe(r1)}\n請求 B：${describe(r2)}\n` +
+      (codes[0] === 409 && codes[1] === 409 ? "（兩個都 409：這組身份先前已建立，請換一組新的測試 ID 再測）" : "");
+    show("outPlayer", ok, (ok ? "✅ 只成功一個或都被拒絕\n" : "❌ 預期 201＋409\n") + text);
+    remember(r1.status === 201 ? r1 : r2);
+    log(`同時建立 ${b.displayId}+${b.baseAvatarKey}`, codes.join("/"), text.replace(/\n/g, "；"));
+  };
+  $("btnGet").onclick = async () => {
+    const pid = $("inPid").value.trim();
+    const r = await api("GET", "/v1/players/" + encodeURIComponent(pid));
+    show("outGet", r.status === 200, describe(r));
+    log(`讀取 ${pid}`, r.status, describe(r));
+  };
+  $("btnLimit").onclick = async () => {
+    $("btnLimit").disabled = true;
+    const fake = "p_" + "z".repeat(20); // 格式正確但不存在：只會讀取，不會寫入
+    const counts = {}; let first429 = 0;
+    for (let i = 1; i <= 320; i++) {
+      const r = await api("GET", "/v1/players/" + fake);
+      counts[r.status] = (counts[r.status] || 0) + 1;
+      if (r.status === 429 && !first429) first429 = i;
+      if (i % 20 === 0) $("outLimit").textContent = `已送出 ${i}／320…`;
+    }
+    const ok = first429 > 0;
+    const text = `結果：${Object.entries(counts).map(([k, v]) => `HTTP ${k} × ${v}`).join("、")}\n第一次 429 出現在第 ${first429 || "（沒有出現）"} 次` +
+      "\n（Cloudflare 限流是近似值，前後差幾次屬正常。到 Cloudflare → Observability 搜尋 rate limited，layer 為 binding 代表官方限流已生效）";
+    show("outLimit", ok, (ok ? "✅ " : "❌ ") + text);
+    log("限流檢查", first429 ? 429 : "-", text.replace(/\n/g, "；"));
+    $("btnLimit").disabled = false;
+  };
+  $("btnCopy").onclick = async () => {
+    try { await navigator.clipboard.writeText(lines.join("\n")); $("btnCopy").textContent = "已複製"; }
+    catch { $("btnCopy").textContent = "請手動選取紀錄複製"; }
+    setTimeout(() => { $("btnCopy").textContent = "複製全部紀錄"; }, 1800);
+  };
+
+  (async () => {
+    const r = await api("GET", "/v1/avatars/base");
+    if (r.status === 200 && r.json && r.json.ok) {
+      $("inAvatar").innerHTML = "";
+      for (const a of r.json.data.avatars) {
+        const o = document.createElement("option");
+        o.value = a.key; o.textContent = `${a.label}（${a.key}）`;
+        $("inAvatar").appendChild(o);
+      }
+    }
+  })();
+</script>
+</body>
+</html>
