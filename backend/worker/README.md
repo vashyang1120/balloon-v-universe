@@ -1,6 +1,6 @@
 # 氣球小V遊戲宇宙 後端 API（Cloudflare Worker）
 
-版本：**universe-backend-v0.2.0-admin-auth-test-1**（API 0.2.0）
+版本：**universe-backend-v0.3.0-player-foundation-test-2**（API 0.3.0）
 Worker 名稱：`balloon-v-universe-api`
 公開網址：https://balloon-v-universe-api.vashyang1120.workers.dev
 
@@ -9,6 +9,10 @@ Firebase 伺服器端連線模組、管理員驗證與 Firebase 只讀連線診�
 
 v0.2.0 新增：診斷 API 回報「卡在哪一步＋安全原因代碼＋中文排除建議」，以及配套的管理員測試頁
 （Repository 根目錄的 `admin-test/`，見該資料夾 README）。
+
+v0.3.0 新增：共用玩家身份系統——`POST /v1/players`（建立）、`POST /v1/players/resolve`（找回）、
+`GET /v1/players/:playerId`（公開資料）、`GET /v1/avatars/base`（固定身份圖案清單）。
+完整規格、資料結構、並發設計與大廳相容性見 [docs/PLAYERS.md](docs/PLAYERS.md)。
 
 > 這個資料夾和大廳網站完全獨立：大廳是 GitHub Pages 靜態網頁，這裡是 Cloudflare Worker。
 > 大廳的任何檔案都沒有引用這裡的程式。
@@ -43,6 +47,7 @@ backend/worker/
     config.js                讀取 vars 與 Secrets（只回報「有沒有設定」，不回傳內容）
     games.js                 遊戲代碼登記表（新增遊戲只要加一筆）
     routes/
+      players.js             玩家 API 與身份圖案清單
       health.js              GET /health（只代表 Worker 本身）
       meta.js                GET /v1/meta（API 版本、遊戲登記表、功能分類狀態）
       admin.js               GET /v1/admin/whoami、GET /v1/admin/diagnostics/firebase
@@ -50,10 +55,16 @@ backend/worker/
                              avatars、titles、shop、admin、exports），回 501
       game-results.js        遊戲結果「信封格式」驗證（含唯一 submissionId）
     middleware/
+      rate-limit.js          限流（Cloudflare binding 或記憶體備援）
       cors.js                只信任名單內的網站，絕不回 *
       admin-auth.js          Firebase ID Token 驗證＋Google 登入＋伺服器端 UID 名單
       client-info.js         解析 X-BV-Client（遊戲版本識別）
       body.js                JSON 內容大小、格式檢查
+    players/
+      id-rules.js            玩家 ID 正規化與驗證（NFKC、字數、禁用字元）
+      base-avatars.js        固定身份圖案目錄（17 款，可擴充）
+      identity-key.js        identityKey（SHA-256 雜湊索引鍵）
+      player-service.js      建立／找回／讀取、ETag 原子判定、profile 自動修復
     services/
       google-oauth.js        服務帳戶 → Google Access Token（RS256 簽章、快取、超時）
       firebase-rest.js       Realtime Database REST Client（超時、重試、ETag 條件寫入）
@@ -70,6 +81,9 @@ backend/worker/
     check-syntax.mjs         node --check 全部檔案
     scan-secrets.mjs         掃描整個 Repository 有沒有私鑰或 Token
   docs/ARCHITECTURE.md       API 規格、資料一致性、安全與免費方案設計
+  docs/PLAYERS.md            共用玩家身份系統規格
+  docs/ACCEPTANCE_v0.3.0.md  v0.3.0 真實 Firebase 驗收計畫
+  acceptance/                驗收工具頁（只呼叫公開玩家 API；驗收後可刪除）
   wrangler.jsonc             Worker 設定（只放公開設定）
   .dev.vars.example          本機私密設定範例（不含真實值）
 ```
@@ -140,9 +154,16 @@ Worker 使用服務帳戶連線，不受這份規則限制；瀏覽器則完全�
 
 ---
 
-## 5. Cloudflare GitHub 自動部署（尚未連接）
+## 4.6 Cloudflare Rate Limiting binding（test-2 已加入 wrangler.jsonc）
+玩家 API 的限流設定在 `wrangler.jsonc` 的 `ratelimits`（`RL_CREATE_IP`、`RL_CREATE_GLOBAL`、`RL_LOOKUP_IP`），
+數字與 `src/middleware/rate-limit.js` 的 `RULES` 一致（測試會檢查）。
+- Cloudflare 文件沒有說明 Workers Free 是否包含此功能；若正式部署失敗並提到 ratelimits，刪除該區塊即可，
+  程式會自動退回「單一 Worker 實例記憶體計數」。
+- binding 是近似限流、各機房分開計數，不是無法繞過的安全機制。詳見 docs/PLAYERS.md 第 9 節。
 
-目前 **沒有** 連接自動部署；Cloudflare 上的 Worker 仍是 Hello World。等使用者確認後再連接：
+## 5. Cloudflare GitHub 自動部署
+
+（已於 v0.1.0-deploy-test-1 連接並驗證。以下為設定紀錄。）
 
 Cloudflare 後台 → `balloon-v-universe-api` →「設定」→「建置（Builds）」→「連接」：
 

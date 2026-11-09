@@ -8,11 +8,11 @@
 import { ApiError } from "../utils/errors.js";
 
 export const CATEGORIES = Object.freeze([
-  { name: "players",      auth: "player", status: "reserved", note: "建立身份、找回、切換展示頭像" },
+  { name: "players",      auth: "player", status: "partial",  note: "已開放：建立、找回、公開資料；其餘（切換展示頭像等）預留" },
   { name: "wallet",       auth: "player", status: "reserved", note: "查詢 V幣、交易紀錄、每日獎勵" },
   { name: "game-results", auth: "player", status: "reserved", note: "提交遊戲結果（需唯一 submissionId）" },
   { name: "leaderboards", auth: "public", status: "reserved", note: "讀取排行榜（寫入只由伺服器）" },
-  { name: "avatars",      auth: "public", status: "reserved", note: "頭像目錄；解鎖只由伺服器" },
+  { name: "avatars",      auth: "public", status: "partial",  note: "已開放：固定身份圖案清單；頭像收藏與解鎖預留" },
   { name: "titles",       auth: "public", status: "reserved", note: "稱號目錄；發放只由伺服器" },
   { name: "shop",         auth: "player", status: "reserved", note: "V幣消費（需加強身份驗證後才開放）" },
   { name: "admin",        auth: "admin",  status: "reserved", note: "管理後台" },
