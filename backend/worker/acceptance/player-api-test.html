@@ -68,8 +68,16 @@
 
   <section class="card">
     <h2>步驟 4：限流檢查（只讀，不寫入資料）</h2>
-    <p class="sub" style="margin:0">連續送出 320 次「讀取不存在的玩家」，預期大約第 301 次開始回 429。只會讀取資料庫，不會建立任何資料。做完要等 1 分鐘，額度才會恢復。</p>
-    <div class="row"><button id="btnLimit" class="secondary">開始限流檢查</button></div>
+    <p class="sub" style="margin:0">
+      目標：確認「找回＋讀取」的限流（每個 IP 每分鐘約 300 次）在正式環境有作用。<br>
+      做法：同時保持 8 個請求、快速送出「讀取一個格式正確但不存在的玩家」（只讀資料庫，不會建立任何資料），
+      最多 400 次；出現第一次 429 後再送 20 次就自動停止。全程應在 60 秒內完成，否則結果不能判斷。<br>
+      注意：做完後這台裝置的網路約 1 分鐘內無法找回玩家（同一個 IP 的額度用完了），屬正常現象。
+    </p>
+    <div class="row">
+      <button id="btnLimit" class="secondary">開始限流檢查</button>
+      <button id="btnLimitStop" class="secondary" disabled>停止</button>
+    </div>
     <div id="outLimit" class="result">尚未檢查</div>
   </section>
 
@@ -177,22 +185,60 @@
     show("outGet", r.status === 200, describe(r));
     log(`讀取 ${pid}`, r.status, describe(r));
   };
+  // ── 步驟 4：限流檢查（test-3 改版）────────────────────────
+  // 舊版一次只送一個、送完才送下一個，又沒有計時：只要每次超過約 0.19 秒，
+  // 320 次就會跨過 60 秒的計數週期，永遠不會出現 429。
+  // 新版：同時 8 個請求、記錄耗時與速率、最多 400 次、出現 429 後再 20 次停止、可手動停止、不自動重試。
+  const LIMIT_TEST = { max: 400, concurrency: 8, afterFirst429: 20, windowSec: 60 };
+  let limitStop = false;
+  $("btnLimitStop").onclick = () => { limitStop = true; $("btnLimitStop").disabled = true; };
   $("btnLimit").onclick = async () => {
-    $("btnLimit").disabled = true;
-    const fake = "p_" + "z".repeat(20); // 格式正確但不存在：只會讀取，不會寫入
-    const counts = {}; let first429 = 0;
-    for (let i = 1; i <= 320; i++) {
-      const r = await api("GET", "/v1/players/" + fake);
-      counts[r.status] = (counts[r.status] || 0) + 1;
-      if (r.status === 429 && !first429) first429 = i;
-      if (i % 20 === 0) $("outLimit").textContent = `已送出 ${i}／320…`;
+    $("btnLimit").disabled = true; $("btnLimitStop").disabled = false; limitStop = false;
+    const fake = "p_" + "z".repeat(20); // 格式正確但不存在：會經過限流、只讀資料庫，不會寫入
+    const counts = {}; const latencies = [];
+    let sent = 0, done = 0, first429 = 0, stopReason = "";
+    const started = performance.now();
+    const shouldStop = () => {
+      if (limitStop) { stopReason = "手動停止"; return true; }
+      if (first429 && sent >= first429 + LIMIT_TEST.afterFirst429) { stopReason = "已出現 429"; return true; }
+      if (sent >= LIMIT_TEST.max) { stopReason = `已達上限 ${LIMIT_TEST.max} 次`; return true; }
+      return false;
+    };
+    const worker = async () => {
+      while (!shouldStop()) {
+        const n = ++sent;
+        const t0 = performance.now();
+        const r = await api("GET", "/v1/players/" + fake); // 失敗不重試
+        latencies.push(performance.now() - t0);
+        counts[r.status] = (counts[r.status] || 0) + 1;
+        if (r.status === 429 && (!first429 || n < first429)) first429 = n;
+        done++;
+        if (done % 20 === 0) $("outLimit").textContent = `已完成 ${done} 次，耗時 ${((performance.now() - started) / 1000).toFixed(1)} 秒…`;
+      }
+    };
+    await Promise.all(Array.from({ length: LIMIT_TEST.concurrency }, worker));
+    const secs = (performance.now() - started) / 1000;
+    const sorted = latencies.slice().sort((x, y) => x - y);
+    const p50 = sorted.length ? Math.round(sorted[Math.floor(sorted.length / 2)]) : 0;
+    const statusText = Object.keys(counts).sort().map((k) => `HTTP ${k === "0" ? "0（連線失敗）" : k} × ${counts[k]}`).join("、");
+    let verdict, ok;
+    if (first429) {
+      ok = true;
+      verdict = `✅ 限流有作用：第一次 429 出現在第 ${first429} 次（Cloudflare 是近似限流，比 300 早或晚一些都正常）`;
+    } else if (secs > LIMIT_TEST.windowSec - 5) {
+      ok = false;
+      verdict = `⚠ 無法判斷：測試花了 ${secs.toFixed(1)} 秒，超過 60 秒計數週期。請換較快的網路（例如 Wi-Fi）再試一次`;
+    } else if (done >= 300) {
+      ok = false;
+      verdict = `❌ ${secs.toFixed(1)} 秒內送了 ${done} 次仍沒有 429：請到 Cloudflare → Observability 查看這些請求記錄的 rl 欄位（見文件）`;
+    } else {
+      ok = false;
+      verdict = `⚠ 只完成 ${done} 次就停止（${stopReason}），不足以判斷`;
     }
-    const ok = first429 > 0;
-    const text = `結果：${Object.entries(counts).map(([k, v]) => `HTTP ${k} × ${v}`).join("、")}\n第一次 429 出現在第 ${first429 || "（沒有出現）"} 次` +
-      "\n（Cloudflare 限流是近似值，前後差幾次屬正常。到 Cloudflare → Observability 搜尋 rate limited，layer 為 binding 代表官方限流已生效）";
-    show("outLimit", ok, (ok ? "✅ " : "❌ ") + text);
+    const text = `${verdict}\n結果：${statusText}\n共完成 ${done} 次、耗時 ${secs.toFixed(1)} 秒、平均每秒 ${(done / Math.max(secs, 0.001)).toFixed(1)} 次、單次回應中位數 ${p50} 毫秒\n停止原因：${stopReason}`;
+    show("outLimit", ok, text);
     log("限流檢查", first429 ? 429 : "-", text.replace(/\n/g, "；"));
-    $("btnLimit").disabled = false;
+    $("btnLimit").disabled = false; $("btnLimitStop").disabled = true;
   };
   $("btnCopy").onclick = async () => {
     try { await navigator.clipboard.writeText(lines.join("\n")); $("btnCopy").textContent = "已複製"; }

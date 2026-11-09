@@ -25,6 +25,7 @@ import { metaRoute } from "./routes/meta.js";
 import { adminRoutes } from "./routes/admin.js";
 import { reservedRoutes } from "./routes/reserved.js";
 import { playerRoutes } from "./routes/players.js";
+import { rateLimitSummary } from "./middleware/rate-limit.js";
 
 // 順序重要：明確的路由在前，預留分類的萬用路由（/v1/<分類>/*）在最後
 const ROUTES = compile([healthRoute(), metaRoute(), ...adminRoutes(), ...playerRoutes(), ...reservedRoutes()]);
@@ -102,6 +103,7 @@ export function createApp(deps = {}) {
         status: response.status,
         ms: Date.now() - started,
         client: ctx.client ? `${ctx.client.gameId}/${ctx.client.gameVersion}` : undefined,
+        rl: rateLimitSummary(ctx), // 限流用了哪一層（只有玩家 API 會有）
       });
       return response;
     },

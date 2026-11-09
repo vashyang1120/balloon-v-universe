@@ -83,6 +83,7 @@ backend/worker/
   docs/ARCHITECTURE.md       API 規格、資料一致性、安全與免費方案設計
   docs/PLAYERS.md            共用玩家身份系統規格
   docs/ACCEPTANCE_v0.3.0.md  v0.3.0 真實 Firebase 驗收計畫
+  docs/DIAGNOSIS_v0.3.0-test-3.md  正式環境限流異常診斷與驗證方法
   acceptance/                驗收工具頁（只呼叫公開玩家 API；驗收後可刪除）
   wrangler.jsonc             Worker 設定（只放公開設定）
   .dev.vars.example          本機私密設定範例（不含真實值）

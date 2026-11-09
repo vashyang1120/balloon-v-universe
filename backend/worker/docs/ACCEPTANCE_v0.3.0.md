@@ -76,8 +76,11 @@ Firebase 主控台 → Realtime Database →「資料」：
 Firebase 主控台 → Realtime Database →「規則」：仍是 `.read: false`、`.write: false`。
 
 ## 14. 限流檢查與停止／回滾
-- 工具「步驟 4：限流檢查」（只讀）：大約第 301 次開始回 429。之後到 Cloudflare → Observability 搜尋 `rate limited`：
-  `layer: "binding"` 代表官方限流已生效；`layer: "memory"` 代表退回記憶體計數。
+- 工具「步驟 4：限流檢查」（只讀；test-3 改版：同時 8 個請求、記錄耗時、最多 400 次、出現 429 後再 20 次自動停止）。
+  預期大約第 300 次前後開始出現 429（近似值，早一些或晚一些都正常）。全程必須在 60 秒內完成，否則工具會顯示「無法判斷」。
+- 到 Cloudflare → Observability 查看這些請求的 `rl` 欄位：`lookup:binding` 代表官方限流有被呼叫；
+  `lookup:memory(missing)`／`lookup:memory(error)` 代表退回記憶體計數（再搜尋 `rate limit fallback` 看原因）。
+  搜尋 `rate limited`：`layer: "binding"` 代表由官方限流擋下。詳見 [DIAGNOSIS_v0.3.0-test-3.md](DIAGNOSIS_v0.3.0-test-3.md)。
 - **立即停止**的情況：出現 `INTEGRITY_ERROR`、同一組身份得到兩個不同 playerId、版本不是 0.3.0、出現預期外的資料庫節點。
 - **回滾部署**：Cloudflare → Deployments → 選上一個版本 →「Rollback」（立即生效，不需改 GitHub）；
   之後再於 GitHub 對 PR #4 按「Revert」建立還原 PR。回滾不會刪除已寫入的測試資料。

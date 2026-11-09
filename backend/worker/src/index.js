@@ -1,6 +1,6 @@
 /**
  * 氣球小V遊戲宇宙 後端 API — Cloudflare Worker 進入點
- * 版本：universe-backend-v0.3.0-player-foundation-test-2
+ * 版本：universe-backend-v0.3.0-rate-limit-diagnostic-test-3
  *
  * 所有邏輯在 app.js；這裡只建立一份 app（同一個 isolate 共用 Token 與公開金鑰快取）。
  */

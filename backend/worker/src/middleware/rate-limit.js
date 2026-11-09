@@ -26,6 +26,14 @@
  *      只能擋住同一實例上的連續濫用，屬於基本防護。
  *
  * 數字都在下方 RULES，可依實際使用情況調整（只能選 10 或 60 秒的週期，這是 Cloudflare 的限制）。
+ *
+ * ── 可觀測性（v0.3.0-test-3 加入）─────────────────────
+ *   每個請求的既有「request」記錄會多一個 rl 欄位，例如：
+ *     rl: "lookup:binding"            官方 binding 正常計數
+ *     rl: "lookup:memory(missing)"    沒有 binding（設定未部署或名稱不符）→ 備援
+ *     rl: "lookup:memory(error)"      binding 呼叫失敗 → 備援
+ *   另外每個 Worker 實例對每個 binding 的「缺少」或「失敗」只會警告一次（不洗版），
+ *   只記錄錯誤類型名稱，不記錄任何內容。不會多產生每個請求的額外記錄。
  */
 import { ApiError } from "../utils/errors.js";
 
@@ -41,6 +49,7 @@ export const RULES = Object.freeze({
 
 const MAX_TRACKED = 5000;
 const memory = new Map(); // key → { count, resetAt }
+const warned = new Set(); // 每個 Worker 實例：已經警告過的「binding:原因」
 
 function clientIp(request) {
   return (request.headers.get("cf-connecting-ip") || "unknown").slice(0, 64);
@@ -60,6 +69,13 @@ function memoryHit(key, rule, nowMs) {
   return e.count <= rule.limit;
 }
 
+function warnOnce(ctx, rule, reason, errorName) {
+  const id = `${rule.binding}:${reason}`;
+  if (warned.has(id)) return;
+  warned.add(id);
+  ctx.logger?.warn("rate limit fallback", { binding: rule.binding, reason, error: errorName });
+}
+
 async function check(ctx, rule, nowMs) {
   const key = rule.scope === "global" ? `${rule.id}:all` : `${rule.id}:${clientIp(ctx.request)}`;
   const binding = ctx.env && ctx.env[rule.binding];
@@ -67,11 +83,14 @@ async function check(ctx, rule, nowMs) {
     try {
       const r = await binding.limit({ key });
       return { allowed: r == null || r.success !== false, layer: "binding" };
-    } catch {
-      // binding 暫時故障：退回記憶體計數，不讓整個 API 掛掉
+    } catch (e) {
+      // binding 暫時故障：退回記憶體計數，不讓整個 API 掛掉；只記錄錯誤類型名稱
+      warnOnce(ctx, rule, "error", e && typeof e.name === "string" ? e.name.slice(0, 40) : "Error");
+      return { allowed: memoryHit(key, rule, nowMs), layer: "memory(error)" };
     }
   }
-  return { allowed: memoryHit(key, rule, nowMs), layer: "memory" };
+  warnOnce(ctx, rule, "missing");
+  return { allowed: memoryHit(key, rule, nowMs), layer: "memory(missing)" };
 }
 
 /**
@@ -83,6 +102,7 @@ export async function enforceRateLimit(ctx, action, nowMs = Date.now()) {
   const rules = RULES[action];
   if (!rules) throw new ApiError("INTERNAL", { internal: "unknown rate limit action" });
   const layers = [];
+  ctx.rateLimit = { action, layers };
   for (const rule of rules) {
     const { allowed, layer } = await check(ctx, rule, nowMs);
     layers.push(layer);
@@ -94,7 +114,16 @@ export async function enforceRateLimit(ctx, action, nowMs = Date.now()) {
   return layers;
 }
 
-/** 測試用：清空記憶體計數 */
+/** 給 request 記錄用的簡短摘要，例如 "lookup:binding" 或 "create:binding,memory(missing)" */
+export function rateLimitSummary(ctx) {
+  const r = ctx && ctx.rateLimit;
+  if (!r || !r.layers.length) return undefined;
+  const uniq = [...new Set(r.layers)];
+  return `${r.action}:${uniq.join(",")}`;
+}
+
+/** 測試用：清空記憶體計數與「已警告」紀錄 */
 export function _resetMemoryLimiter() {
   memory.clear();
+  warned.clear();
 }
