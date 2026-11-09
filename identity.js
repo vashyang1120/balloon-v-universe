@@ -1,20 +1,15 @@
 /* ==========================================================
-   氣球小V遊戲宇宙 — 玩家身份工具（v0.3.0 新增）
-   balloon-v-universe-v0.3.0-unified-player-lobby-test-1
+   氣球小V遊戲宇宙 — 玩家身份工具
+   v0.3.0 新增；v0.3.4 改為遊戲宇宙共用玩家系統
 
-   ⚠ 本檔的 normalizePlayerId / encodeFirebaseKeyPart / makePlayerKey
-     逐字取自節奏遊戲、方塊遊戲、問答遊戲（三款完全相同的實作），
-     不可自行修改，否則大廳產生的 playerKey 會和遊戲不一致。
+   身份定義（v0.3.4 起）：
+     playerId         = 伺服器產生的不可變內部 ID（例如 p_k3x7…），身份歸屬的唯一依據
+     displayId        = 玩家看得到的 ID（伺服器正規化後的結果，例如「測試Ａ」→「測試A」）
+     baseAvatarKey    = 固定身份圖案（建立後不可改；33 款之一）
+     displayAvatarKey = 展示頭像（目前等於 baseAvatarKey；解鎖收藏尚未接入）
 
-     來源：
-       vparty-rhythm-game/index.html  normalizePlayerId / makePlayerKey / encodeFirebaseKeyPart
-       vparty-tetris/index.html       同上
-       vparty-quiz-game/main.js       同上
-
-   身份定義：
-     playerKey      = encodeFirebaseKeyPart(ID) + "__" + baseAvatarKey
-     baseAvatarKey  = 固定身份圖案（建立後不可改，只能是 17 個內建頭像之一）
-     displayAvatarKey = 可更換的展示頭像（內建頭像，或已解鎖的特殊頭像）
+   ⚠ 舊系統的 playerKey（encodeFirebaseKeyPart(ID) + "__" + baseAvatarKey）已不使用：
+     新身份一律由伺服器以 ID＋圖案找回 playerId，大廳不自行組合身份鍵。
    ========================================================== */
 
 (function () {
@@ -22,75 +17,52 @@
 
   var P = window.MAP_CONFIG.player;
 
-  /* ---------- 以下三個函式與遊戲逐字相同 ---------- */
-  function normalizePlayerId(id) {
-    return (id || '').trim() || '玩家';
-  }
-
-  function encodeFirebaseKeyPart(s) {
-    return encodeURIComponent(normalizePlayerId(s))
-      .replace(/\./g, '%2E')
-      .replace(/#/g, '%23')
-      .replace(/\$/g, '%24')
-      .replace(/\[/g, '%5B')
-      .replace(/\]/g, '%5D');
-  }
-
-  function makePlayerKey(id, baseAvatarKey) {
-    return encodeFirebaseKeyPart(id) + '__' + (baseAvatarKey || 'boy1');
-  }
-  /* ---------- 以上三個函式與遊戲逐字相同 ---------- */
-
-  var builtin = P.builtinAvatars.map(function (a) { return { key: a[0], label: a[1] }; });
+  var builtin = P.builtinAvatars.map(function (a, i) { return { key: a[0], label: a[1], full: a[2] === "full", order: i + 1 }; });
   var builtinByKey = {};
   builtin.forEach(function (a) { builtinByKey[a.key] = a; });
   var unlockableByKey = {};
   P.unlockableAvatars.forEach(function (a) { unlockableByKey[a[0]] = { key: a[0], label: a[1] }; });
 
-  var remoteCatalog = {};   // Firebase avatarCatalog（只讀，由 player-store 載入）
+  /* 後端 GET /v1/avatars/base 回傳的可選清單（null = 還沒讀到） */
+  var serverActive = null;
 
   function isBuiltinAvatar(key) { return !!builtinByKey[key]; }
 
-  /* 與遊戲 resolveAvatarSrc 相同規則：相對路徑一律指向節奏遊戲的頭像資料夾 */
-  function resolveAvatarSrc(src) {
-    if (!src) return "";
-    var s = String(src);
-    if (/^https?:\/\//.test(s)) return s;
-    var base = P.avatarBaseUrl.replace(/assets\/avatars\/$/, "");
-    if (s.indexOf("../assets/avatars/") === 0) return base + s.slice(3);
-    if (s.indexOf("./assets/avatars/") === 0) return base + s.slice(2);
-    if (s.indexOf("assets/avatars/") === 0) return base + s;
-    return s;
+  /* 選單可以顯示的身份圖案：
+     - 讀到後端清單後：大廳有圖片 ∩ 後端已開放（兩邊都有才顯示，避免「選得到但建立失敗」）
+     - 還沒讀到時：只顯示所有後端版本都接受的原有 17 款 */
+  function selectableAvatars() {
+    if (serverActive) return builtin.filter(function (a) { return serverActive[a.key]; });
+    return builtin.slice(0, P.safeDefaultAvatarCount || 17);
+  }
+  function setServerActiveKeys(keys) {
+    var map = {};
+    (keys || []).forEach(function (k) { map[k] = true; });
+    serverActive = map;
   }
 
-  /* 與遊戲 getAvatarByKey 相同的查找順序：內建 → 固定解鎖 → avatarCatalog → 玩家解鎖資料 */
-  function avatarSrc(key, unlockedAvatars) {
+  /* 身份圖案一律由遊戲宇宙提供；只有展示用可解鎖頭像仍讀節奏遊戲的舊位置 */
+  function avatarSrc(key) {
     if (!key) return "";
-    if (builtinByKey[key] || unlockableByKey[key]) return P.avatarBaseUrl + key + ".png";
-    var cat = remoteCatalog[key];
-    if (cat && cat.file) return resolveAvatarSrc(cat.file);
-    var u = unlockedAvatars && unlockedAvatars[key];
-    if (u && u.file) return resolveAvatarSrc(u.file);
+    if (builtinByKey[key]) return P.avatarBaseUrl + key + ".png";
+    if (unlockableByKey[key]) return P.legacyDisplayAvatarBaseUrl + key + ".png";
     return "";
   }
+
+  /* 新款透明全身圖：顯示時完整放進圓框，不做臉部放大 */
+  function isFullFigure(key) { return !!(builtinByKey[key] && builtinByKey[key].full); }
 
   function avatarLabel(key) {
     if (builtinByKey[key]) return builtinByKey[key].label;
     if (unlockableByKey[key]) return unlockableByKey[key].label;
-    var cat = remoteCatalog[key];
-    if (cat && (cat.name || cat.label)) return String(cat.name || cat.label);
     return key || "";
   }
 
-  /* 與遊戲 isDisplayAvatarAllowed 相同：內建永遠允許；其他必須 unlockedAvatars[key].unlocked === true */
-  function isDisplayAvatarAllowed(key, unlockedAvatars) {
-    if (!key) return false;
-    if (isBuiltinAvatar(key)) return true;
-    var u = unlockedAvatars && unlockedAvatars[key];
-    return !!(u && u.unlocked);
-  }
+  /* 展示頭像：v0.3.4 只允許身份圖案本身（解鎖收藏尚未接入） */
+  function isDisplayAvatarAllowed(key) { return isBuiltinAvatar(key); }
 
-  /* 大廳輸入檢查（只做大廳端限制，不改變 ID 本身的編碼方式） */
+  /* 大廳輸入檢查（與後端規則一致：去頭尾空白後 1～20 個字、不可為「玩家」）。
+     最後以伺服器的檢查為準，伺服器的中文錯誤訊息會直接顯示給玩家。 */
   function validateNewId(raw) {
     var id = (raw || "").trim();
     if (!id) return { ok: false, msg: "請輸入玩家 ID" };
@@ -100,16 +72,14 @@
   }
 
   window.PlayerIdentity = {
-    normalizePlayerId: normalizePlayerId,
-    encodeFirebaseKeyPart: encodeFirebaseKeyPart,
-    makePlayerKey: makePlayerKey,
     builtinAvatars: builtin,
+    selectableAvatars: selectableAvatars,
+    setServerActiveKeys: setServerActiveKeys,
     isBuiltinAvatar: isBuiltinAvatar,
+    isFullFigure: isFullFigure,
     avatarSrc: avatarSrc,
     avatarLabel: avatarLabel,
-    resolveAvatarSrc: resolveAvatarSrc,
     isDisplayAvatarAllowed: isDisplayAvatarAllowed,
-    validateNewId: validateNewId,
-    setRemoteCatalog: function (cat) { remoteCatalog = cat || {}; }
+    validateNewId: validateNewId
   };
 })();

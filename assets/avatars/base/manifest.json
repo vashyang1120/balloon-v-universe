@@ -1,0 +1,979 @@
+{
+  "catalogVersion": 2,
+  "count": 33,
+  "note": "遊戲宇宙固定身份圖案（baseAvatarKey）圖片清單。圖片由 balloon-v-universe 統一提供。",
+  "totals": {
+    "original17Bytes": 722863,
+    "new16SourceBytes": 22480730,
+    "new16OptimizedBytes": 1819387
+  },
+  "avatars": [
+    {
+      "order": 1,
+      "key": "boy1",
+      "label": "男生1",
+      "file": "boy1.png",
+      "group": "original-17",
+      "width": 501,
+      "height": 501,
+      "mode": "RGB",
+      "transparent": false,
+      "bytes": 37184,
+      "source": {
+        "repo": "vashyang1120/vparty-rhythm-game",
+        "path": "assets/avatars/boy1.png",
+        "commit": "9caa7dc",
+        "sha256": "484a0078665f7d88554bee8c048e512b2a7468dfee3e9fe73ec07c21a2261328",
+        "bytes": 37184,
+        "processing": "原檔逐位元組複製，未修改"
+      },
+      "format": "JPEG",
+      "formatNote": "原檔內容是 JPEG（副檔名沿用 .png），為保持與原檔逐位元組相同，本版不轉檔；瀏覽器可正常顯示"
+    },
+    {
+      "order": 2,
+      "key": "girl1",
+      "label": "女生1",
+      "file": "girl1.png",
+      "group": "original-17",
+      "width": 501,
+      "height": 501,
+      "mode": "RGB",
+      "transparent": false,
+      "bytes": 47892,
+      "source": {
+        "repo": "vashyang1120/vparty-rhythm-game",
+        "path": "assets/avatars/girl1.png",
+        "commit": "9caa7dc",
+        "sha256": "e4f7b6bdd975f5275e9593f2a3cc95f649194de8609fe02fee08383a49ea4536",
+        "bytes": 47892,
+        "processing": "原檔逐位元組複製，未修改"
+      },
+      "format": "JPEG",
+      "formatNote": "原檔內容是 JPEG（副檔名沿用 .png），為保持與原檔逐位元組相同，本版不轉檔；瀏覽器可正常顯示"
+    },
+    {
+      "order": 3,
+      "key": "boy2",
+      "label": "男生2",
+      "file": "boy2.png",
+      "group": "original-17",
+      "width": 501,
+      "height": 501,
+      "mode": "RGB",
+      "transparent": false,
+      "bytes": 33102,
+      "source": {
+        "repo": "vashyang1120/vparty-rhythm-game",
+        "path": "assets/avatars/boy2.png",
+        "commit": "9caa7dc",
+        "sha256": "303fe9eb00a0c3ee71c551eb5f54dfbee00e5b963babf489d9b102b851a01ecb",
+        "bytes": 33102,
+        "processing": "原檔逐位元組複製，未修改"
+      },
+      "format": "JPEG",
+      "formatNote": "原檔內容是 JPEG（副檔名沿用 .png），為保持與原檔逐位元組相同，本版不轉檔；瀏覽器可正常顯示"
+    },
+    {
+      "order": 4,
+      "key": "girl2",
+      "label": "女生2",
+      "file": "girl2.png",
+      "group": "original-17",
+      "width": 501,
+      "height": 501,
+      "mode": "RGB",
+      "transparent": false,
+      "bytes": 48557,
+      "source": {
+        "repo": "vashyang1120/vparty-rhythm-game",
+        "path": "assets/avatars/girl2.png",
+        "commit": "9caa7dc",
+        "sha256": "1935967142384951791b9f8dcb959ed755332fc0694d478f751e182871a2ba69",
+        "bytes": 48557,
+        "processing": "原檔逐位元組複製，未修改"
+      },
+      "format": "JPEG",
+      "formatNote": "原檔內容是 JPEG（副檔名沿用 .png），為保持與原檔逐位元組相同，本版不轉檔；瀏覽器可正常顯示"
+    },
+    {
+      "order": 5,
+      "key": "cat1",
+      "label": "貓咪1",
+      "file": "cat1.png",
+      "group": "original-17",
+      "width": 501,
+      "height": 501,
+      "mode": "RGB",
+      "transparent": false,
+      "bytes": 40075,
+      "source": {
+        "repo": "vashyang1120/vparty-rhythm-game",
+        "path": "assets/avatars/cat1.png",
+        "commit": "9caa7dc",
+        "sha256": "0b8f94bbf68312378e2710bfe11ef5ee3e1265f21c4ab61895f8db261401339c",
+        "bytes": 40075,
+        "processing": "原檔逐位元組複製，未修改"
+      },
+      "format": "JPEG",
+      "formatNote": "原檔內容是 JPEG（副檔名沿用 .png），為保持與原檔逐位元組相同，本版不轉檔；瀏覽器可正常顯示"
+    },
+    {
+      "order": 6,
+      "key": "cat2",
+      "label": "貓咪2",
+      "file": "cat2.png",
+      "group": "original-17",
+      "width": 501,
+      "height": 501,
+      "mode": "RGB",
+      "transparent": false,
+      "bytes": 55178,
+      "source": {
+        "repo": "vashyang1120/vparty-rhythm-game",
+        "path": "assets/avatars/cat2.png",
+        "commit": "9caa7dc",
+        "sha256": "24d54875226b0ed822dbb3b2181f799602101c0f7644617794845388205d5773",
+        "bytes": 55178,
+        "processing": "原檔逐位元組複製，未修改"
+      },
+      "format": "JPEG",
+      "formatNote": "原檔內容是 JPEG（副檔名沿用 .png），為保持與原檔逐位元組相同，本版不轉檔；瀏覽器可正常顯示"
+    },
+    {
+      "order": 7,
+      "key": "fat1",
+      "label": "胖胖",
+      "file": "fat1.png",
+      "group": "original-17",
+      "width": 501,
+      "height": 501,
+      "mode": "RGB",
+      "transparent": false,
+      "bytes": 35356,
+      "source": {
+        "repo": "vashyang1120/vparty-rhythm-game",
+        "path": "assets/avatars/fat1.png",
+        "commit": "9caa7dc",
+        "sha256": "b56f0259819f0ef4fb1fb068d84ce1afe91940d905b112dd9ae7d5901288fb63",
+        "bytes": 35356,
+        "processing": "原檔逐位元組複製，未修改"
+      },
+      "format": "JPEG",
+      "formatNote": "原檔內容是 JPEG（副檔名沿用 .png），為保持與原檔逐位元組相同，本版不轉檔；瀏覽器可正常顯示"
+    },
+    {
+      "order": 8,
+      "key": "girl3",
+      "label": "女生3",
+      "file": "girl3.png",
+      "group": "original-17",
+      "width": 501,
+      "height": 501,
+      "mode": "RGB",
+      "transparent": false,
+      "bytes": 46253,
+      "source": {
+        "repo": "vashyang1120/vparty-rhythm-game",
+        "path": "assets/avatars/girl3.png",
+        "commit": "9caa7dc",
+        "sha256": "f43bbf5b2a8178e4948c73e59ae767a4dc3b9758959a038f317a25e5c2ca5c6d",
+        "bytes": 46253,
+        "processing": "原檔逐位元組複製，未修改"
+      },
+      "format": "JPEG",
+      "formatNote": "原檔內容是 JPEG（副檔名沿用 .png），為保持與原檔逐位元組相同，本版不轉檔；瀏覽器可正常顯示"
+    },
+    {
+      "order": 9,
+      "key": "curl1",
+      "label": "捲髮1",
+      "file": "curl1.png",
+      "group": "original-17",
+      "width": 501,
+      "height": 501,
+      "mode": "RGB",
+      "transparent": false,
+      "bytes": 43544,
+      "source": {
+        "repo": "vashyang1120/vparty-rhythm-game",
+        "path": "assets/avatars/curl1.png",
+        "commit": "9caa7dc",
+        "sha256": "876c33ef35ff1f415d3efe965a19bcef4ecfdae6b77ce1642996ce7543ee0b3e",
+        "bytes": 43544,
+        "processing": "原檔逐位元組複製，未修改"
+      },
+      "format": "JPEG",
+      "formatNote": "原檔內容是 JPEG（副檔名沿用 .png），為保持與原檔逐位元組相同，本版不轉檔；瀏覽器可正常顯示"
+    },
+    {
+      "order": 10,
+      "key": "boy3",
+      "label": "男生3",
+      "file": "boy3.png",
+      "group": "original-17",
+      "width": 501,
+      "height": 501,
+      "mode": "RGB",
+      "transparent": false,
+      "bytes": 37240,
+      "source": {
+        "repo": "vashyang1120/vparty-rhythm-game",
+        "path": "assets/avatars/boy3.png",
+        "commit": "9caa7dc",
+        "sha256": "64c9bb4fa3462cd7bec0a9d53413f6c1e6cd59b7569bdb3848db62d9002877d9",
+        "bytes": 37240,
+        "processing": "原檔逐位元組複製，未修改"
+      },
+      "format": "JPEG",
+      "formatNote": "原檔內容是 JPEG（副檔名沿用 .png），為保持與原檔逐位元組相同，本版不轉檔；瀏覽器可正常顯示"
+    },
+    {
+      "order": 11,
+      "key": "girl4",
+      "label": "女生4",
+      "file": "girl4.png",
+      "group": "original-17",
+      "width": 501,
+      "height": 501,
+      "mode": "RGB",
+      "transparent": false,
+      "bytes": 46108,
+      "source": {
+        "repo": "vashyang1120/vparty-rhythm-game",
+        "path": "assets/avatars/girl4.png",
+        "commit": "9caa7dc",
+        "sha256": "300105f7d802d46a8b4fd8e64c2d9dd744fd76e10f220bc75561f43b98e26591",
+        "bytes": 46108,
+        "processing": "原檔逐位元組複製，未修改"
+      },
+      "format": "JPEG",
+      "formatNote": "原檔內容是 JPEG（副檔名沿用 .png），為保持與原檔逐位元組相同，本版不轉檔；瀏覽器可正常顯示"
+    },
+    {
+      "order": 12,
+      "key": "girl5",
+      "label": "女生5",
+      "file": "girl5.png",
+      "group": "original-17",
+      "width": 501,
+      "height": 501,
+      "mode": "RGB",
+      "transparent": false,
+      "bytes": 51230,
+      "source": {
+        "repo": "vashyang1120/vparty-rhythm-game",
+        "path": "assets/avatars/girl5.png",
+        "commit": "9caa7dc",
+        "sha256": "dd0169d9bbdc5a0b130c2bb5f7b5cf06f68f1dea9ab3374d3f16c61e20a37825",
+        "bytes": 51230,
+        "processing": "原檔逐位元組複製，未修改"
+      },
+      "format": "JPEG",
+      "formatNote": "原檔內容是 JPEG（副檔名沿用 .png），為保持與原檔逐位元組相同，本版不轉檔；瀏覽器可正常顯示"
+    },
+    {
+      "order": 13,
+      "key": "curl2",
+      "label": "捲髮2",
+      "file": "curl2.png",
+      "group": "original-17",
+      "width": 501,
+      "height": 501,
+      "mode": "RGB",
+      "transparent": false,
+      "bytes": 43151,
+      "source": {
+        "repo": "vashyang1120/vparty-rhythm-game",
+        "path": "assets/avatars/curl2.png",
+        "commit": "9caa7dc",
+        "sha256": "73e8bed300f83f8c3ff5f9e19969fb26c45496b7ab20a7ff35545a284e625b9e",
+        "bytes": 43151,
+        "processing": "原檔逐位元組複製，未修改"
+      },
+      "format": "JPEG",
+      "formatNote": "原檔內容是 JPEG（副檔名沿用 .png），為保持與原檔逐位元組相同，本版不轉檔；瀏覽器可正常顯示"
+    },
+    {
+      "order": 14,
+      "key": "dog1",
+      "label": "狗狗1",
+      "file": "dog1.png",
+      "group": "original-17",
+      "width": 501,
+      "height": 501,
+      "mode": "RGB",
+      "transparent": false,
+      "bytes": 41596,
+      "source": {
+        "repo": "vashyang1120/vparty-rhythm-game",
+        "path": "assets/avatars/dog1.png",
+        "commit": "9caa7dc",
+        "sha256": "e054159f8a5e084acde84fbc28b1aa3d4af2bbdbc759df2ff4e51e875bf04dbc",
+        "bytes": 41596,
+        "processing": "原檔逐位元組複製，未修改"
+      },
+      "format": "JPEG",
+      "formatNote": "原檔內容是 JPEG（副檔名沿用 .png），為保持與原檔逐位元組相同，本版不轉檔；瀏覽器可正常顯示"
+    },
+    {
+      "order": 15,
+      "key": "dog2",
+      "label": "狗狗2",
+      "file": "dog2.png",
+      "group": "original-17",
+      "width": 501,
+      "height": 501,
+      "mode": "RGB",
+      "transparent": false,
+      "bytes": 48126,
+      "source": {
+        "repo": "vashyang1120/vparty-rhythm-game",
+        "path": "assets/avatars/dog2.png",
+        "commit": "9caa7dc",
+        "sha256": "d445b70b496ee623e86265ce1face9a5f68e9c12c64bf409022953176af86131",
+        "bytes": 48126,
+        "processing": "原檔逐位元組複製，未修改"
+      },
+      "format": "JPEG",
+      "formatNote": "原檔內容是 JPEG（副檔名沿用 .png），為保持與原檔逐位元組相同，本版不轉檔；瀏覽器可正常顯示"
+    },
+    {
+      "order": 16,
+      "key": "dog3",
+      "label": "狗狗3",
+      "file": "dog3.png",
+      "group": "original-17",
+      "width": 501,
+      "height": 501,
+      "mode": "RGB",
+      "transparent": false,
+      "bytes": 39283,
+      "source": {
+        "repo": "vashyang1120/vparty-rhythm-game",
+        "path": "assets/avatars/dog3.png",
+        "commit": "9caa7dc",
+        "sha256": "002c5a3e69535a1130291e90c6f3eb49352e84873bb94bd626ab7e40ced40ca9",
+        "bytes": 39283,
+        "processing": "原檔逐位元組複製，未修改"
+      },
+      "format": "JPEG",
+      "formatNote": "原檔內容是 JPEG（副檔名沿用 .png），為保持與原檔逐位元組相同，本版不轉檔；瀏覽器可正常顯示"
+    },
+    {
+      "order": 17,
+      "key": "dog4",
+      "label": "狗狗4",
+      "file": "dog4.png",
+      "group": "original-17",
+      "width": 501,
+      "height": 501,
+      "mode": "RGB",
+      "transparent": false,
+      "bytes": 28988,
+      "source": {
+        "repo": "vashyang1120/vparty-rhythm-game",
+        "path": "assets/avatars/dog4.png",
+        "commit": "9caa7dc",
+        "sha256": "cb8f3c8a3f17c73567f0bfcbba80a1446ed3ab85a231f7386ce77804addc3ff9",
+        "bytes": 28988,
+        "processing": "原檔逐位元組複製，未修改"
+      },
+      "format": "JPEG",
+      "formatNote": "原檔內容是 JPEG（副檔名沿用 .png），為保持與原檔逐位元組相同，本版不轉檔；瀏覽器可正常顯示"
+    },
+    {
+      "order": 18,
+      "key": "avatar_rabbit_hoodie",
+      "label": "兔兔帽T",
+      "file": "avatar_rabbit_hoodie.png",
+      "group": "v1.0-16",
+      "width": 320,
+      "height": 320,
+      "mode": "RGBA",
+      "transparent": true,
+      "bytes": 91250,
+      "source": {
+        "archive": "balloon-v-universe-base-avatars-v1.0.zip",
+        "path": "avatar_rabbit_hoodie.png",
+        "sha256": "1fd05937d7c04d844a89b29aee54ff33e6833694b30569a17b099b5ab55e19f2",
+        "bytes": 1130143,
+        "width": 1254,
+        "height": 1254,
+        "processing": "等比例縮小為 320×320（Lanczos），無損 PNG，未改顏色、未裁切、未加背景"
+      },
+      "visibleBoundsRatio": {
+        "threshold": "alpha>16",
+        "source": [
+          0.172,
+          0.0,
+          0.797,
+          1.0
+        ],
+        "optimized": [
+          0.172,
+          0.0,
+          0.797,
+          1.0
+        ]
+      },
+      "format": "PNG"
+    },
+    {
+      "order": 19,
+      "key": "avatar_koala_hoodie",
+      "label": "無尾熊帽T",
+      "file": "avatar_koala_hoodie.png",
+      "group": "v1.0-16",
+      "width": 320,
+      "height": 320,
+      "mode": "RGBA",
+      "transparent": true,
+      "bytes": 112350,
+      "source": {
+        "archive": "balloon-v-universe-base-avatars-v1.0.zip",
+        "path": "avatar_koala_hoodie.png",
+        "sha256": "8983efd74ac17a40131f8681946e34a71c13813837660cf014e5de5178dc758f",
+        "bytes": 1475217,
+        "width": 1254,
+        "height": 1254,
+        "processing": "等比例縮小為 320×320（Lanczos），無損 PNG，未改顏色、未裁切、未加背景"
+      },
+      "visibleBoundsRatio": {
+        "threshold": "alpha>16",
+        "source": [
+          0.037,
+          0.113,
+          0.942,
+          1.0
+        ],
+        "optimized": [
+          0.034,
+          0.113,
+          0.944,
+          1.0
+        ]
+      },
+      "format": "PNG"
+    },
+    {
+      "order": 20,
+      "key": "avatar_unicorn_cape",
+      "label": "獨角獸斗篷",
+      "file": "avatar_unicorn_cape.png",
+      "group": "v1.0-16",
+      "width": 320,
+      "height": 320,
+      "mode": "RGBA",
+      "transparent": true,
+      "bytes": 110352,
+      "source": {
+        "archive": "balloon-v-universe-base-avatars-v1.0.zip",
+        "path": "avatar_unicorn_cape.png",
+        "sha256": "d5473aac2ad08fb8d0475b152481ffa1dd5c22f725155f940072d0026a79ee7f",
+        "bytes": 1271518,
+        "width": 1254,
+        "height": 1254,
+        "processing": "等比例縮小為 320×320（Lanczos），無損 PNG，未改顏色、未裁切、未加背景"
+      },
+      "visibleBoundsRatio": {
+        "threshold": "alpha>16",
+        "source": [
+          0.133,
+          0.007,
+          0.813,
+          0.995
+        ],
+        "optimized": [
+          0.131,
+          0.006,
+          0.812,
+          0.997
+        ]
+      },
+      "format": "PNG"
+    },
+    {
+      "order": 21,
+      "key": "avatar_boy_star_hat",
+      "label": "星星帽男孩",
+      "file": "avatar_boy_star_hat.png",
+      "group": "v1.0-16",
+      "width": 320,
+      "height": 320,
+      "mode": "RGBA",
+      "transparent": true,
+      "bytes": 103377,
+      "source": {
+        "archive": "balloon-v-universe-base-avatars-v1.0.zip",
+        "path": "avatar_boy_star_hat.png",
+        "sha256": "d1a085c955f9224d6866a2094a09d8f0ada06cb2e9f955a296bbc011939fae85",
+        "bytes": 1286449,
+        "width": 1254,
+        "height": 1254,
+        "processing": "等比例縮小為 320×320（Lanczos），無損 PNG，未改顏色、未裁切、未加背景"
+      },
+      "visibleBoundsRatio": {
+        "threshold": "alpha>16",
+        "source": [
+          0.161,
+          0.01,
+          0.809,
+          0.998
+        ],
+        "optimized": [
+          0.159,
+          0.009,
+          0.809,
+          1.0
+        ]
+      },
+      "format": "PNG"
+    },
+    {
+      "order": 22,
+      "key": "avatar_turtle",
+      "label": "小烏龜",
+      "file": "avatar_turtle.png",
+      "group": "v1.0-16",
+      "width": 320,
+      "height": 320,
+      "mode": "RGBA",
+      "transparent": true,
+      "bytes": 110336,
+      "source": {
+        "archive": "balloon-v-universe-base-avatars-v1.0.zip",
+        "path": "avatar_turtle.png",
+        "sha256": "740fed4064d803548b65ea9ed64dcfc8c167dda7fe0d0a61c6a8b7e928149ba5",
+        "bytes": 1375627,
+        "width": 1254,
+        "height": 1254,
+        "processing": "等比例縮小為 320×320（Lanczos），無損 PNG，未改顏色、未裁切、未加背景"
+      },
+      "visibleBoundsRatio": {
+        "threshold": "alpha>16",
+        "source": [
+          0.122,
+          0.167,
+          0.911,
+          0.892
+        ],
+        "optimized": [
+          0.122,
+          0.166,
+          0.912,
+          0.894
+        ]
+      },
+      "format": "PNG"
+    },
+    {
+      "order": 23,
+      "key": "avatar_girl_bow",
+      "label": "蝴蝶結女孩",
+      "file": "avatar_girl_bow.png",
+      "group": "v1.0-16",
+      "width": 320,
+      "height": 320,
+      "mode": "RGBA",
+      "transparent": true,
+      "bytes": 121360,
+      "source": {
+        "archive": "balloon-v-universe-base-avatars-v1.0.zip",
+        "path": "avatar_girl_bow.png",
+        "sha256": "4a81e692eb7f982e0535ffdfaf006b490eced1ceee94437d02b71b3d95788ccf",
+        "bytes": 1490603,
+        "width": 1254,
+        "height": 1254,
+        "processing": "等比例縮小為 320×320（Lanczos），無損 PNG，未改顏色、未裁切、未加背景"
+      },
+      "visibleBoundsRatio": {
+        "threshold": "alpha>16",
+        "source": [
+          0.09,
+          0.01,
+          0.883,
+          1.0
+        ],
+        "optimized": [
+          0.091,
+          0.009,
+          0.884,
+          1.0
+        ]
+      },
+      "format": "PNG"
+    },
+    {
+      "order": 24,
+      "key": "avatar_panda_hoodie",
+      "label": "熊貓帽T",
+      "file": "avatar_panda_hoodie.png",
+      "group": "v1.0-16",
+      "width": 320,
+      "height": 320,
+      "mode": "RGBA",
+      "transparent": true,
+      "bytes": 102421,
+      "source": {
+        "archive": "balloon-v-universe-base-avatars-v1.0.zip",
+        "path": "avatar_panda_hoodie.png",
+        "sha256": "1668913f3600c0f6a3a7032ce2a2cddaf911d1b59d4cb136851ad49375f3993a",
+        "bytes": 1326053,
+        "width": 1254,
+        "height": 1254,
+        "processing": "等比例縮小為 320×320（Lanczos），無損 PNG，未改顏色、未裁切、未加背景"
+      },
+      "visibleBoundsRatio": {
+        "threshold": "alpha>16",
+        "source": [
+          0.124,
+          0.072,
+          0.833,
+          0.99
+        ],
+        "optimized": [
+          0.122,
+          0.072,
+          0.834,
+          0.991
+        ]
+      },
+      "format": "PNG"
+    },
+    {
+      "order": 25,
+      "key": "avatar_fox_blue_hat",
+      "label": "藍帽狐狸",
+      "file": "avatar_fox_blue_hat.png",
+      "group": "v1.0-16",
+      "width": 320,
+      "height": 320,
+      "mode": "RGBA",
+      "transparent": true,
+      "bytes": 119247,
+      "source": {
+        "archive": "balloon-v-universe-base-avatars-v1.0.zip",
+        "path": "avatar_fox_blue_hat.png",
+        "sha256": "1523cace96e099175b9ab40cd034c09332b0c30c205ab1bc18eefc53163e8aa5",
+        "bytes": 1567025,
+        "width": 1254,
+        "height": 1254,
+        "processing": "等比例縮小為 320×320（Lanczos），無損 PNG，未改顏色、未裁切、未加背景"
+      },
+      "visibleBoundsRatio": {
+        "threshold": "alpha>16",
+        "source": [
+          0.13,
+          0.021,
+          0.829,
+          0.996
+        ],
+        "optimized": [
+          0.128,
+          0.019,
+          0.831,
+          0.997
+        ]
+      },
+      "format": "PNG"
+    },
+    {
+      "order": 26,
+      "key": "avatar_leopard_gecko",
+      "label": "豹紋守宮",
+      "file": "avatar_leopard_gecko.png",
+      "group": "v1.0-16",
+      "width": 320,
+      "height": 320,
+      "mode": "RGBA",
+      "transparent": true,
+      "bytes": 138138,
+      "source": {
+        "archive": "balloon-v-universe-base-avatars-v1.0.zip",
+        "path": "avatar_leopard_gecko.png",
+        "sha256": "e680da5cca37aa6d51f31043136b3029847e424ba988cc38c02c2daf43533b65",
+        "bytes": 1634543,
+        "width": 1254,
+        "height": 1254,
+        "processing": "等比例縮小為 320×320（Lanczos），無損 PNG，未改顏色、未裁切、未加背景"
+      },
+      "visibleBoundsRatio": {
+        "threshold": "alpha>16",
+        "source": [
+          0.065,
+          0.094,
+          0.96,
+          0.948
+        ],
+        "optimized": [
+          0.066,
+          0.094,
+          0.959,
+          0.95
+        ]
+      },
+      "format": "PNG"
+    },
+    {
+      "order": 27,
+      "key": "avatar_blue_tongue_skink",
+      "label": "藍舌石龍子",
+      "file": "avatar_blue_tongue_skink.png",
+      "group": "v1.0-16",
+      "width": 320,
+      "height": 320,
+      "mode": "RGBA",
+      "transparent": true,
+      "bytes": 132763,
+      "source": {
+        "archive": "balloon-v-universe-base-avatars-v1.0.zip",
+        "path": "avatar_blue_tongue_skink.png",
+        "sha256": "a26063ecf21c6973bfc9df209ae8030c91acedfe645e9d1edec9be748d9565e6",
+        "bytes": 1647592,
+        "width": 1254,
+        "height": 1254,
+        "processing": "等比例縮小為 320×320（Lanczos），無損 PNG，未改顏色、未裁切、未加背景"
+      },
+      "visibleBoundsRatio": {
+        "threshold": "alpha>16",
+        "source": [
+          0.072,
+          0.096,
+          0.94,
+          0.947
+        ],
+        "optimized": [
+          0.072,
+          0.097,
+          0.941,
+          0.947
+        ]
+      },
+      "format": "PNG"
+    },
+    {
+      "order": 28,
+      "key": "avatar_bearded_dragon",
+      "label": "鬆獅蜥",
+      "file": "avatar_bearded_dragon.png",
+      "group": "v1.0-16",
+      "width": 320,
+      "height": 320,
+      "mode": "RGBA",
+      "transparent": true,
+      "bytes": 141129,
+      "source": {
+        "archive": "balloon-v-universe-base-avatars-v1.0.zip",
+        "path": "avatar_bearded_dragon.png",
+        "sha256": "4599c416b4b97303941202bf83d271cf79f41775f4fb4a0809f40e6e725c96bc",
+        "bytes": 1730165,
+        "width": 1254,
+        "height": 1254,
+        "processing": "等比例縮小為 320×320（Lanczos），無損 PNG，未改顏色、未裁切、未加背景"
+      },
+      "visibleBoundsRatio": {
+        "threshold": "alpha>16",
+        "source": [
+          0.071,
+          0.082,
+          0.936,
+          0.962
+        ],
+        "optimized": [
+          0.072,
+          0.081,
+          0.938,
+          0.963
+        ]
+      },
+      "format": "PNG"
+    },
+    {
+      "order": 29,
+      "key": "avatar_hamster_hoodie",
+      "label": "倉鼠帽T",
+      "file": "avatar_hamster_hoodie.png",
+      "group": "v1.0-16",
+      "width": 320,
+      "height": 320,
+      "mode": "RGBA",
+      "transparent": true,
+      "bytes": 94563,
+      "source": {
+        "archive": "balloon-v-universe-base-avatars-v1.0.zip",
+        "path": "avatar_hamster_hoodie.png",
+        "sha256": "fb7a0786d6329c965666a2dadbad023fa56d87afd9ff27b77e995b86f8e9258f",
+        "bytes": 1168967,
+        "width": 1254,
+        "height": 1254,
+        "processing": "等比例縮小為 320×320（Lanczos），無損 PNG，未改顏色、未裁切、未加背景"
+      },
+      "visibleBoundsRatio": {
+        "threshold": "alpha>16",
+        "source": [
+          0.181,
+          0.079,
+          0.825,
+          0.966
+        ],
+        "optimized": [
+          0.181,
+          0.078,
+          0.825,
+          0.966
+        ]
+      },
+      "format": "PNG"
+    },
+    {
+      "order": 30,
+      "key": "avatar_green_iguana",
+      "label": "綠鬣蜥",
+      "file": "avatar_green_iguana.png",
+      "group": "v1.0-16",
+      "width": 320,
+      "height": 320,
+      "mode": "RGBA",
+      "transparent": true,
+      "bytes": 124112,
+      "source": {
+        "archive": "balloon-v-universe-base-avatars-v1.0.zip",
+        "path": "avatar_green_iguana.png",
+        "sha256": "4ce689aaa0b4c4be0b7ce55b581dfa514e2d5c25ac55fefa34172399f4275149",
+        "bytes": 1516927,
+        "width": 1254,
+        "height": 1254,
+        "processing": "等比例縮小為 320×320（Lanczos），無損 PNG，未改顏色、未裁切、未加背景"
+      },
+      "visibleBoundsRatio": {
+        "threshold": "alpha>16",
+        "source": [
+          0.128,
+          0.049,
+          0.907,
+          0.957
+        ],
+        "optimized": [
+          0.125,
+          0.05,
+          0.906,
+          0.959
+        ]
+      },
+      "format": "PNG"
+    },
+    {
+      "order": 31,
+      "key": "avatar_corn_snake",
+      "label": "玉米蛇",
+      "file": "avatar_corn_snake.png",
+      "group": "v1.0-16",
+      "width": 320,
+      "height": 320,
+      "mode": "RGBA",
+      "transparent": true,
+      "bytes": 102603,
+      "source": {
+        "archive": "balloon-v-universe-base-avatars-v1.0.zip",
+        "path": "avatar_corn_snake.png",
+        "sha256": "424c5dda0f5d985f02dcd59dcf24d4e39964e6d844015bd66fbbb08fd2f543e2",
+        "bytes": 1239993,
+        "width": 1254,
+        "height": 1254,
+        "processing": "等比例縮小為 320×320（Lanczos），無損 PNG，未改顏色、未裁切、未加背景"
+      },
+      "visibleBoundsRatio": {
+        "threshold": "alpha>16",
+        "source": [
+          0.164,
+          0.12,
+          0.833,
+          0.954
+        ],
+        "optimized": [
+          0.163,
+          0.119,
+          0.834,
+          0.956
+        ]
+      },
+      "format": "PNG"
+    },
+    {
+      "order": 32,
+      "key": "avatar_dragon_purple_robe",
+      "label": "紫袍小龍",
+      "file": "avatar_dragon_purple_robe.png",
+      "group": "v1.0-16",
+      "width": 320,
+      "height": 320,
+      "mode": "RGBA",
+      "transparent": true,
+      "bytes": 121902,
+      "source": {
+        "archive": "balloon-v-universe-base-avatars-v1.0.zip",
+        "path": "avatar_dragon_purple_robe.png",
+        "sha256": "e7f03d91a29c51b193a9b6f0f962ea6e3b5b58d6455538be31f32ebebd5e422a",
+        "bytes": 1465713,
+        "width": 1254,
+        "height": 1254,
+        "processing": "等比例縮小為 320×320（Lanczos），無損 PNG，未改顏色、未裁切、未加背景"
+      },
+      "visibleBoundsRatio": {
+        "threshold": "alpha>16",
+        "source": [
+          0.08,
+          0.02,
+          0.881,
+          0.992
+        ],
+        "optimized": [
+          0.078,
+          0.019,
+          0.881,
+          0.994
+        ]
+      },
+      "format": "PNG"
+    },
+    {
+      "order": 33,
+      "key": "avatar_penguin_hoodie",
+      "label": "企鵝帽T",
+      "file": "avatar_penguin_hoodie.png",
+      "group": "v1.0-16",
+      "width": 320,
+      "height": 320,
+      "mode": "RGBA",
+      "transparent": true,
+      "bytes": 93484,
+      "source": {
+        "archive": "balloon-v-universe-base-avatars-v1.0.zip",
+        "path": "avatar_penguin_hoodie.png",
+        "sha256": "30822e49a8535da52d2ad939c4c9ae74b1d1f7606e55516e3fb76d0522bb3054",
+        "bytes": 1154195,
+        "width": 1254,
+        "height": 1254,
+        "processing": "等比例縮小為 320×320（Lanczos），無損 PNG，未改顏色、未裁切、未加背景"
+      },
+      "visibleBoundsRatio": {
+        "threshold": "alpha>16",
+        "source": [
+          0.18,
+          0.069,
+          0.821,
+          0.997
+        ],
+        "optimized": [
+          0.178,
+          0.069,
+          0.822,
+          0.997
+        ]
+      },
+      "format": "PNG"
+    }
+  ],
+  "formatNote": "原有 17 款原檔實際是 JPEG 內容、副檔名為 .png（沿用節奏遊戲原檔，未轉檔）；新款 16 款是透明 PNG。"
+}

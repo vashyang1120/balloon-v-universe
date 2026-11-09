@@ -108,34 +108,41 @@ window.MAP_CONFIG = {
     addPlayer:       "assets/ui/avatar_add_player_idle.png"
   },
 
-  /* ---------- 玩家系統（依四款遊戲現有程式盤點結果） ----------
-     ⚠ 以下設定必須與四款遊戲完全一致，請勿自行修改：
-       - Firebase 專案與資料路徑 players/{playerKey}
-       - playerKey = encodeFirebaseKeyPart(ID) + "__" + baseAvatarKey
-       - 身份圖案只能從 17 個內建頭像選擇（與四款遊戲相同）               */
+  /* ---------- 玩家系統（v0.3.4：改接遊戲宇宙共用玩家 API） ----------
+     ■ 玩家身份的正式來源：Cloudflare Worker（balloon-v-universe-api）→ Firebase 專案 balloon-v-universe。
+       大廳不再連線舊 Firebase 專案 vparty-rhythm-game，也不再讀寫舊 players/{playerKey}。
+     ■ 身份＝玩家 ID＋固定身份圖案（baseAvatarKey）；伺服器回傳不可變的 playerId。
+     ■ 舊 playerKey（encodeFirebaseKeyPart(ID) + "__" + baseAvatarKey）不再使用，也不會被當成 playerId。 */
   player: {
-    firebaseSdkVersion: "9.23.0",            // 四款遊戲使用的版本
-    firebaseConfig: {                          // 與四款遊戲相同（公開的前端設定）
-      apiKey: "AIzaSyAZ8WTuAHOslZSa4eqqX3dHR771mkaSNd8",
-      authDomain: "vparty-rhythm-game.firebaseapp.com",
-      databaseURL: "https://vparty-rhythm-game-default-rtdb.firebaseio.com",
-      projectId: "vparty-rhythm-game",
-      storageBucket: "vparty-rhythm-game.firebasestorage.app",
-      messagingSenderId: "1043884247859",
-      appId: "1:1043884247859:web:24b1c030d159d1e9374c46"
-    },
-    playersPath: "players",
-    avatarBaseUrl: "https://vashyang1120.github.io/vparty-rhythm-game/assets/avatars/",
-    idMaxLength: 20,                           // 只限制大廳輸入框長度
-    /* 17 個內建頭像：可作為「固定身份圖案」，也永遠可作為展示頭像 */
+    apiBaseUrl: "https://balloon-v-universe-api.vashyang1120.workers.dev",
+    apiTimeoutMs: 15000,
+    /* 固定身份圖案：由遊戲宇宙統一提供（assets/avatars/base/README.md）。
+       正式網址 https://vashyang1120.github.io/balloon-v-universe/assets/avatars/base/<key>.png */
+    avatarBaseUrl: "assets/avatars/base/",
+    /* 只有「展示用」可解鎖頭像仍放在節奏遊戲（v0.3.4 尚未接入展示頭像解鎖） */
+    legacyDisplayAvatarBaseUrl: "https://vashyang1120.github.io/vparty-rhythm-game/assets/avatars/",
+    idMaxLength: 20,                           // 與後端一致：1～20 個字
+    /* 33 款固定身份圖案（順序、鍵值與後端 GET /v1/avatars/base 一致）。
+       第三欄 "full"：新款是透明背景的上半身全身圖，顯示時完整放進圓框，不放大裁切。
+       實際可選清單 = 這裡 ∩ 後端清單（後端尚未開放的圖案不會出現在選單）。 */
     builtinAvatars: [
       ["boy1", "男生1"], ["girl1", "女生1"], ["boy2", "男生2"], ["girl2", "女生2"],
       ["cat1", "貓咪1"], ["cat2", "貓咪2"], ["fat1", "胖胖"], ["girl3", "女生3"],
       ["curl1", "捲髮1"], ["boy3", "男生3"], ["girl4", "女生4"], ["girl5", "女生5"],
       ["curl2", "捲髮2"], ["dog1", "狗狗1"], ["dog2", "狗狗2"], ["dog3", "狗狗3"],
-      ["dog4", "狗狗4"]
+      ["dog4", "狗狗4"],
+      ["avatar_rabbit_hoodie", "兔兔帽T", "full"], ["avatar_koala_hoodie", "無尾熊帽T", "full"],
+      ["avatar_unicorn_cape", "獨角獸斗篷", "full"], ["avatar_boy_star_hat", "星星帽男孩", "full"],
+      ["avatar_turtle", "小烏龜", "full"], ["avatar_girl_bow", "蝴蝶結女孩", "full"],
+      ["avatar_panda_hoodie", "熊貓帽T", "full"], ["avatar_fox_blue_hat", "藍帽狐狸", "full"],
+      ["avatar_leopard_gecko", "豹紋守宮", "full"], ["avatar_blue_tongue_skink", "藍舌石龍子", "full"],
+      ["avatar_bearded_dragon", "鬆獅蜥", "full"], ["avatar_hamster_hoodie", "倉鼠帽T", "full"],
+      ["avatar_green_iguana", "綠鬣蜥", "full"], ["avatar_corn_snake", "玉米蛇", "full"],
+      ["avatar_dragon_purple_robe", "紫袍小龍", "full"], ["avatar_penguin_hoodie", "企鵝帽T", "full"]
     ],
-    /* 可解鎖頭像：只能當「展示頭像」，不能當身份圖案（與遊戲相同） */
+    /* 後端清單還沒讀到（或讀取失敗）時，只顯示所有後端版本都接受的原有 17 款 */
+    safeDefaultAvatarCount: 17,
+    /* 可解鎖頭像：只能當「展示頭像」，不能當身份圖案（v0.3.4 尚未接入解鎖，不會出現在新玩家資料中） */
     unlockableAvatars: [
       ["xiaov_base", "小V"], ["dance_sister_01", "唱跳姐姐"],
       ["balloon_sister_01", "氣球姐姐 1"], ["balloon_sister_02", "氣球姐姐 2"],
@@ -145,7 +152,7 @@ window.MAP_CONFIG = {
     ],
     gameIds: ["quiz", "rhythm", "tetris", "adventure"],
     gameNames: { quiz: "知識挑戰", rhythm: "節奏遊戲", tetris: "方塊派對", adventure: "派對島大作戰" },
-    /* 四款遊戲網址（本版只用於身份交接測試資料，不會自動跳轉） */
+    /* 四款遊戲網址（本版只用於身份交接測試資料，不會自動跳轉；遊戲尚未支援 playerId） */
     gameUrls: {
       quiz: "https://vashyang1120.github.io/vparty-quiz-game/",
       rhythm: "https://vashyang1120.github.io/vparty-rhythm-game/",
