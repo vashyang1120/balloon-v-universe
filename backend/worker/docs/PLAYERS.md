@@ -194,6 +194,9 @@ identityKey = "i1_" + base64url( SHA-256( "bv-identity-v1" ␀ displayId ␀ bas
 - ⚠ Cloudflare 文件**沒有說明 Workers Free 是否包含**此功能，要在正式部署時確認（見 ACCEPTANCE_v0.3.0.md 第 2 節）。
   本機 `wrangler dev` 已確認會模擬 binding（記錄顯示 `layer: "binding"`）。
 
+**可觀測性（test-3）**：每個玩家 API 請求的 `request` 記錄有 `rl` 欄位（例如 `lookup:binding`、`lookup:memory(missing)`、`lookup:memory(error)`），
+binding 缺少或失敗時每個 Worker 實例只警告一次 `rate limit fallback`。用來分辨官方限流是否真的在運作；不對玩家公開。
+
 可能誤擋的情境：
 - 大型活動或整個學校（同一個對外 IP）在同一分鐘內有超過 60 人建立身份 → 部分人要等 1 分鐘再按。
 - 同一個機房在同一分鐘內全體超過 300 次建立（正常情況下不會發生）。
