@@ -1033,3 +1033,13 @@ html.low-motion { --actor-talk-lift: 1.5px; --actor-talk-tilt: .7deg; --actor-ta
 html.page-hidden .actor, html.page-hidden .actor * { animation-play-state: paused !important; }
 
 
+
+/* ==========================================================
+   v0.3.4 新增（只加不改）：新款 16 個透明全身身份圖案
+   原有 17 款是黑底頭肩像（維持 v0.3.1 臉部放大設定不變）；
+   新款是透明背景的Q版上半身，完整放進圓框，不放大、不裁切耳朵、角、帽子。
+   ========================================================== */
+.av--full .av__face { object-fit: contain; object-position: 50% 50%; transform: scale(.96); transform-origin: 50% 50%; }
+.av--pick.av--full { --zoom: 1; --face-y: 50%; }
+.pass__face--full img { object-fit: contain; transform: scale(.96); }
+.flow__hint--idchanged { color: #7a3d00; background: #fff1c9; border-radius: 10px; padding: 6px 10px; }
