@@ -384,6 +384,96 @@
   spot.querySelectorAll(".spot__block").forEach(function (b) { blocks[b.dataset.side] = b; });
   var spotTargets = null, spotRaf = 0, hintTimer = 0, hintNormal = "";
 
+  /* v0.3.4 test-3：多目標「各自獨立」聚光燈（目前只有 tryZone 使用）。
+     原本 layoutSpot 會把所有目標合併成一個大矩形（rectOf），再用上下左右 4 塊壓暗，只能挖出一個矩形洞；
+     多目標模式改用一張全畫面 SVG 遮罩，每個目標挖一個圓角、邊緣柔和的洞，並各自加一圈柔和光暈。
+     只在位置真的改變時才更新 DOM（視窗大小、縮放、方向、元素重排都會自動跟上）。 */
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var holesMode = false, holesKey = "", holesSvg = null, holesGroup = null, holesBase = null, holesDim = null, holesBlur = null, glows = [];
+  var HOLE_PAD = 14, HOLE_RADIUS = 30, HOLE_SOFT = 8;
+  function ensureHolesLayer() {
+    if (holesSvg) return;
+    holesSvg = document.createElementNS(SVGNS, "svg");
+    holesSvg.setAttribute("class", "spot__mask");
+    holesSvg.setAttribute("aria-hidden", "true");
+    holesSvg.innerHTML =
+      '<defs>' +
+        '<filter id="spotHoleSoft" filterUnits="userSpaceOnUse" x="0" y="0" width="100%" height="100%"><feGaussianBlur stdDeviation="' + HOLE_SOFT + '"/></filter>' +
+        '<mask id="spotHolesMask" maskUnits="userSpaceOnUse" x="0" y="0" width="100%" height="100%">' +
+          '<rect class="spot__maskbase" x="0" y="0" width="100%" height="100%" fill="#fff"/>' +
+          '<g class="spot__holes" filter="url(#spotHoleSoft)"></g>' +
+        '</mask>' +
+      '</defs>' +
+      '<rect class="spot__dim" x="0" y="0" width="100%" height="100%" mask="url(#spotHolesMask)"/>';
+    holesGroup = holesSvg.querySelector(".spot__holes");
+    holesBase = holesSvg.querySelector(".spot__maskbase");
+    holesDim = holesSvg.querySelector(".spot__dim");
+    holesBlur = holesSvg.querySelector("feGaussianBlur");
+    spot.insertBefore(holesSvg, spot.firstChild);
+  }
+  /* 目標之間的最小間距（手機四個入口只隔約 6px；桌機隔 100px 以上） */
+  function minGapOf(boxes) {
+    var min = Infinity;
+    for (var i = 0; i < boxes.length; i++) for (var j = i + 1; j < boxes.length; j++) {
+      var a = boxes[i], c = boxes[j];
+      var dx = Math.max(0, Math.max(a.left, c.left) - Math.min(a.right, c.right));
+      var dy = Math.max(0, Math.max(a.top, c.top) - Math.min(a.bottom, c.bottom));
+      min = Math.min(min, Math.max(dx, dy));
+    }
+    return min;
+  }
+  function layoutHoles(W, H) {
+    var boxes = [];
+    (spotTargets || []).forEach(function (t) {
+      if (!t || t.hidden || !t.isConnected) return;
+      var b = t.getBoundingClientRect();
+      if (!b.width && !b.height) return;
+      boxes.push(b);
+    });
+    // 依實際排版決定留白：空間夠（桌機）→ 14px 留白＋外光暈；入口緊鄰（手機）→ 留白縮到間距一半、光暈改在入口內側，
+    // 避免四個洞與光暈連成一條、光暈溢到隔壁入口
+    var gap = minGapOf(boxes);
+    var tight = gap < HOLE_PAD * 2 + 8;
+    var pad = tight ? Math.max(1, Math.floor(gap / 2) - 1) : HOLE_PAD;
+    var soft = tight ? 1.2 : HOLE_SOFT;
+    var rects = boxes.map(function (b) {
+      return { l: Math.round(b.left - pad), t: Math.round(b.top - pad), w: Math.round(b.width + pad * 2), h: Math.round(b.height + pad * 2) };
+    });
+    var key = W + "x" + H + "|" + pad + "|" + rects.map(function (r) { return r.l + "," + r.t + "," + r.w + "," + r.h; }).join(";");
+    if (key === holesKey) return;
+    holesKey = key;
+    holesBlur.setAttribute("stdDeviation", soft);
+    spot.classList.toggle("spot--tight", tight);
+    holesSvg.setAttribute("width", W); holesSvg.setAttribute("height", H);
+    holesSvg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    while (holesGroup.firstChild) holesGroup.removeChild(holesGroup.firstChild);
+    rects.forEach(function (r) {
+      var h = document.createElementNS(SVGNS, "rect");
+      h.setAttribute("x", r.l); h.setAttribute("y", r.t); h.setAttribute("width", r.w); h.setAttribute("height", r.h);
+      var rad = tight ? 14 : Math.min(HOLE_RADIUS, Math.round(Math.min(r.w, r.h) / 3));
+      h.setAttribute("rx", rad); h.setAttribute("fill", "#000");
+      holesGroup.appendChild(h);
+    });
+    while (glows.length > rects.length) spot.removeChild(glows.pop());
+    while (glows.length < rects.length) {
+      var g = document.createElement("div");
+      g.className = "spot__glow";
+      spot.insertBefore(g, ring);
+      glows.push(g);
+    }
+    rects.forEach(function (r, i) {
+      Object.assign(glows[i].style, { left: r.l + "px", top: r.t + "px", width: r.w + "px", height: r.h + "px", borderRadius: (tight ? 14 : Math.min(HOLE_RADIUS, Math.round(Math.min(r.w, r.h) / 3))) + "px" });
+    });
+  }
+  function setHolesMode(on) {
+    holesMode = !!on;
+    spot.classList.toggle("spot--holes", holesMode);
+    if (!holesMode) spot.classList.remove("spot--tight");
+    holesKey = "";
+    if (holesMode) ensureHolesLayer();
+    else { while (glows.length) spot.removeChild(glows.pop()); if (holesGroup) while (holesGroup.firstChild) holesGroup.removeChild(holesGroup.firstChild); }
+  }
+
   function rectOf(targets) {
     var r = null;
     (targets || []).forEach(function (t) {
@@ -399,8 +489,9 @@
     if (!spotTargets) return;
     var r = rectOf(spotTargets);
     var W = window.innerWidth, H = window.innerHeight;
+    if (holesMode) layoutHoles(W, H);
     if (r) {
-      var pad = 8;
+      var pad = holesMode ? HOLE_PAD : 8;
       var l = Math.max(0, r.left - pad), t = Math.max(0, r.top - pad), rr = Math.min(W, r.right + pad), bb = Math.min(H, r.bottom + pad);
       Object.assign(blocks.top.style, { left: 0, top: 0, width: W + "px", height: t + "px" });
       Object.assign(blocks.bottom.style, { left: 0, top: bb + "px", width: W + "px", height: Math.max(0, H - bb) + "px" });
@@ -426,6 +517,7 @@
     spotTargets = (targets || []).filter(Boolean);
     spot.hidden = false;
     spot.classList.toggle("spot--hintonly", !!opts.hintOnly);
+    setHolesMode(opts.holes && !opts.hintOnly);
     hintNormal = hintMsg || "";
     setHint(hintNormal, false);
     var first = spotTargets[0];
@@ -440,6 +532,7 @@
   }
   function hideSpot() {
     spot.hidden = true; spotTargets = null; cancelAnimationFrame(spotRaf);
+    setHolesMode(false);
     clearTimeout(hintTimer); setHint("", false);
   }
   /* 點錯：小提示換成溫和提醒、聚光燈框抖一下、播放提醒音；2.4 秒後恢復原本小提示 */
@@ -447,6 +540,7 @@
     L.sfx("error");
     if (D.react) D.react("remind", 1800);
     ring.classList.remove("is-shake"); void ring.offsetWidth; ring.classList.add("is-shake");
+    glows.forEach(function (g) { g.classList.remove("is-shake"); void g.offsetWidth; g.classList.add("is-shake"); });
     if (msg) {
       setHint(msg, true);
       clearTimeout(hintTimer);
@@ -477,7 +571,8 @@
        因此桌機改以四個入口招牌（聚光燈）＋四個地圖點擊區（對話框避開）為目標。手機維持原本設定。 */
     var zoneSigns = function () { return [].slice.call(els.entries.querySelectorAll(".entry")); };
     var zoneHits = function () { return [].slice.call(els.stage.querySelectorAll("path.hit")); };
-    var tryZoneSpot = function () { return L.isDesktop() ? zoneSigns() : mapTargets(); };
+    /* v0.3.4 test-3：桌機與手機都改為「四個入口各自獨立高亮」（依實際 DOM 位置；手機入口在地圖下方） */
+    var tryZoneSpot = function () { return zoneSigns(); };
     var tryZoneAvoid = function () { return L.isDesktop() ? zoneSigns().concat(zoneHits()) : mapTargets(); };
 
     function end() {
@@ -515,7 +610,7 @@
       return new Promise(function (resolve) {
         var done = false;
         var ev = waitFor(eventName, filter);
-        showSpot(targetsFn(), cfg.hint, { hintOnly: extra.hintOnly });
+        showSpot(targetsFn(), cfg.hint, { hintOnly: extra.hintOnly, holes: extra.holes });
         L.setGuard(function (act, data) {
           if (allow(act, data)) return true;
           var msg = (act === "addPlayer" && cfg.wrongAdd) || (act === "avatarOther" && cfg.wrongOther) || cfg.wrong;
@@ -547,7 +642,7 @@
 
     return intro(S.zones, mapTargets())
       .then(function () {
-        return action(S.tryZone, tryZoneSpot, function (a) { return a === "selectZone"; }, "zoneSelected", null, { avoid: tryZoneAvoid });
+        return action(S.tryZone, tryZoneSpot, function (a) { return a === "selectZone"; }, "zoneSelected", null, { avoid: tryZoneAvoid, holes: true });
       })
       .then(function (ok) {
         if (ended || ok === false) return;
