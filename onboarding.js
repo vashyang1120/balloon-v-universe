@@ -472,6 +472,13 @@
     var ended = false;
     var mapTargets = function () { return L.isDesktop() ? [els.stage] : [els.stage, els.entries]; };
     var myAvatar = function () { return els.avatarRow.querySelector(".av-item.is-current"); };
+    /* v0.3.4 test-2：「點一下任何一個遊戲區域」要點的是四個遊戲入口。
+       桌機若把整張地圖當成要避開的目標，地圖幾乎佔滿畫面，對話框上下都放不下，會退到上方蓋住入口；
+       因此桌機改以四個入口招牌（聚光燈）＋四個地圖點擊區（對話框避開）為目標。手機維持原本設定。 */
+    var zoneSigns = function () { return [].slice.call(els.entries.querySelectorAll(".entry")); };
+    var zoneHits = function () { return [].slice.call(els.stage.querySelectorAll("path.hit")); };
+    var tryZoneSpot = function () { return L.isDesktop() ? zoneSigns() : mapTargets(); };
+    var tryZoneAvoid = function () { return L.isDesktop() ? zoneSigns().concat(zoneHits()) : mapTargets(); };
 
     function end() {
       if (ended) return;
@@ -518,7 +525,7 @@
         if (!extra.noDialog) {
           D.ask([say(cfg.text, { waitAction: true, actor: cfg.actor })], {
             shield: false, allowSkip: true, focus: false,
-            avoid: function () { return targetsFn().concat([hint]); },
+            avoid: function () { return (extra.avoid ? extra.avoid() : targetsFn()).concat([hint]); },
             onWaitClick: function () { wrongFeedback(cfg.wrong); }
           }).then(function (r) {
             if (!done && r && r.skipped && !r.replaced) { done = true; ev.cancel(); end(); resolve(false); }
@@ -540,7 +547,7 @@
 
     return intro(S.zones, mapTargets())
       .then(function () {
-        return action(S.tryZone, mapTargets, function (a) { return a === "selectZone"; }, "zoneSelected");
+        return action(S.tryZone, tryZoneSpot, function (a) { return a === "selectZone"; }, "zoneSelected", null, { avoid: tryZoneAvoid });
       })
       .then(function (ok) {
         if (ended || ok === false) return;
