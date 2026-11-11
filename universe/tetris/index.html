@@ -1,0 +1,3684 @@
+<!DOCTYPE html>
+<!-- 遊戲宇宙換殼原型 universe-game-migration-v0.1.0-foundation-test-1
+     由 vashyang1120/vparty-tetris@7f3388562c35ca24572b3fb8cd861f7302f81509 index.html（SHA-256 a2a50b0fa56c8210a7035a4808447d6c5743fa1d9692f80cd341bcaf6f1f9cb9）
+     經 universe/tetris/tools/build_prototype.py 產生。請勿直接修改正式遊戲 Repository。 -->
+
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>氣球小V方塊派對 🎈｜遊戲宇宙換殼測試版</title>
+<!-- [Universe 換殼] 不再載入 Firebase SDK；改用遊戲宇宙共用 SDK（唯讀玩家資料；成績只進 Mock） -->
+<script src="../shared/universe-sdk.js"></script>
+<script src="universe-shell.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&family=Noto+Sans+TC:wght@400;700&display=swap');
+:root{
+  --pink:#ff85a1;--pink2:#e86f9a;--pink-lt:#ffd6e7;--pink-bg:#fff0f6;
+  --yellow:#ffd166;--yellow2:#ffbe0b;--mint:#3ecf8e;
+  --purple:#9b5de5;--purple2:#c77dff;--purple-lt:#e8d5ff;--purple-bg:#f8f0ff;
+  --bg:#fff5fb;--text:#5a3a4a;--text2:#9b7a8a;
+  --r-md:24px;--r-lg:32px;--r-xl:50px;
+  --shadow-sm:0 2px 10px rgba(232,111,154,.12);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);
+  font-family:'Nunito','Noto Sans TC',sans-serif}
+#root{width:100%;height:100%;position:relative;overflow:hidden}
+
+/* screens */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;z-index:1;transition:opacity .3s}
+.screen.off{opacity:0;pointer-events:none}
+
+/* logo */
+.logo{font-family:'Fredoka One',cursive;font-size:clamp(22px,5vw,48px);
+  text-align:center;line-height:1.2;
+  background:linear-gradient(135deg,#ff85a1,#ff6b9d,#c77dff,#9b5de5);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo small{display:block;font-size:.38em;font-family:'Nunito',sans-serif;font-weight:900;
+  letter-spacing:.25em;background:linear-gradient(135deg,#ffd166,#ffbe0b);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-top:2px}
+
+/* buttons */
+.btn{padding:12px 28px;border-radius:var(--r-xl);border:none;
+  font-family:'Fredoka One',cursive;font-size:15px;cursor:pointer;
+  transition:transform .15s,box-shadow .15s;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn:active{transform:scale(.94)}
+.btn-p{background:linear-gradient(135deg,#ff85a1,#e86f9a);color:#fff;box-shadow:0 4px 16px rgba(232,111,154,.4)}
+.btn-s{background:linear-gradient(135deg,#3ecf8e,#2ab377);color:#fff;box-shadow:0 4px 16px rgba(62,207,142,.4)}
+.btn-y{background:linear-gradient(135deg,#ffd166,#ffbe0b);color:#fff;box-shadow:0 4px 16px rgba(255,190,11,.4)}
+.btn-outline{background:#fff;border:2px solid var(--pink-lt);color:var(--pink2);box-shadow:var(--shadow-sm)}
+.btn-outline:hover{border-color:var(--pink);background:var(--pink-bg)}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;justify-content:center}
+.btn-sm{padding:8px 18px;font-size:13px}
+
+/* ── TITLE ── */
+#s-title{background:radial-gradient(ellipse 70% 60% at 50% 45%,#fff0f6 0%,var(--bg) 100%);gap:16px}
+.title-deco{font-size:clamp(28px,6vw,52px);letter-spacing:10px;animation:floatDeco 3s ease-in-out infinite}
+@keyframes floatDeco{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.title-card{background:#fff;border-radius:var(--r-lg);
+  box-shadow:0 8px 32px rgba(232,111,154,.15);border:1.5px solid rgba(255,182,215,.35);
+  padding:24px 32px;text-align:center;max-width:380px;width:92vw}
+.title-sub{font-size:12px;color:var(--text2);letter-spacing:.15em;font-weight:800;margin-bottom:16px}
+.best-box{background:var(--pink-bg);border-radius:16px;padding:8px 16px;margin-bottom:12px;
+  font-size:12px;color:var(--text2);font-weight:700}
+.best-box span{color:var(--pink2);font-size:18px;font-family:'Fredoka One',cursive}
+
+/* ── PROFILE ── */
+#s-profile{background:linear-gradient(160deg,#fff5fb,#fff8ff);
+  gap:0;padding:16px 16px 80px;overflow-y:auto;justify-content:flex-start}
+#s-profile h2{font-family:'Fredoka One',cursive;color:var(--pink2);font-size:20px;
+  margin:16px 0 14px;text-align:center}
+.profile-layout{display:flex;gap:20px;width:min(680px,94vw);align-items:flex-start;
+  flex-wrap:wrap;justify-content:center}
+.av-preview{display:flex;flex-direction:column;align-items:center;gap:8px}
+#av-preview-img{width:90px;height:90px;border-radius:50%;border:4px solid #fff;
+  object-fit:cover;background:var(--pink-bg);
+  box-shadow:0 0 0 3px var(--pink),0 6px 20px rgba(232,111,154,.35)}
+.id-box{display:flex;flex-direction:column;gap:7px;min-width:180px}
+.id-box label{font-size:12px;color:var(--text2);font-weight:800;letter-spacing:.08em}
+#player-id-input{background:#fff;border:2px solid var(--pink-lt);border-radius:var(--r-xl);
+  color:var(--text);padding:10px 16px;font-size:16px;font-family:'Nunito',sans-serif;
+  font-weight:800;outline:none;transition:border-color .2s}
+#player-id-input:focus{border-color:var(--pink)}
+.av-section{display:flex;flex-direction:column;gap:8px;flex:1;min-width:240px}
+.av-section>label{font-size:12px;color:var(--text2);font-weight:800;letter-spacing:.08em}
+#av-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));
+  gap:8px;max-height:220px;overflow-y:auto;padding:4px 2px}
+.av-item{width:62px;height:62px;border-radius:50%;border:3px solid var(--pink-lt);
+  object-fit:cover;cursor:pointer;transition:all .18s;background:var(--pink-bg);display:block}
+.av-item:hover{border-color:var(--pink);transform:scale(1.08)}
+.av-item.sel{border-color:var(--pink);box-shadow:0 0 0 3px var(--pink);transform:scale(1.12)}
+.profile-btns{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:16px}
+
+/* ── GAME SCREEN ── */
+#s-game{flex-direction:row;padding:0;align-items:stretch;justify-content:center;
+  background:linear-gradient(135deg,#1a0a2e,#2d1b4e,#1a0a2e)}
+@media (pointer:coarse){#s-game{padding-bottom:170px}}
+#particle-canvas{position:absolute;inset:0;z-index:5;pointer-events:none}
+
+.side{width:clamp(88px,13vw,130px);flex-shrink:0;display:flex;flex-direction:column;
+  gap:10px;padding:10px 8px;z-index:10}
+.hud-card{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:10px 12px;width:100%}
+.hud-label{font-size:9px;color:rgba(255,255,255,.5);font-weight:800;
+  letter-spacing:.12em;font-family:'Fredoka One',cursive;text-transform:uppercase;margin-bottom:4px}
+.hud-val{font-family:'Fredoka One',cursive;font-size:clamp(14px,2.2vw,22px);
+  color:#fff;line-height:1.1}
+.hud-val.pink{color:var(--pink)}
+.hud-val.yellow{color:var(--yellow)}
+.hud-val.mint{color:var(--mint)}
+#g-avatar{width:48px;height:48px;border-radius:50%;border:3px solid #fff;
+  object-fit:cover;box-shadow:0 0 0 2px var(--pink)}
+#g-name{font-size:10px;color:#fff;font-weight:800;text-align:center;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.ctrl-hint{font-size:9px;color:rgba(255,255,255,.4);font-weight:700;line-height:1.9}
+#pause-btn{background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.25);
+  border-radius:var(--r-xl);color:#fff;font-family:'Fredoka One',cursive;
+  font-size:12px;padding:6px 10px;cursor:pointer;width:100%;transition:all .18s}
+#pause-btn:hover{background:rgba(255,133,161,.3)}
+.side-gap{margin-top:auto}
+
+/* board */
+#game-mid{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;position:relative;z-index:10;padding:8px 0}
+@media(max-width:700px){#s-game{padding-bottom:170px}}
+#board-wrap{position:relative;border-radius:16px;overflow:hidden;
+  box-shadow:0 0 40px rgba(255,133,161,.3),0 0 80px rgba(199,125,255,.15);
+  border:2px solid rgba(255,255,255,.15)}
+#board-canvas{display:block}
+#next-canvas{display:block;border-radius:10px;background:rgba(0,0,0,.3);
+  border:1px solid rgba(255,255,255,.12)}
+
+/* overlays */
+#g-overlay{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;
+  background:rgba(20,5,40,.82);backdrop-filter:blur(8px);border-radius:14px;z-index:20}
+#g-overlay.off{display:none}
+#ov-title{font-family:'Fredoka One',cursive;font-size:clamp(20px,4vw,36px);
+  color:#fff;text-align:center;text-shadow:0 2px 20px rgba(255,133,161,.6)}
+#ov-sub{font-size:13px;color:rgba(255,255,255,.7);text-align:center;max-width:230px}
+#ov-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+
+#lv-flash{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Fredoka One',cursive;font-size:clamp(24px,5vw,44px);color:var(--yellow);
+  text-shadow:0 0 30px rgba(255,209,102,.8);opacity:0;pointer-events:none;border-radius:14px;z-index:25}
+#lv-flash.show{animation:lvFlash 1.2s forwards}
+@keyframes lvFlash{0%{opacity:0;transform:scale(.8)}20%{opacity:1;transform:scale(1.05)}80%{opacity:1;transform:scale(1)}100%{opacity:0}}
+
+#cl-flash{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+  font-family:'Fredoka One',cursive;font-size:clamp(14px,2.5vw,22px);
+  white-space:nowrap;opacity:0;pointer-events:none;z-index:25;border-radius:30px;
+  padding:4px 16px;background:rgba(0,0,0,.4)}
+#cl-flash.show{animation:clFlash .9s forwards}
+@keyframes clFlash{0%{opacity:0;transform:translateX(-50%) translateY(10px)}
+  20%{opacity:1;transform:translateX(-50%) translateY(0)}
+  80%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-10px)}}
+
+/* sticker */
+#sticker-box{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  pointer-events:none;z-index:28}
+#sticker-img{width:min(200px,60%);height:auto;opacity:0;transform:scale(.4) rotate(-12deg);
+  filter:drop-shadow(0 8px 24px rgba(0,0,0,.6));transition:none}
+#sticker-img.pop-in{animation:popIn .18s cubic-bezier(.34,1.56,.64,1) forwards}
+#sticker-img.pop-out{animation:popOut .25s ease-in forwards}
+@keyframes popIn{to{opacity:1;transform:scale(1) rotate(0deg)}}
+@keyframes popOut{to{opacity:0;transform:scale(1.15) rotate(4deg)}}
+
+/* danger */
+#danger-img{position:absolute;bottom:6px;right:6px;width:min(110px,32%);height:auto;
+  opacity:0;pointer-events:none;z-index:27;
+  filter:drop-shadow(0 4px 12px rgba(255,50,50,.6));transition:opacity .4s}
+#danger-img.show{opacity:1;animation:dangerPulse 1s ease-in-out infinite}
+@keyframes dangerPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+#board-wrap.danger{box-shadow:0 0 0 3px #ff4444,0 0 50px rgba(255,68,68,.5);
+  animation:borderFlash .8s ease-in-out infinite}
+@keyframes borderFlash{0%,100%{box-shadow:0 0 0 3px #ff4444,0 0 40px rgba(255,68,68,.4)}
+  50%{box-shadow:0 0 0 4px #ff6666,0 0 70px rgba(255,68,68,.7)}}
+
+/* ── RESULT ── */
+#s-result{background:linear-gradient(160deg,#fff5fb,#f8f0ff);gap:16px;padding:20px}
+.res-card{background:#fff;border-radius:var(--r-lg);
+  box-shadow:0 8px 32px rgba(232,111,154,.15);border:1.5px solid rgba(255,182,215,.35);
+  padding:24px 28px;width:min(400px,92vw);text-align:center}
+.res-title{font-family:'Fredoka One',cursive;font-size:28px;color:var(--pink2)}
+.res-emoji{font-size:48px;margin:8px 0}
+.res-stats{display:flex;gap:12px;justify-content:center;margin:14px 0;flex-wrap:wrap}
+.stat-box{background:var(--pink-bg);border-radius:16px;padding:10px 18px;min-width:76px}
+.stat-lbl{font-size:10px;color:var(--text2);font-weight:800;letter-spacing:.1em}
+.stat-val{font-family:'Fredoka One',cursive;font-size:22px;color:var(--pink2);line-height:1.2}
+.new-best{font-size:12px;color:var(--yellow2);font-weight:800;animation:pulse .8s infinite}
+#res-vcoin-msg{margin:10px auto 0;padding:9px 14px;border-radius:16px;font-size:12px;font-weight:800;line-height:1.5;max-width:300px;background:var(--purple-bg);color:var(--purple);border:1.5px solid var(--purple-lt)}
+#res-vcoin-msg.hidden{display:none}
+#res-vcoin-msg.checking{background:#fff8e8;color:var(--yellow2);border-color:rgba(255,190,11,.35)}
+#res-vcoin-msg.success{background:#f0fff8;color:#2ab377;border-color:rgba(62,207,142,.35)}
+#res-vcoin-msg.already{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-lt)}
+#res-vcoin-msg.error,#res-vcoin-msg.offline{background:#fff0f0;color:#ff6b6b;border-color:rgba(255,107,107,.35)}
+
+/* ── TOP PLAYER CARD / PROFILE META ── */
+.tetris-player-chip{
+  position:fixed;top:12px;right:12px;z-index:120;
+  display:flex;align-items:center;gap:10px;max-width:min(320px,calc(100vw - 68px));
+  background:rgba(255,255,255,.92);backdrop-filter:blur(12px);
+  border:1.5px solid rgba(255,182,215,.55);border-radius:22px;
+  box-shadow:0 6px 18px rgba(232,111,154,.14);
+  padding:8px 12px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;
+  transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,opacity .16s ease;
+}
+.tetris-player-chip:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(232,111,154,.22);border-color:var(--pink)}
+.tetris-player-chip:active{transform:scale(.98)}
+.tetris-player-chip:focus-visible{outline:3px solid rgba(255,133,161,.35);outline-offset:3px}
+.tetris-player-chip.off{display:none}
+#top-avatar{width:46px;height:46px;border-radius:50%;object-fit:cover;background:var(--pink-bg);border:3px solid #fff;box-shadow:0 0 0 2px var(--pink)}
+.top-player-info{display:flex;flex-direction:column;gap:2px;min-width:0;line-height:1.2}
+#top-name{font-size:13px;color:var(--text);font-weight:900;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#top-player-key,#top-player-title,#top-vcoin-balance{font-size:10px;color:var(--text2);font-weight:800;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.title-chip-inline{color:var(--purple)!important}
+.wallet-chip-inline{color:#d59a00!important}
+.profile-help{width:min(480px,94vw);background:#fff;border:1.5px solid rgba(255,182,215,.45);border-radius:20px;box-shadow:var(--shadow-sm);padding:12px 14px;margin:-4px 0 14px;font-size:12px;color:var(--text2);font-weight:700;line-height:1.6}
+.profile-status-grid{width:min(480px,94vw);display:grid;grid-template-columns:1fr;gap:8px;margin:0 0 14px}
+.identity-box,.profile-wallet-box,.profile-title-panel{background:#fff;border:1.5px solid var(--pink-lt);border-radius:18px;box-shadow:var(--shadow-sm);padding:11px 14px}
+.identity-box>div,.profile-wallet-box span,.profile-title-current span{display:block;font-size:11px;color:var(--text2);font-weight:900;letter-spacing:.06em;margin-bottom:4px}
+.identity-box strong,.profile-wallet-box strong,.profile-title-current strong{font-size:15px;color:var(--pink2);font-weight:900}
+.identity-box code{display:block;margin-top:4px;font-size:10px;line-height:1.4;color:var(--text2);word-break:break-all;background:var(--pink-bg);border-radius:10px;padding:6px 8px}
+.profile-wallet-box strong{font-family:'Fredoka One',cursive;color:#d59a00;font-size:20px}
+.profile-title-current strong{color:var(--purple)}
+#s-profile{padding-bottom:190px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.profile-data-card{
+  width:min(480px,94vw);
+  margin:10px 0 14px;
+  overflow:visible;
+  flex:0 0 auto;
+}
+.profile-data-toggle{
+  width:100%;
+  min-height:58px;
+  border:1.8px solid var(--purple-lt);
+  background:linear-gradient(135deg,#fff,var(--purple-bg));
+  color:var(--purple);
+  padding:13px 16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  font-family:'Nunito','Noto Sans TC',sans-serif;
+  font-weight:900;
+  cursor:pointer;
+  border-radius:22px;
+  box-shadow:0 8px 22px rgba(155,93,229,.16),var(--shadow-sm);
+  position:relative;
+  z-index:1;
+}
+.profile-data-toggle span{font-size:15px;line-height:1.2;white-space:nowrap}
+.profile-data-toggle small{font-size:10px;color:var(--text2);font-weight:900;line-height:1.2;white-space:nowrap}
+.profile-data-toggle::after{
+  content:"⌃";
+  font-size:16px;
+  color:var(--purple);
+  font-weight:900;
+  margin-left:2px;
+}
+.profile-data-content{
+  margin-top:8px;
+  padding:12px;
+  background:#fff;
+  border:1.5px solid rgba(255,182,215,.45);
+  border-radius:20px;
+  box-shadow:var(--shadow-sm);
+  max-height:min(300px,42vh);
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.profile-data-card.collapsed .profile-data-content{display:none}
+.profile-data-card.collapsed .profile-data-toggle{
+  min-height:58px;
+  border-color:var(--purple);
+  background:linear-gradient(135deg,#fff,var(--purple-bg));
+}
+.profile-data-card.collapsed .profile-data-toggle::after{content:"⌄"}
+.profile-data-card.collapsed .profile-data-toggle small::before{content:"已收合，點擊展開"}
+.profile-data-card.collapsed #profile-data-toggle-hint{font-size:0}
+.profile-status-grid{margin:0}
+.profile-save-note{font-size:11px;color:var(--text2);margin-top:8px;margin-bottom:12px}
+.profile-floating-actions{
+  position:fixed;left:50%;bottom:14px;transform:translateX(-50%);
+  z-index:170;width:min(540px,calc(100vw - 24px));
+  display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center;
+  background:rgba(255,255,255,.94);border:1.5px solid rgba(255,182,215,.62);
+  border-radius:22px;padding:10px 12px;box-shadow:0 10px 30px rgba(155,93,229,.18);
+  backdrop-filter:blur(12px);
+}
+.profile-floating-actions .btn{margin:0}
+.profile-floating-actions .btn-p{min-width:126px}
+#title-grid-wrap{
+  width:min(480px,94vw);margin-top:12px;margin-bottom:124px;background:#fff;border-radius:20px;
+  border:1.5px solid var(--purple-lt);padding:14px;box-shadow:var(--shadow-sm);
+}
+#title-grid-title{font-size:13px;font-weight:900;color:var(--purple);margin-bottom:10px}
+.title-filter-row{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+.title-filter-btn{
+  border:1.5px solid var(--purple-lt);background:#fff;color:var(--purple);
+  border-radius:999px;padding:6px 10px;font-family:'Nunito','Noto Sans TC',sans-serif;
+  font-size:11px;font-weight:900;cursor:pointer;box-shadow:var(--shadow-sm);
+}
+.title-filter-btn.active{background:linear-gradient(135deg,var(--purple),var(--pink2));color:#fff;border-color:transparent}
+.title-empty-msg{
+  color:var(--text2);font-size:12px;font-weight:800;text-align:center;
+  line-height:1.6;padding:18px 10px;background:var(--pink-bg);border-radius:16px;
+}
+.title-source{font-size:10px;color:var(--text2);font-weight:900;margin-top:3px}
+.title-status{font-size:10px;font-weight:900;margin-top:5px;color:var(--purple)}
+#vcoin-history-wrap{
+  width:min(480px,94vw);margin-top:12px;margin-bottom:124px;background:#fff;border-radius:20px;
+  border:1.5px solid var(--yellow);padding:14px;box-shadow:var(--shadow-sm);
+}
+#vcoin-history-title{font-size:13px;font-weight:900;color:#d59a00;margin-bottom:10px}
+#vcoin-history-summary{
+  background:#fff8e8;border:1.5px solid rgba(255,190,11,.35);border-radius:16px;
+  padding:10px 12px;color:#d59a00;font-weight:900;font-size:12px;margin-bottom:10px;
+}
+#vcoin-history-list{
+  display:flex;flex-direction:column;gap:8px;max-height:min(260px,34vh);
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+.vcoin-log-item{background:#fff;border:1.5px solid rgba(255,190,11,.28);border-radius:16px;padding:10px 12px}
+.vcoin-log-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.vcoin-log-source{font-size:12px;font-weight:900;color:var(--text)}
+.vcoin-log-amount{font-family:'Fredoka One',cursive;font-size:16px;color:#d59a00;white-space:nowrap}
+.vcoin-log-amount.negative{color:#e63946}
+.vcoin-log-meta{font-size:10px;color:var(--text2);font-weight:800;line-height:1.5;margin-top:4px}
+.vcoin-empty-msg{
+  color:var(--text2);font-size:12px;font-weight:800;text-align:center;line-height:1.6;
+  padding:18px 10px;background:var(--pink-bg);border-radius:16px;
+}
+.vcoin-wallet-guide{
+  display:flex;flex-direction:column;gap:8px;
+}
+.vcoin-wallet-section-title{
+  font-size:12px;font-weight:900;color:#d59a00;margin:2px 0 4px;
+}
+.vcoin-earn-card{
+  background:#fff;border:1.5px solid rgba(255,190,11,.28);
+  border-radius:16px;padding:10px 12px;
+}
+.vcoin-earn-card strong{
+  display:block;font-size:12px;color:var(--text);font-weight:900;margin-bottom:4px;
+}
+.vcoin-earn-card span{
+  display:block;font-size:11px;color:var(--text2);font-weight:800;line-height:1.55;
+}
+.vcoin-wallet-coming{
+  color:var(--text2);font-size:12px;font-weight:900;text-align:center;
+  line-height:1.6;padding:12px 10px;background:var(--pink-bg);border-radius:16px;
+}
+.vcoin-task-card{
+  background:#fff;border:1.5px solid rgba(255,190,11,.28);
+  border-radius:16px;padding:10px 12px;position:relative;
+}
+.vcoin-task-card.done{
+  background:#fffaf0;border-color:rgba(255,190,11,.45);opacity:.86;
+}
+.vcoin-task-title{
+  font-size:12px;color:var(--text);font-weight:900;margin-bottom:4px;
+}
+.vcoin-task-reward{
+  font-size:11px;color:#d59a00;font-weight:900;line-height:1.55;
+}
+.vcoin-task-note{
+  font-size:10px;color:var(--text2);font-weight:800;line-height:1.55;margin-top:4px;
+}
+.vcoin-task-status{
+  font-size:11px;font-weight:900;color:var(--purple);margin-top:6px;
+}
+.vcoin-task-card.done .vcoin-task-status{color:#2a9d8f}
+.vcoin-task-stamp{
+  display:inline-block;margin-top:6px;border-radius:999px;padding:4px 8px;
+  background:#fff8e8;color:#d59a00;font-size:10px;font-weight:900;
+}
+#title-grid{display:flex;flex-direction:column;gap:8px}
+.title-item{
+  background:#fff;border:1.5px solid var(--purple-lt);border-radius:16px;
+  padding:10px 12px;transition:border-color .16s,background .16s,opacity .16s;
+}
+.title-item.locked{opacity:.48}
+.title-item.equipped{border-color:var(--purple);background:var(--purple-bg)}
+.title-name{font-size:13px;font-weight:900;color:var(--purple);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.title-condition{font-size:10px;color:var(--text2);margin-top:3px;line-height:1.4}
+.title-actions{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.title-badge{font-size:10px;font-weight:900;color:var(--purple);background:#fff;border:1.5px solid var(--purple-lt);border-radius:999px;padding:4px 10px}
+.title-equip-btn{padding:6px 14px;border-radius:999px;border:0;background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;font-family:'Nunito',sans-serif;font-size:11px;font-weight:900;cursor:pointer}
+.title-equip-btn:active{transform:scale(.96)}
+@media(max-width:720px){
+  #fs-btn{top:8px;left:8px;right:auto;z-index:180}
+  .tetris-player-chip{top:8px;right:8px;max-width:calc(100vw - 62px);padding:6px 9px;border-radius:18px}
+  #top-avatar{width:38px;height:38px}
+  #top-name{font-size:12px;max-width:170px}
+  #top-player-key,#top-player-title,#top-vcoin-balance{font-size:9px;max-width:170px}
+}
+@media(max-width:420px){
+  #top-player-title{display:block;max-width:150px;font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tetris-player-chip{right:8px;max-width:calc(100vw - 62px)}
+  #s-profile{padding-bottom:142px}
+  .profile-floating-actions{bottom:10px;border-radius:20px;padding:9px 8px;gap:6px}
+  .profile-floating-actions .btn{font-size:11px;padding:9px 10px}
+  .profile-floating-actions .btn-p{min-width:118px}
+  .profile-data-toggle{min-height:56px;padding:12px 14px}
+  .profile-data-toggle span{font-size:14px}
+  .profile-data-toggle small{font-size:9px}
+  .profile-data-content{max-height:38vh}
+  .lb-floating-actions{bottom:10px}
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── LEADERBOARD ── */
+#s-lb{background:linear-gradient(160deg,#fff5fb,#f8f0ff);gap:12px;
+  padding:16px 16px 112px;overflow-y:auto;justify-content:flex-start}
+#s-lb h2{font-family:'Fredoka One',cursive;color:var(--pink2);font-size:22px;margin-top:12px}
+
+.lb-card{background:#fff;border-radius:var(--r-lg);
+  box-shadow:0 4px 24px rgba(232,111,154,.12);border:1.5px solid rgba(255,182,215,.3);
+  padding:14px;width:min(500px,94vw)}
+.lb-row{display:flex;align-items:center;gap:10px;background:var(--pink-bg);
+  border-radius:12px;padding:8px 12px;margin-bottom:6px;transition:transform .15s}
+.lb-row:hover{transform:translateX(4px)}
+.lb-row.r1{background:linear-gradient(135deg,rgba(255,209,102,.2),rgba(255,190,11,.1));border:1.5px solid rgba(255,190,11,.3)}
+.lb-row.r2{background:linear-gradient(135deg,rgba(200,200,220,.15),rgba(200,200,220,.05));border:1.5px solid rgba(200,200,220,.3)}
+.lb-row.r3{background:linear-gradient(135deg,rgba(255,160,80,.15),rgba(205,127,50,.05));border:1.5px solid rgba(205,127,50,.25)}
+.lb-row.mine{border:2px solid var(--pink)}
+.lb-rank{width:26px;text-align:center;font-family:'Fredoka One',cursive;font-size:16px;color:var(--text2);flex-shrink:0}
+.lb-av{width:34px;height:34px;border-radius:50%;object-fit:cover;background:var(--pink-bg);
+  border:2px solid var(--pink-lt);flex-shrink:0;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;font-size:16px}
+.lb-av img{width:100%;height:100%;object-fit:cover}
+.lb-info{flex:1;min-width:0}
+.lb-name{font-size:13px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-title{font-size:10px;color:var(--purple);font-weight:900;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-meta{font-size:10px;color:var(--text2);font-weight:600}
+.lb-score{font-family:'Fredoka One',cursive;font-size:18px;color:var(--pink2)}
+.lb-floating-actions{
+  position:fixed;left:50%;bottom:14px;transform:translateX(-50%);
+  z-index:170;width:min(360px,calc(100vw - 24px));display:flex;justify-content:center;
+  background:rgba(255,255,255,.94);border:1.5px solid rgba(255,182,215,.62);
+  border-radius:22px;padding:10px 12px;box-shadow:0 10px 30px rgba(155,93,229,.18);
+  backdrop-filter:blur(12px);
+}
+.lb-floating-actions .btn{margin:0;width:100%}
+.lb-msg{text-align:center;color:var(--text2);font-size:13px;padding:20px}
+
+/* ── MUSIC PLAYER ── */
+.music-mini{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);
+  border-radius:18px;padding:8px 10px;width:100%}
+.mc-row{display:flex;gap:4px;align-items:center;margin-top:6px}
+.mc-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  border-radius:8px;color:#fff;font-size:13px;padding:4px 7px;cursor:pointer;
+  transition:all .15s;font-family:'Fredoka One',cursive}
+.mc-btn:active{transform:scale(.88)}
+.mc-btn:hover{background:rgba(255,133,161,.35)}
+.mini-title{font-size:10px;color:#fff;font-weight:800;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+
+#music-modal{position:fixed;inset:0;z-index:200;
+  background:rgba(10,5,25,.85);backdrop-filter:blur(12px);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s}
+#music-modal.show{opacity:1;pointer-events:all}
+.mp{background:linear-gradient(145deg,#1e0d38,#2d1a50);
+  border:1.5px solid rgba(255,133,161,.25);border-radius:var(--r-lg);
+  padding:22px;width:min(400px,94vw);display:flex;flex-direction:column;gap:14px}
+.mp-head{display:flex;align-items:center;justify-content:space-between}
+.mp-ttl{font-family:'Fredoka One',cursive;font-size:18px;color:#fff}
+.mp-x{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  border-radius:50%;width:30px;height:30px;cursor:pointer;color:#fff;font-size:15px;
+  display:flex;align-items:center;justify-content:center;transition:all .15s}
+.mp-x:hover{background:rgba(255,107,107,.4)}
+.mp-now{background:rgba(255,255,255,.06);border-radius:18px;padding:14px;text-align:center}
+.mp-disc{width:64px;height:64px;border-radius:50%;margin:0 auto 8px;
+  background:linear-gradient(135deg,var(--pink),var(--purple));
+  display:flex;align-items:center;justify-content:center;font-size:26px;
+  box-shadow:0 6px 20px rgba(232,111,154,.4);border:3px solid rgba(255,255,255,.2);
+  animation:discSpin 3s linear infinite paused}
+.mp-disc.playing{animation-play-state:running}
+@keyframes discSpin{to{transform:rotate(360deg)}}
+.mp-nt{font-family:'Fredoka One',cursive;font-size:14px;color:#fff;margin-bottom:2px}
+.mp-ar{font-size:11px;color:rgba(255,255,255,.5);font-weight:700}
+.mp-prog-row{display:flex;align-items:center;gap:8px}
+.mp-time{font-size:10px;color:rgba(255,255,255,.45);font-weight:700;min-width:30px;font-family:'Fredoka One',cursive}
+.mp-prog{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.15);cursor:pointer;position:relative;overflow:hidden}
+.mp-prog-fill{height:100%;border-radius:2px;width:0%;background:linear-gradient(90deg,var(--pink),var(--purple2));pointer-events:none}
+.mp-ctrl{display:flex;align-items:center;justify-content:center;gap:10px}
+.mpb{background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.18);
+  border-radius:50%;cursor:pointer;color:#fff;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;font-size:16px}
+.mpb:hover{background:rgba(255,133,161,.3);border-color:var(--pink);transform:scale(1.08)}
+.mpb:active{transform:scale(.92)}
+.mpb.sm{width:34px;height:34px;font-size:14px}
+.mpb.lg{width:50px;height:50px;font-size:22px;background:linear-gradient(135deg,var(--pink),var(--pink2));border-color:transparent;box-shadow:0 4px 16px rgba(232,111,154,.5)}
+.mpb.act{color:var(--pink);border-color:var(--pink);background:rgba(255,133,161,.15)}
+.mp-vol-row{display:flex;align-items:center;gap:8px}
+.mp-vol-row span{font-size:13px;color:rgba(255,255,255,.5)}
+.mp-vol{flex:1;-webkit-appearance:none;height:4px;border-radius:2px;outline:none;cursor:pointer;background:rgba(255,255,255,.2)}
+.mp-vol::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--pink);cursor:pointer}
+.mp-list-hd{font-size:11px;color:rgba(255,255,255,.4);font-weight:800;letter-spacing:.1em}
+.mp-list{display:flex;flex-direction:column;gap:4px;max-height:160px;overflow-y:auto}
+.mp-list::-webkit-scrollbar{width:3px}
+.mp-list::-webkit-scrollbar-thumb{background:rgba(255,133,161,.4);border-radius:2px}
+.mp-item{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.05);
+  border-radius:10px;padding:7px 10px;cursor:pointer;transition:all .15s;border:1px solid transparent}
+.mp-item:hover{background:rgba(255,133,161,.12);border-color:rgba(255,133,161,.2)}
+.mp-item.on{background:rgba(255,133,161,.18);border-color:rgba(255,133,161,.35)}
+.mp-item-num{font-family:'Fredoka One',cursive;font-size:12px;color:rgba(255,255,255,.3);width:16px;flex-shrink:0}
+.mp-item-info{flex:1;min-width:0}
+.mp-item-name{font-size:12px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-item-dur{font-size:10px;color:rgba(255,255,255,.4)}
+.mp-badge{font-size:9px;padding:2px 7px;border-radius:10px;font-weight:800;background:rgba(255,133,161,.2);color:var(--pink);letter-spacing:.08em}
+
+/* ── MOBILE CONTROLS ── */
+#mob-ctrl{
+  position:fixed;bottom:0;left:0;right:0;z-index:50;display:none;
+  background:transparent;
+  border-top:0;
+  padding:0 22px calc(14px + env(safe-area-inset-bottom));
+  align-items:flex-end;justify-content:space-between;gap:18px;
+  height:170px;
+  pointer-events:none;
+}
+/* Left side: move */
+.dpad{
+  display:flex;
+  align-items:flex-end;
+  justify-content:flex-start;
+  gap:18px;
+  pointer-events:auto;
+}
+/* Right side: rotate / soft drop / hard drop */
+.action-btns{
+  position:relative;
+  width:clamp(172px,26vw,230px);
+  height:clamp(124px,18vw,168px);
+  pointer-events:auto;
+}
+.action-row{display:contents;}
+
+.mob-btn{
+  background:rgba(255,255,255,.15);
+  border:2px solid rgba(255,255,255,.58);
+  border-radius:50%;
+  color:rgba(255,255,255,.92);
+  font-size:24px;
+  cursor:pointer;text-align:center;
+  font-family:'Fredoka One','Nunito','Noto Sans TC',sans-serif;user-select:none;
+  transition:background .1s,transform .1s,border-color .1s,box-shadow .1s;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+  box-shadow:0 3px 10px rgba(0,0,0,.16);
+}
+.mob-btn:active{
+  background:rgba(255,255,255,.33);
+  border-color:rgba(255,255,255,.96);
+  transform:scale(.94);
+  box-shadow:0 4px 14px rgba(255,255,255,.15);
+}
+.dpad .mob-btn{
+  width:clamp(64px,9vw,84px);
+  height:clamp(64px,9vw,84px);
+  font-size:28px;
+}
+.dpad .mob-btn.center{display:none;}
+.action-btn-lg{
+  position:absolute;
+  top:0;
+  left:50%;
+  transform:translateX(-50%);
+  width:clamp(72px,10vw,90px);
+  height:clamp(72px,10vw,90px);
+  font-size:24px;
+  border-radius:50%;
+  background:rgba(255,255,255,.17);
+  border:2px solid rgba(255,255,255,.64);
+}
+.action-btn-lg:active{
+  background:rgba(255,255,255,.35);
+  transform:translateX(-50%) scale(.94);
+}
+.action-btn-sm{
+  position:absolute;
+  bottom:0;
+  width:clamp(64px,9vw,82px);
+  height:clamp(64px,9vw,82px);
+  font-size:22px;
+  border-radius:50%;
+}
+.action-row .action-btn-sm:first-child{left:0;}
+.action-row .action-btn-sm:last-child{right:0;}
+.action-label{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:-16px;
+  font-size:10px;color:rgba(255,255,255,.62);font-weight:900;margin-top:0;letter-spacing:.06em;
+  text-shadow:0 1px 4px rgba(0,0,0,.45);
+  pointer-events:none;
+}
+@media(max-height:700px) and (max-width:900px){
+  #mob-ctrl{height:150px;padding-left:18px;padding-right:18px;gap:14px}
+  .dpad{gap:14px;}
+  .dpad .mob-btn{width:clamp(58px,8.5vw,76px);height:clamp(58px,8.5vw,76px)}
+  .action-btns{width:clamp(158px,24vw,208px);height:clamp(112px,17vw,150px)}
+  .action-btn-lg{width:clamp(64px,9vw,82px);height:clamp(64px,9vw,82px)}
+  .action-btn-sm{width:clamp(58px,8.5vw,76px);height:clamp(58px,8.5vw,76px)}
+}
+@media(max-height:620px) and (max-width:900px){
+  #mob-ctrl{height:138px;padding-left:16px;padding-right:16px;gap:12px}
+  .dpad{gap:12px;}
+  .dpad .mob-btn{width:56px;height:56px}
+  .action-btns{width:150px;height:108px}
+  .action-btn-lg{width:62px;height:62px}
+  .action-btn-sm{width:56px;height:56px}
+}
+/* toast */
+#toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);
+  background:rgba(26,10,46,.9);color:#fff;border-radius:var(--r-xl);
+  padding:10px 20px;font-size:13px;font-weight:700;z-index:999;
+  white-space:pre-line;text-align:center;
+  transition:opacity .3s;opacity:0;pointer-events:none;
+  border:1px solid rgba(255,133,161,.3)}
+#toast.show{opacity:1}
+.admin-lnk{position:fixed;bottom:4px;right:8px;font-size:9px;color:rgba(255,255,255,.12);cursor:pointer;z-index:100}
+
+/* fullscreen btn */
+#fs-btn{
+  position:fixed;top:10px;left:10px;right:auto;z-index:180;
+  background:linear-gradient(135deg,var(--purple),var(--pink2));
+  border:2px solid rgba(255,255,255,.95);
+  border-radius:12px;color:#fff;font-size:18px;font-weight:900;
+  width:40px;height:40px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 22px rgba(155,93,229,.34),0 2px 8px rgba(232,111,154,.28);
+  transition:transform .18s,box-shadow .18s,filter .18s;backdrop-filter:blur(6px);
+}
+#fs-btn:hover{filter:brightness(1.08);box-shadow:0 10px 26px rgba(155,93,229,.42),0 3px 10px rgba(232,111,154,.32);}
+#fs-btn:active{transform:scale(.95);}
+#fs-btn.off{display:none !important;}
+
+@media(max-width:420px){
+  #s-profile{padding-bottom:230px}
+  .profile-floating-actions{gap:6px;padding:8px 10px}
+  .profile-floating-actions .btn{font-size:10px;padding:7px 8px}
+  .profile-floating-actions .btn-p{min-width:108px}
+  #vcoin-history-wrap,#title-grid-wrap{margin-bottom:150px}
+  #vcoin-history-list{max-height:30vh}
+}
+
+/* v1.3.5-test-5: desktop wide view must never show mobile controls */
+@media (min-width:901px){
+  #mob-ctrl{display:none!important}
+  #s-game{padding-bottom:0!important}
+}
+@media (max-width:900px){
+  #s-game{padding-bottom:170px}
+}
+
+/* v1.3.5-test-6: mobile controls are visible only while game screen is active */
+body:not(.game-active) #mob-ctrl{display:none!important}
+</style>
+<link rel="stylesheet" href="universe-shell.css">
+</head>
+<body>
+<div id="root">
+
+<!-- TOP PLAYER CARD -->
+<div id="top-player-card" class="player-chip tetris-player-chip" role="button" tabindex="0" title="開啟玩家設定">
+  <img id="top-avatar" alt="玩家頭像">
+  <div class="top-player-info">
+    <strong id="top-name">玩家</strong>
+    <span id="top-player-key">身份：尚未設定</span>
+    <span id="top-player-title" class="title-chip-inline">稱號：未裝備</span>
+    <span id="top-vcoin-balance" class="wallet-chip-inline">🪙 V幣：—</span>
+  </div>
+</div>
+
+<!-- TITLE -->
+<div id="s-title" class="screen">
+  <div class="title-deco">🎈🎪🎈</div>
+  <div class="logo" id="logo-title">氣球小V<br>方塊派對<small>BALLOON V TETRIS</small></div>
+  <div style="font-size:11px;color:rgba(155,93,229,.4);letter-spacing:.15em;margin-top:4px;">v1.3.7</div>
+  <div class="title-card">
+    <div class="title-sub">🎈 用氣球堆疊你的世界 🎈</div>
+    <div class="best-box">最高紀錄：<span id="best-disp">—</span></div>
+    <div class="btn-row">
+      <button class="btn btn-p" id="btn-start">🎮 開始遊戲</button>
+      <button class="btn btn-outline" id="btn-lb">🏆 排行榜</button>
+    </div>
+    <div class="btn-row" style="margin-top:4px">
+      <button class="btn btn-outline btn-sm" id="btn-change-profile">👤 角色設定</button>
+      <button class="btn btn-outline btn-sm" id="btn-music-title">🎵 音樂</button>
+      <button class="btn btn-outline btn-sm" id="btn-how">🎹 操作說明</button>
+    </div>
+    <div class="btn-row" style="margin-top:4px">
+      <button class="btn btn-outline btn-sm" onclick="window.top.location.href='https://balloonv.com/%e6%b0%a3%e7%90%83%e5%b0%8fv%e9%ad%94%e6%b3%95%e6%b4%be%e5%b0%8d%e9%81%8a%e6%88%b2'">🏠 遊戲選單</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div id="s-profile" class="screen off" style="overflow-y:auto;justify-content:flex-start;padding:16px;">
+  <h2 style="margin:12px 0 16px;font-size:20px;">✨ 玩家設定</h2>
+  <div class="profile-help">ID + 身份頭像就像遊戲身分證，會決定成績、解鎖和排行榜歸在哪一個玩家身上；只要更換 ID 或身份頭像，就會變成另一個玩家身份。顯示頭像只是外觀造型，不會影響成績。</div>
+
+  <!-- ID 輸入 -->
+  <div style="width:min(480px,94vw);margin-bottom:12px;">
+    <div style="font-size:12px;font-weight:800;color:var(--text2);margin-bottom:4px;">🏷️ 玩家 ID（最多 16 字）</div>
+    <input type="text" id="player-id-input" maxlength="16" placeholder="輸入你的名字..."
+      style="width:100%;background:#fff;border:2px solid var(--pink-lt);border-radius:var(--r-xl);color:var(--text);padding:10px 16px;font-size:16px;outline:none;">
+    <div id="profile-id-dirty-hint" style="font-size:11px;color:#ff6b6b;margin-top:4px;display:none;">⚠️ 你正在變更玩家身份，請按「確認」完成切換。</div>
+  </div>
+
+  <!-- 雙頭像區塊 -->
+  <div style="width:min(480px,94vw);display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
+    <!-- 身份頭像 -->
+    <div style="flex:1;min-width:180px;background:#fff;border-radius:20px;border:1.5px solid var(--pink-lt);padding:14px;text-align:center;box-shadow:var(--shadow-sm);">
+      <div style="font-size:12px;font-weight:800;color:var(--text2);margin-bottom:6px;">🔑 身份頭像</div>
+      <img id="base-avatar-preview" src="" alt="" style="width:64px;height:64px;border-radius:50%;border:3px solid var(--pink);object-fit:cover;margin:0 auto 6px;display:block;">
+      <div style="font-size:10px;color:var(--text2);line-height:1.4;margin-bottom:8px;">遊戲身分證：ID + 身份頭像決定成績與解鎖歸屬</div>
+      <button class="btn btn-outline btn-sm" id="btn-change-base-avatar">變更身份頭像</button>
+    </div>
+    <!-- 顯示頭像 -->
+    <div style="flex:1;min-width:180px;background:#fff;border-radius:20px;border:1.5px solid var(--pink-lt);padding:14px;text-align:center;box-shadow:var(--shadow-sm);">
+      <div style="font-size:12px;font-weight:800;color:var(--text2);margin-bottom:6px;">🎨 顯示頭像</div>
+      <img id="av-preview-img" src="" alt="" style="width:64px;height:64px;border-radius:50%;border:3px solid var(--purple);object-fit:cover;margin:0 auto 6px;display:block;">
+      <div style="font-size:10px;color:var(--text2);line-height:1.4;margin-bottom:8px;">外觀造型：只改畫面顯示</div>
+      <button class="btn btn-outline btn-sm" id="btn-change-display-avatar">變更顯示頭像</button>
+    </div>
+  </div>
+
+  <!-- 玩家資料（可收合） -->
+  <div id="profile-data-card" class="profile-data-card">
+    <button id="profile-data-toggle" class="profile-data-toggle" type="button" aria-expanded="true">
+      <span>👤 玩家資料</span>
+      <small id="profile-data-toggle-hint">點擊可收合</small>
+    </button>
+    <div id="profile-data-content" class="profile-data-content">
+      <div class="profile-status-grid">
+        <div class="identity-box">
+          <div>目前遊戲身份：</div>
+          <strong id="profile-identity-label">身份：—</strong>
+          <code id="profile-player-key">—</code>
+        </div>
+        <div class="profile-wallet-box">
+          <span>🪙 目前 V幣</span>
+          <strong id="profile-vcoin-balance">—</strong>
+        </div>
+        <div class="profile-title-panel">
+          <div class="profile-title-current">
+            <span>🎖 目前稱號</span>
+            <strong id="profile-equipped-title">未裝備</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部浮動按鈕列 -->
+  <div class="profile-floating-actions">
+    <button class="btn btn-p" id="btn-profile-ok">🎈 確認身份</button>
+    <button class="btn btn-outline btn-sm" id="btn-unlock-collection">🏆 頭像收藏</button>
+    <button class="btn btn-outline btn-sm" id="btn-title-collection">🎖 稱號收藏</button>
+    <button class="btn btn-outline btn-sm" id="btn-vcoin-history">🪙 V幣錢包</button>
+    <button class="btn btn-outline btn-sm" id="btn-profile-back">← 返回</button>
+  </div>
+  <!-- 頭像選擇 Grid（動態顯示）-->
+  <div id="av-grid-wrap" style="display:none;width:min(480px,94vw);margin-top:12px;margin-bottom:124px;background:#fff;border-radius:20px;border:1.5px solid var(--pink-lt);padding:14px;box-shadow:var(--shadow-sm);">
+    <div id="av-grid-title" style="font-size:13px;font-weight:800;color:var(--text2);margin-bottom:10px;"></div>
+    <div id="av-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:8px;max-height:240px;overflow-y:auto;"></div>
+  </div>
+
+  <!-- 稱號收藏 Grid（動態顯示）-->
+  <div id="title-grid-wrap" style="display:none;">
+    <div id="title-grid-title">🎖 稱號收藏</div>
+    <div id="title-grid"></div>
+  </div>
+
+  <!-- V幣紀錄（動態顯示）-->
+  <div id="vcoin-history-wrap" style="display:none;">
+    <div id="vcoin-history-title">🪙 V幣錢包</div>
+    <div id="vcoin-history-summary"></div>
+    <div id="vcoin-history-list"></div>
+  </div>
+  <div class="profile-save-note">設定會自動儲存，下次直接開始！</div>
+</div>
+
+<!-- GAME -->
+<div id="s-game" class="screen off">
+  <canvas id="particle-canvas"></canvas>
+  <!-- LEFT -->
+  <div class="side">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+      <img id="g-avatar" src="" alt="">
+      <div id="g-name">Player</div>
+    </div>
+    <div class="hud-card"><div class="hud-label">⭐ 分數</div><div class="hud-val pink" id="hud-score">0</div></div>
+    <div class="hud-card"><div class="hud-label">🔥 連消</div><div class="hud-val yellow" id="hud-combo">×0</div></div>
+    <div class="hud-card"><div class="hud-label">📦 消除行</div><div class="hud-val mint" id="hud-lines">0</div></div>
+    <button id="pause-btn">⏸ 暫停</button>
+    <div class="side-gap"></div>
+    <button class="btn btn-outline btn-sm" id="btn-quit" style="width:100%;font-size:11px">🏠 離開</button>
+  </div>
+  <!-- CENTER -->
+  <div id="game-mid">
+    <div id="board-wrap">
+      <canvas id="board-canvas"></canvas>
+      <div id="g-overlay" class="off">
+        <div id="ov-title"></div>
+        <div id="ov-sub"></div>
+        <div id="ov-btns"></div>
+      </div>
+      <div id="lv-flash">🌟 LEVEL UP! 🌟</div>
+      <div id="cl-flash"></div>
+      <div id="sticker-box"><img id="sticker-img" src="" alt=""></div>
+      <img id="danger-img" src="" alt="">
+    </div>
+  </div>
+  <!-- RIGHT -->
+  <div class="side">
+    <div class="hud-card"><div class="hud-label">🎯 關卡</div><div class="hud-val yellow" id="hud-level">1</div></div>
+    <div class="hud-card">
+      <div class="hud-label">NEXT</div>
+      <canvas id="next-canvas" width="76" height="76"></canvas>
+    </div>
+    <div class="hud-card">
+      <div class="hud-label" style="margin-bottom:6px">🎹 操作</div>
+      <div class="ctrl-hint">← → 移動<br>↑ 旋轉<br>↓ 加速<br>空白 落下<br>Esc 暫停</div>
+    </div>
+    <!-- music mini -->
+    <div class="music-mini">
+      <div class="hud-label">🎵 音樂</div>
+      <div class="mini-title" id="mini-title">未播放</div>
+      <div class="mc-row">
+        <button class="mc-btn" id="mc-prev">⏮</button>
+        <button class="mc-btn" id="mc-play">▶</button>
+        <button class="mc-btn" id="mc-next">⏭</button>
+        <button class="mc-btn" id="mc-list">☰</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="s-result" class="screen off">
+  <div class="res-card">
+    <div class="res-title">遊戲結束！</div>
+    <div class="res-emoji" id="res-emoji">🎈</div>
+    <div class="res-stats">
+      <div class="stat-box"><div class="stat-lbl">⭐ 分數</div><div class="stat-val" id="res-score">0</div></div>
+      <div class="stat-box"><div class="stat-lbl">🎯 關卡</div><div class="stat-val" id="res-level">1</div></div>
+      <div class="stat-box"><div class="stat-lbl">📦 消除</div><div class="stat-val" id="res-lines">0</div></div>
+      <div class="stat-box"><div class="stat-lbl">🔥 最高連消</div><div class="stat-val" id="res-combo">0</div></div>
+    </div>
+    <div id="new-best" class="new-best" style="display:none">🏆 新紀錄！</div>
+    <div id="res-vcoin-msg" class="hidden"></div>
+    <div class="btn-row">
+      <button class="btn btn-p" id="btn-replay">🔄 再玩一次</button>
+      <button class="btn btn-outline" id="btn-res-lb">🏆 排行榜</button>
+    </div>
+    <div class="btn-row" style="margin-top:4px">
+      <button class="btn btn-outline btn-sm" id="btn-res-home">🏠 回首頁</button>
+      <button class="btn btn-outline btn-sm" id="btn-res-profile">👤 角色設定</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEADERBOARD -->
+<div id="s-lb" class="screen off">
+  <h2>🏆 排行榜</h2>
+
+  <div class="lb-card"><div id="lb-list" class="lb-msg">🎈 載入中...</div></div>
+  <div class="lb-floating-actions"><button class="btn btn-outline" id="btn-lb-back">← 返回</button></div>
+</div>
+
+<!-- MUSIC MODAL -->
+<div id="music-modal">
+  <div class="mp">
+    <div class="mp-head">
+      <div class="mp-ttl">🎵 音樂播放器</div>
+      <button class="mp-x" id="mp-close">✕</button>
+    </div>
+    <div class="mp-now">
+      <div class="mp-disc" id="mp-disc">🎈</div>
+      <div class="mp-nt" id="mp-nt">— 尚未播放 —</div>
+      <div class="mp-ar">氣球小V</div>
+    </div>
+    <div class="mp-prog-row">
+      <div class="mp-time" id="mp-cur">0:00</div>
+      <div class="mp-prog" id="mp-prog"><div class="mp-prog-fill" id="mp-fill"></div></div>
+      <div class="mp-time" id="mp-dur">0:00</div>
+    </div>
+    <div class="mp-ctrl">
+      <button class="mpb sm" id="mp-loop">🔁</button>
+      <button class="mpb sm" id="mp-prev2">⏮</button>
+      <button class="mpb lg" id="mp-play2">▶</button>
+      <button class="mpb sm" id="mp-next2">⏭</button>
+      <button class="mpb sm" id="mp-shuf">🔀</button>
+    </div>
+    <div class="mp-vol-row">
+      <span>🔈</span>
+      <input type="range" class="mp-vol" id="mp-vol" min="0" max="100" value="10">
+      <span>🔊</span>
+      <div class="mp-badge" id="mp-badge">全部循環</div>
+    </div>
+    <div class="mp-list-hd">播放清單</div>
+    <div class="mp-list" id="mp-list"></div>
+  </div>
+</div>
+
+<!-- ADMIN SCREEN -->
+<div id="s-admin" class="screen off" style="background:linear-gradient(160deg,#f0fff8,#fff5fb);gap:0;padding:16px;overflow-y:auto;justify-content:flex-start;">
+  <div style="display:flex;align-items:center;justify-content:space-between;width:min(520px,94vw);margin:16px 0 14px;">
+    <div style="font-family:'Fredoka One',cursive;color:#3ecf8e;font-size:20px;">⚙ 後台管理</div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-outline btn-sm" id="btn-admin-refresh" style="color:#3ecf8e;border-color:#3ecf8e;">🔄 重新整理</button>
+      <button class="btn btn-outline btn-sm" id="btn-admin-out">登出</button>
+    </div>
+  </div>
+
+  <!-- 統計 -->
+  <div style="background:#fff;border-radius:24px;box-shadow:0 4px 20px rgba(62,207,142,.12);border:1.5px solid rgba(62,207,142,.2);padding:20px;width:min(520px,94vw);margin-bottom:14px;">
+    <div style="font-size:13px;font-weight:800;color:#3ecf8e;margin-bottom:14px;">統計資料</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+      <div style="background:#f0fff8;border-radius:16px;padding:12px 20px;text-align:center;min-width:80px;">
+        <div style="font-family:'Fredoka One',cursive;font-size:26px;color:#3ecf8e;" id="adm-total">—</div>
+        <div style="font-size:10px;color:#9b7a8a;font-weight:800;">總記錄數</div>
+      </div>
+      <div style="background:#f0fff8;border-radius:16px;padding:12px 20px;text-align:center;min-width:80px;">
+        <div style="font-family:'Fredoka One',cursive;font-size:26px;color:#3ecf8e;" id="adm-players">—</div>
+        <div style="font-size:10px;color:#9b7a8a;font-weight:800;">玩家數</div>
+      </div>
+      <div style="background:#f0fff8;border-radius:16px;padding:12px 20px;text-align:center;min-width:80px;">
+        <div style="font-family:'Fredoka One',cursive;font-size:26px;color:#3ecf8e;" id="adm-topscore">—</div>
+        <div style="font-size:10px;color:#9b7a8a;font-weight:800;">最高分</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 排行榜管理 -->
+  <div style="background:#fff;border-radius:24px;box-shadow:0 4px 20px rgba(62,207,142,.12);border:1.5px solid rgba(62,207,142,.2);padding:20px;width:min(520px,94vw);margin-bottom:14px;">
+    <div style="font-size:13px;font-weight:800;color:#3ecf8e;margin-bottom:12px;">排行榜管理</div>
+    <!-- 排序按鈕 -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;" id="adm-sort-btns">
+      <button onclick="setAdminSort('time_desc')" id="sort-time_desc" style="padding:5px 10px;border-radius:16px;border:1.5px solid rgba(62,207,142,.4);background:linear-gradient(135deg,#3ecf8e,#2ab377);color:#fff;font-size:11px;cursor:pointer;font-family:'Fredoka One',cursive;">🕐 最新→最舊</button>
+      <button onclick="setAdminSort('time_asc')" id="sort-time_asc" style="padding:5px 10px;border-radius:16px;border:1.5px solid rgba(62,207,142,.4);background:#f0fff8;color:#3ecf8e;font-size:11px;cursor:pointer;font-family:'Fredoka One',cursive;">🕐 最舊→最新</button>
+      <button onclick="setAdminSort('score_desc')" id="sort-score_desc" style="padding:5px 10px;border-radius:16px;border:1.5px solid rgba(62,207,142,.4);background:#f0fff8;color:#3ecf8e;font-size:11px;cursor:pointer;font-family:'Fredoka One',cursive;">🏆 分數高→低</button>
+      <button onclick="setAdminSort('score_asc')" id="sort-score_asc" style="padding:5px 10px;border-radius:16px;border:1.5px solid rgba(62,207,142,.4);background:#f0fff8;color:#3ecf8e;font-size:11px;cursor:pointer;font-family:'Fredoka One',cursive;">🏆 分數低→高</button>
+    </div>
+    <div id="adm-count" style="font-size:11px;color:#9b7a8a;margin-bottom:6px;"></div>
+    <div id="adm-lb-list" style="display:flex;flex-direction:column;gap:6px;max-height:500px;overflow-y:auto;"></div>
+    <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
+      <button class="btn btn-sm" id="btn-adm-clear" style="background:linear-gradient(135deg,#ff6b6b,#ee5a52);color:#fff;box-shadow:0 4px 12px rgba(255,107,107,.4);">🗑 清空全部</button>
+      <button class="btn btn-sm" id="btn-adm-export" style="background:linear-gradient(135deg,#3ecf8e,#2ab377);color:#fff;box-shadow:0 4px 12px rgba(62,207,142,.4);">📥 匯出 JSON</button>
+    </div>
+  </div>
+
+  <!-- 遠端 PIN 解鎖 -->
+  <div style="background:#fff;border-radius:24px;box-shadow:0 4px 20px rgba(62,207,142,.12);border:1.5px solid rgba(62,207,142,.2);padding:20px;width:min(520px,94vw);margin-bottom:14px;">
+    <div style="font-size:13px;font-weight:800;color:#3ecf8e;margin-bottom:12px;">🔓 遠端 PIN 解鎖</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <input type="text" id="adm-pin-input" placeholder="輸入 PIN 碼" maxlength="6"
+        style="flex:1;min-width:120px;background:#f0fff8;border:2px solid rgba(62,207,142,.3);border-radius:50px;padding:8px 16px;font-size:14px;outline:none;">
+      <input type="text" id="adm-pin-playerkey" placeholder="玩家 playerKey（選填）" maxlength="80"
+        style="flex:2;min-width:180px;background:#f0fff8;border:2px solid rgba(62,207,142,.3);border-radius:50px;padding:8px 16px;font-size:12px;outline:none;">
+      <button class="btn btn-sm" id="btn-adm-pin" style="background:linear-gradient(135deg,#3ecf8e,#2ab377);color:#fff;">解鎖</button>
+    </div>
+  </div>
+
+  <!-- 更改密碼 -->
+  <div style="background:#fff;border-radius:24px;box-shadow:0 4px 20px rgba(62,207,142,.12);border:1.5px solid rgba(62,207,142,.2);padding:20px;width:min(520px,94vw);margin-bottom:14px;">
+    <div style="font-size:13px;font-weight:800;color:#3ecf8e;margin-bottom:12px;">更改後台密碼</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <input type="password" id="adm-pw1" placeholder="新密碼" maxlength="20"
+        style="flex:1;min-width:120px;background:#f0fff8;border:2px solid rgba(62,207,142,.3);border-radius:50px;padding:8px 16px;font-size:14px;outline:none;font-family:'Nunito',sans-serif;">
+      <input type="password" id="adm-pw2" placeholder="確認新密碼" maxlength="20"
+        style="flex:1;min-width:120px;background:#f0fff8;border:2px solid rgba(62,207,142,.3);border-radius:50px;padding:8px 16px;font-size:14px;outline:none;font-family:'Nunito',sans-serif;">
+      <button class="btn btn-sm" id="btn-adm-pw" style="background:linear-gradient(135deg,#3ecf8e,#2ab377);color:#fff;">更改</button>
+    </div>
+  </div>
+</div>
+
+<!-- PASSWORD MODAL -->
+<div id="pwd-modal" style="position:fixed;inset:0;z-index:300;background:rgba(10,5,25,.85);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;">
+  <div style="background:linear-gradient(145deg,#1e0d38,#2d1a50);border:1.5px solid rgba(255,133,161,.25);border-radius:32px;padding:28px;width:min(320px,90vw);text-align:center;display:flex;flex-direction:column;gap:14px;">
+    <div style="font-family:'Fredoka One',cursive;font-size:20px;color:#fff;">🔐 後台管理</div>
+    <input type="password" id="pwd-input" placeholder="輸入密碼" maxlength="20"
+      style="background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.2);border-radius:50px;color:#fff;padding:10px 18px;font-size:16px;outline:none;text-align:center;font-family:'Nunito',sans-serif;">
+    <div id="pwd-err" style="font-size:12px;color:#ff6b6b;display:none;">密碼錯誤！</div>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <button class="btn btn-p btn-sm" id="btn-pwd-ok">確認</button>
+      <button class="btn btn-outline btn-sm" id="btn-pwd-cancel">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE CONTROLS -->
+<div id="mob-ctrl">
+  <!-- LEFT: move buttons -->
+  <div class="dpad">
+    <button class="mob-btn" id="mob-left">←</button>
+    <button class="mob-btn" id="mob-right">→</button>
+  </div>
+
+  <!-- RIGHT: Tetris actions -->
+  <div class="action-btns" aria-label="手機操作">
+    <button class="mob-btn action-btn-lg" id="mob-rotl">轉</button>
+    <div class="action-row">
+      <button class="mob-btn action-btn-sm" id="mob-down">下</button>
+      <button class="mob-btn action-btn-sm" id="mob-drop">落</button>
+    </div>
+    <div class="action-label">轉 / 下 / 落</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<button id="fs-btn" title="全螢幕">⛶</button>
+<div class="admin-lnk" id="admin-lnk">⚙</div>
+
+<script>
+// Firebase compat SDK - exact same as rhythm game
+// [Universe 換殼] 舊 Firebase 設定已移除：本原型不讀、不寫舊 Firebase
+var FIREBASE_CONFIG = null;
+var FIREBASE_ENABLED = false;
+
+// ── 解鎖頭像清單 ──
+var UNLOCK_AV_BASE = "https://vashyang1120.github.io/vparty-rhythm-game/assets/avatars/";
+var UNLOCKABLE_AVATARS = [
+  { key: 'xiaov_base',         name: '小V',         file: UNLOCK_AV_BASE + 'xiaov_base.png',         tier: 'wave1', unlockCategory: 'first_play',   unlockText: '完成任一遊戲 1 場' },
+  { key: 'dance_sister_01',    name: '唱跳姐姐',    file: UNLOCK_AV_BASE + 'dance_sister_01.png',    tier: 'wave1', unlockCategory: 'social_ig_fb', unlockText: '追蹤 IG 或 FB 粉專' },
+  { key: 'balloon_sister_01',  name: '氣球姐姐 1',  file: UNLOCK_AV_BASE + 'balloon_sister_01.png',  tier: 'wave1', unlockCategory: 'social_line',  unlockText: '加官方 LINE 好友' },
+  { key: 'balloon_sister_02',  name: '氣球姐姐 2',  file: UNLOCK_AV_BASE + 'balloon_sister_02.png',  tier: 'wave1', unlockCategory: 'social_google',unlockText: 'Google 商家 5 星好評' },
+  { key: 'balloon_brother_01', name: '氣球哥哥 1',  file: UNLOCK_AV_BASE + 'balloon_brother_01.png', tier: 'wave2', unlockCategory: 'game_tetris',  unlockText: '方塊遊戲達 2,000 分' },
+  { key: 'balloon_brother_02', name: '氣球哥哥 2',  file: UNLOCK_AV_BASE + 'balloon_brother_02.png', tier: 'wave2', unlockCategory: 'game_rhythm',  unlockText: '節奏遊戲任一首達 A 以上' },
+  { key: 'balloon_brother_03', name: '氣球哥哥 3',  file: UNLOCK_AV_BASE + 'balloon_brother_03.png', tier: 'wave2', unlockCategory: 'game_adventure',unlockText: '冒險遊戲通過指定進度' },
+  { key: 'bubble_brother_01',  name: '泡泡哥哥',    file: UNLOCK_AV_BASE + 'bubble_brother_01.png',  tier: 'rare',  unlockCategory: 'event',        unlockText: '泡泡活動限定 / 特別活動' },
+  { key: 'xiaov_special',      name: '小V 特別版',  file: UNLOCK_AV_BASE + 'xiaov_special.png',      tier: 'rare',  unlockCategory: 'special',      unlockText: '打敗小V / 特別活動 / 高階成就' }
+];
+
+
+// ── PIN ──
+// [Universe 換殼] 前端寫死的管理員 PIN 已移除（任何人都能看到原始碼，不安全）
+var ADMIN_UNLOCK_PIN = '';
+var REMOTE_UNLOCK_PINS = {};
+
+var DB_PATHS = {
+  legacyLeaderboard: 'tetris-balloon/leaderboard',
+  gameLogs:          'gameLogs/tetris',
+  leaderboards:      'leaderboards/tetris',
+  players:           'players',
+  avatarCatalog:     'avatarCatalog'
+};
+var db = null;
+var firebaseDb = null;
+var firebaseAuthReady = false;
+var firebaseInitPromise = null;
+var unlockedAvatars = {}; // 已解鎖頭像
+var newlyUnlockedThisGame = []; // 本場新解鎖
+var AVATAR_CATALOG = {}; // Firebase avatarCatalog（學生/特殊頭像）
+
+// ── 方塊遊戲稱號第一版 ──
+var TETRIS_TITLES = {
+  tetris_first_clear: {
+    titleKey: "tetris_first_clear",
+    name: "初次堆疊者",
+    gameId: "tetris",
+    source: "first_clear",
+    conditionText: "完成方塊遊戲 1 場"
+  },
+  tetris_score_1000: {
+    titleKey: "tetris_score_1000",
+    name: "方塊新星",
+    gameId: "tetris",
+    source: "score_1000",
+    conditionText: "單場分數達 1000"
+  },
+  tetris_score_2000: {
+    titleKey: "tetris_score_2000",
+    name: "氣球堆疊師",
+    gameId: "tetris",
+    source: "score_2000",
+    conditionText: "單場分數達 2000"
+  },
+  tetris_peak_combo_3: {
+    titleKey: "tetris_peak_combo_3",
+    name: "連消高手",
+    gameId: "tetris",
+    source: "peak_combo_3",
+    conditionText: "單場最高連消達 3"
+  },
+  tetris_level_5: {
+    titleKey: "tetris_level_5",
+    name: "高塔建築師",
+    gameId: "tetris",
+    source: "level_5",
+    conditionText: "單場 Level 達 5"
+  }
+};
+var titleCollectionFilter = "all";
+var LAST_KNOWN_VCOIN_BALANCE = null;
+// ── avatarCatalog：從 Firebase 讀取學生/特殊頭像 ──
+function loadAvatarCatalog() {
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return Promise.resolve({});
+}
+
+function ensureFirebaseReady() {
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return Promise.resolve(false);
+}
+
+function initFirebase() {
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return;
+}
+
+// ── 共用玩家身份系統 ──
+function ensurePlayerProfile() {
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return Promise.resolve();
+}
+
+
+function loadUnlockedAvatars() {
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return Promise.resolve({});
+}
+
+
+function unlockAvatar(avatarKey, source) {
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return Promise.resolve(false);  // 共用頭像解鎖 API 尚未完成（NOT_IMPLEMENTED）
+}
+
+
+function equipDisplayAvatar(avatarKey) {
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  UniverseTetris.notReady('avatarUnlocks');
+}
+
+
+function isProfileIdentityDirty() {
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return false;
+}
+
+
+
+// ── IMAGE DATA ──
+const IMG = {
+  clear1:  "https://vashyang1120.github.io/vparty-tetris/assets/Clear1.png",
+  clear2:  "https://vashyang1120.github.io/vparty-tetris/assets/Clear2.png",
+  clear3:  "https://vashyang1120.github.io/vparty-tetris/assets/Clear3.png",
+  clear4:  "https://vashyang1120.github.io/vparty-tetris/assets/Clear4.png",
+  clear5:  "https://vashyang1120.github.io/vparty-tetris/assets/Clear5.png",
+  clear10: "https://vashyang1120.github.io/vparty-tetris/assets/Clear10.png",
+  danger:  "https://vashyang1120.github.io/vparty-tetris/assets/danger.png",
+  balloon: "https://vashyang1120.github.io/vparty-tetris/assets/balloon_base.png",
+};
+
+// ── AVATARS ──
+const AV_BASE = "https://vashyang1120.github.io/vparty-rhythm-game/assets/avatars/";
+const AVATARS = [
+  {key:"boy1",url:AV_BASE+"boy1.png",label:"男生1"},
+  {key:"girl1",url:AV_BASE+"girl1.png",label:"女生1"},
+  {key:"boy2",url:AV_BASE+"boy2.png",label:"男生2"},
+  {key:"girl2",url:AV_BASE+"girl2.png",label:"女生2"},
+  {key:"cat1",url:AV_BASE+"cat1.png",label:"貓咪1"},
+  {key:"cat2",url:AV_BASE+"cat2.png",label:"貓咪2"},
+  {key:"fat1",url:AV_BASE+"fat1.png",label:"胖胖"},
+  {key:"girl3",url:AV_BASE+"girl3.png",label:"女生3"},
+  {key:"curl1",url:AV_BASE+"curl1.png",label:"捲髮1"},
+  {key:"boy3",url:AV_BASE+"boy3.png",label:"男生3"},
+  {key:"girl4",url:AV_BASE+"girl4.png",label:"女生4"},
+  {key:"girl5",url:AV_BASE+"girl5.png",label:"女生5"},
+  {key:"curl2",url:AV_BASE+"curl2.png",label:"捲髮2"},
+  {key:"dog1",url:AV_BASE+"dog1.png",label:"狗狗1"},
+  {key:"dog2",url:AV_BASE+"dog2.png",label:"狗狗2"},
+  {key:"dog3",url:AV_BASE+"dog3.png",label:"狗狗3"},
+  {key:"dog4",url:AV_BASE+"dog4.png",label:"狗狗4"},
+];
+
+// ── PLAYER ──
+// 升級為雙頭像版 PLAYER
+var PLAYER = {
+  id: '玩家',
+  baseAvatarKey: 'boy1',
+  displayAvatarKey: 'boy1',
+  avatarKey: 'boy1',
+  avatarSrc: '',
+  playerKey: ''
+};
+// 相容舊版 player 指向
+var player = PLAYER;
+var profileOriginalId = "";
+var profileOriginalBaseAvatarKey = "";
+var playerWalletBalance = null;
+var playerEquippedTitleName = "未裝備";
+
+function getLeaderboardIdentityKey(e) {
+  var id = normalizePlayerId(e.id || e.name || "");
+  var base = e.baseAvatarKey || e.avKey || "boy1";
+  if (!id && e.playerKey && e.playerKey.indexOf("__") !== -1) {
+    var parts = e.playerKey.split("__");
+    try { id = normalizePlayerId(decodeURIComponent(parts[0] || "")); }
+    catch(err) { id = normalizePlayerId(parts[0] || ""); }
+    base = parts[1] || base;
+  }
+  return id + "||" + base;
+}
+
+function normalizePlayerId(id) {
+  return (id || '').trim() || '玩家';
+}
+
+function encodeFirebaseKeyPart(s) {
+  return encodeURIComponent(normalizePlayerId(s))
+    .replace(/\./g, '%2E')
+    .replace(/#/g, '%23')
+    .replace(/\$/g, '%24')
+    .replace(/\[/g, '%5B')
+    .replace(/\]/g, '%5D');
+}
+
+
+function makePlayerKey(id, baseAvatarKey) {
+  return encodeFirebaseKeyPart(id) + '__' + (baseAvatarKey || 'boy1');
+}
+
+// resolveAvatarSrc：所有 catalog/unlocked 相對路徑轉完整 GitHub Pages URL
+// 確保 iframe 嵌入 balloonv.com 時不破圖
+function resolveAvatarSrc(src) {
+  if (!src) return "";
+  var s = String(src);
+  if (/^https?:\/\//.test(s)) return s; // 已是完整 URL 不動
+  var base = "https://vashyang1120.github.io/vparty-rhythm-game/";
+  if (s.indexOf("../assets/avatars/") === 0) return base + s.slice(3);
+  if (s.indexOf("./assets/avatars/") === 0)  return base + s.slice(2);
+  if (s.indexOf("assets/avatars/") === 0)    return base + s;
+  return s;
+}
+
+function getAvatarByKey(key) {
+  var uni = UniverseTetris.avatarFor(key); if (uni) return uni;  // [Universe 換殼]
+  if (!key) return { key: AVATARS[0].key, url: AVATARS[0].url, src: AVATARS[0].url, name: AVATARS[0].label };
+  // 1. 內建頭像
+  var builtin = AVATARS.find(function(a){ return a.key === key; });
+  if (builtin) return { key: builtin.key, url: builtin.url || builtin.src, src: builtin.url || builtin.src, name: builtin.label || builtin.key };
+  // 2. 固定解鎖頭像（UNLOCKABLE_AVATARS）
+  var unlock = UNLOCKABLE_AVATARS.find(function(a){ return a.key === key; });
+  if (unlock) {
+    var uSrc = unlock.src || unlock.file;
+    return { key: unlock.key, url: uSrc, src: uSrc, name: unlock.name };
+  }
+  // 3. avatarCatalog（學生/特殊頭像）
+  if (AVATAR_CATALOG[key]) {
+    var cat = AVATAR_CATALOG[key];
+    var cSrc = resolveAvatarSrc(cat.src || cat.file || cat.url || '');
+    return { key: key, url: cSrc, src: cSrc, name: cat.name || key };
+  }
+  // 4. unlockedAvatars metadata fallback（已解鎖但 catalog 尚未載入）
+  if (unlockedAvatars[key]) {
+    var meta = unlockedAvatars[key];
+    var mSrc = resolveAvatarSrc(meta.src || meta.file || meta.url || '');
+    if (mSrc) {
+      return { key: key, url: mSrc, src: mSrc, name: meta.name || key };
+    }
+  }
+  return { key: AVATARS[0].key, url: AVATARS[0].url, src: AVATARS[0].url, name: AVATARS[0].label };
+}
+function getAvatarUrl(key) {
+  var av = getAvatarByKey(key);
+  return av.url || av.src;
+}
+
+function loadPlayer(){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  UniverseTetris.applyPlayerTo(PLAYER);
+}
+// savePlayerLocal：只存 localStorage，不觸發 ensurePlayerProfile
+// 用於身份切換流程，避免 ensurePlayerProfile 在 loadAvatarCatalog/loadUnlockedAvatars 前先執行
+function savePlayerLocal(){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  UniverseTetris.applyPlayerTo(PLAYER);  // 身份由遊戲宇宙管理，遊戲內不寫入本機身份
+}
+
+// savePlayer：存 localStorage + 同步 Firebase profile
+// 用於非身份切換的一般更新（如換顯示頭像）
+function savePlayer(){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  savePlayerLocal();
+}
+
+// ── PLAYER META UI（右上角色卡 / 玩家設定頁狀態） ──
+function getBaseAvatarDisplayName(baseAvatarKey){
+  var uniLabel = UniverseTetris.avatarLabel(baseAvatarKey || (PLAYER && PLAYER.baseAvatarKey)); if (uniLabel) return uniLabel;  // [Universe 換殼]
+  var key = baseAvatarKey || (PLAYER && PLAYER.baseAvatarKey) || 'boy1';
+  var av = (AVATARS || []).find(function(a){ return a.key === key; });
+  if(av && av.label) return av.label;
+  var unlockAv = (UNLOCKABLE_AVATARS || []).find(function(a){ return a.key === key; });
+  if(unlockAv && unlockAv.name) return unlockAv.name;
+  if(AVATAR_CATALOG && AVATAR_CATALOG[key] && AVATAR_CATALOG[key].name) return AVATAR_CATALOG[key].name;
+  return key;
+}
+
+function getCurrentDisplayAvatarKey(){
+  return (PLAYER && (PLAYER.displayAvatarKey || PLAYER.avatarKey || PLAYER.baseAvatarKey)) || 'boy1';
+}
+
+function getWalletDisplayText(){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return UniverseTetris.walletText();
+}
+
+function updateTopPlayerCard(){
+  var card = document.getElementById('top-player-card');
+  if(!card || !PLAYER) return;
+  var avatarKey = getCurrentDisplayAvatarKey();
+  var avatarUrl = resolveAvatarSrc(getAvatarUrl(avatarKey));
+  var topAvatar = document.getElementById('top-avatar');
+  var topName = document.getElementById('top-name');
+  var topKey = document.getElementById('top-player-key');
+  var topTitle = document.getElementById('top-player-title');
+  var topWallet = document.getElementById('top-vcoin-balance');
+  var id = PLAYER.id || PLAYER.name || '玩家';
+  var baseName = getBaseAvatarDisplayName(PLAYER.baseAvatarKey || 'boy1');
+  if(topAvatar) topAvatar.src = avatarUrl;
+  if(topName) topName.textContent = id;
+  if(topKey) topKey.textContent = '身份：' + id + ' + ' + baseName;
+  if(topTitle) topTitle.textContent = '稱號：' + (playerEquippedTitleName || '未裝備');
+  if(topWallet) topWallet.textContent = '🪙 V幣：' + getWalletDisplayText();
+}
+
+function updateProfileIdentityBox(){
+  var label = document.getElementById('profile-identity-label');
+  var keyEl = document.getElementById('profile-player-key');
+  if(!PLAYER) return;
+  var id = PLAYER.id || PLAYER.name || '玩家';
+  var baseName = getBaseAvatarDisplayName(PLAYER.baseAvatarKey || 'boy1');
+  if(label) label.textContent = '身份：' + id + ' + ' + baseName;
+  if(keyEl) keyEl.textContent = PLAYER.playerId || '—';  // [Universe 換殼] 顯示遊戲宇宙 playerId（不組合舊 playerKey）
+}
+
+function updateProfileWalletBox(){
+  var el = document.getElementById('profile-vcoin-balance');
+  if(el) el.textContent = getWalletDisplayText();
+}
+
+function updateProfileTitleBox(){
+  var el = document.getElementById('profile-equipped-title');
+  if(el) el.textContent = playerEquippedTitleName || '未裝備';
+}
+
+function loadPlayerWalletBalance(){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  playerWalletBalance = null;
+  updateTopPlayerCard();
+  updateProfileWalletBox();
+  return Promise.resolve(null);
+}
+
+
+function normalizeEquippedTitleData(raw, fallbackGameId){
+  if(!raw) return null;
+  var key = raw.titleKey || raw.key || raw.id || '';
+  var name = raw.name || raw.title || raw.label || '';
+  if(!name) return null;
+  var gameId = raw.gameId || fallbackGameId || '';
+  var source = raw.source || (fallbackGameId ? (fallbackGameId + '_legacy') : '');
+  return {
+    titleKey: key,
+    name: String(name),
+    gameId: gameId,
+    source: source,
+    originPath: raw.originPath || (gameId && key ? ('titles/' + gameId + '/' + key) : ''),
+    equippedAt: raw.equippedAt || raw.updatedAt || raw.ts || null
+  };
+}
+
+function getCurrentEquippedTitleSnapshot(){
+  var title = normalizeEquippedTitleData(window.currentEquippedTitleData, '');
+  if(!title || !title.name) return {};
+  return {
+    equippedTitleKey: title.titleKey || '',
+    equippedTitleName: title.name || '',
+    equippedTitleGameId: title.gameId || ''
+  };
+}
+
+function loadEquippedTitleForCurrentPlayer(){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  window.currentEquippedTitleData = null;
+  playerEquippedTitleName = UniverseTetris.titleText();
+  updateTopPlayerCard();
+  updateProfileTitleBox();
+  return Promise.resolve(playerEquippedTitleName);
+}
+
+function refreshPlayerMetaUI(){
+  updateTopPlayerCard();
+  updateProfileIdentityBox();
+  updateProfileWalletBox();
+  updateProfileTitleBox();
+  return Promise.all([
+    loadPlayerWalletBalance(),
+    loadEquippedTitleForCurrentPlayer()
+  ]).then(function(){
+    updateTopPlayerCard();
+    updateProfileIdentityBox();
+    updateProfileWalletBox();
+    updateProfileTitleBox();
+  });
+}
+
+function updateTopPlayerCardVisibility(screenId){
+  var card = document.getElementById('top-player-card');
+  if(!card) return;
+  card.classList.toggle('off', screenId === 's-game');
+}
+
+function syncProfilePreviewUI(){
+  var baseImg = document.getElementById('base-avatar-preview');
+  var dispImg = document.getElementById('av-preview-img');
+  var inp = document.getElementById('player-id-input');
+  if(baseImg) baseImg.src = resolveAvatarSrc(getAvatarUrl(PLAYER.baseAvatarKey));
+  if(dispImg) dispImg.src = resolveAvatarSrc(getAvatarUrl(PLAYER.displayAvatarKey || PLAYER.avatarKey || PLAYER.baseAvatarKey));
+  if(inp) inp.value = PLAYER.id;
+  updateProfileIdentityBox();
+}
+
+function openProfileFromTopCard(){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  loadPlayer();
+  profileOriginalId = PLAYER.id;
+  profileOriginalBaseAvatarKey = PLAYER.baseAvatarKey;
+  var hint = document.getElementById('profile-id-dirty-hint');
+  if(hint) hint.style.display = 'none';
+  hideAvGrid();
+  hideTitleGrid();
+  closeVcoinHistory();
+  setProfileDataCollapsed(false);
+  syncProfilePreviewUI();
+  showScreen('s-profile');
+  refreshPlayerMetaUI();
+}
+
+// ── TOAST ──
+let toastTmr;
+function toast(msg, dur=2500){
+  const el=document.getElementById("toast");
+  el.textContent=msg; el.classList.add("show");
+  clearTimeout(toastTmr); toastTmr=setTimeout(()=>el.classList.remove("show"),dur);
+}
+
+// ── SCREEN ──
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.add("off"));
+  document.getElementById(id).classList.remove("off");
+  const isGame = id==="s-game";
+  if(!isGame) clearGameVisualState();
+  const isMobile = window.innerWidth < 900 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+  document.getElementById("mob-ctrl").style.display = (isGame && isMobile)?"flex":"none";
+  // Show fullscreen btn on normal player screens so fullscreen can always be exited
+  const fsBtn = document.getElementById("fs-btn");
+  fsBtn.classList.toggle("off", id==="s-admin");
+  updateTopPlayerCardVisibility(id);
+  updateTopPlayerCard();
+  if(id === "s-title" && PLAYER && PLAYER.playerKey){
+    updateBestDisp();
+  }
+  // Music: only play during game, pause on other screens
+  if(!isGame && mPlaying) pauseSong();
+
+  updateMobileControlsVisibility();
+}
+
+// Fullscreen - same as rhythm game
+function toggleFullscreen(){
+  if(!document.fullscreenElement && !document.webkitFullscreenElement){
+    var el=document.documentElement;
+    if(el.requestFullscreen)            el.requestFullscreen();
+    else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    $("fs-btn").textContent="✕";
+    $("fs-btn").title="退出全螢幕";
+  } else {
+    if(document.exitFullscreen)            document.exitFullscreen();
+    else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+    $("fs-btn").textContent="⛶";
+    $("fs-btn").title="全螢幕";
+  }
+}
+document.getElementById("fs-btn").addEventListener("click", toggleFullscreen);
+document.addEventListener("fullscreenchange",()=>{
+  if(!document.fullscreenElement && !document.webkitFullscreenElement){
+    $("fs-btn").textContent="⛶";
+  }
+});
+document.addEventListener("webkitfullscreenchange",()=>{
+  if(!document.webkitFullscreenElement){
+    $("fs-btn").textContent="⛶";
+  }
+});
+
+// ── PROFILE ──
+function setProfileDataCollapsed(collapsed){
+  var card = document.getElementById('profile-data-card');
+  var toggle = document.getElementById('profile-data-toggle');
+  var hint = document.getElementById('profile-data-toggle-hint');
+  if(!card) return;
+  card.classList.toggle('collapsed', !!collapsed);
+  if(toggle) toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+  if(hint) hint.textContent = collapsed ? '已收合，點擊展開' : '點擊可收合';
+}
+function isAvGridVisible(){
+  var wrap = document.getElementById('av-grid-wrap');
+  return !!(wrap && wrap.style.display !== 'none' && wrap.style.display !== '');
+}
+function isTitleGridVisible(){
+  var wrap = document.getElementById('title-grid-wrap');
+  return !!(wrap && wrap.style.display !== 'none' && wrap.style.display !== '');
+}
+function isVcoinHistoryVisible(){
+  var wrap = document.getElementById('vcoin-history-wrap');
+  return !!(wrap && wrap.style.display !== 'none');
+}
+function syncProfileDataCollapseByPanels(){
+  setProfileDataCollapsed(isAvGridVisible() || isTitleGridVisible() || isVcoinHistoryVisible());
+}
+function scrollProfilePanelIntoView(el){
+  if(!el) return;
+  setTimeout(function(){
+    try{
+      var container = document.getElementById('s-profile');
+      if(container && container.scrollTo && el.offsetTop !== undefined){
+        container.scrollTo({top: Math.max(0, el.offsetTop - 12), behavior:'smooth'});
+      }else if(el.scrollIntoView){
+        el.scrollIntoView({behavior:'smooth', block:'start'});
+      }
+    }catch(e){
+      if(el.scrollIntoView) el.scrollIntoView();
+    }
+  }, 40);
+}
+function scrollProfileDataCardIntoView(){
+  var card = document.getElementById('profile-data-card');
+  scrollProfilePanelIntoView(card);
+}
+function scrollProfilePanelStartIntoView(el){
+  if(!el) return;
+  setTimeout(function(){
+    try{
+      if(el.scrollIntoView) el.scrollIntoView({behavior:'smooth', block:'start'});
+      var scroller = document.getElementById('s-profile');
+      if(scroller && scroller.scrollBy) scroller.scrollBy({top:-10, behavior:'smooth'});
+    }catch(e){
+      try{ if(el.scrollIntoView) el.scrollIntoView(); }catch(_){}
+    }
+  },60);
+}
+
+function buildAvGrid(mode){
+  if (UniverseTetris.identityLocked()) return;  // [Universe 換殼]
+  // mode: 'base' = 身份頭像（只選內建）, 'display' = 顯示頭像（內建+已解鎖）
+  var wrap = document.getElementById("av-grid-wrap");
+  var title = document.getElementById("av-grid-title");
+  var grid = document.getElementById("av-grid");
+  if(!wrap || !grid) return;
+  hideTitleGrid();
+  closeVcoinHistory();
+
+  if(mode === 'base'){
+    title.textContent = "🔑 選擇身份頭像（只限內建頭像）";
+  } else {
+    title.textContent = "🎨 選擇顯示頭像";
+  }
+  wrap.style.display = "block";
+  setProfileDataCollapsed(true);
+  scrollProfileDataCardIntoView();
+  grid.innerHTML = "";
+
+  // 內建頭像
+  AVATARS.forEach(function(av){
+    var img = document.createElement("img");
+    img.className = "av-item";
+    img.src = av.url; img.alt = av.label || av.key;
+    var isSelected = mode === 'base' ? (av.key === PLAYER.baseAvatarKey) : (av.key === PLAYER.displayAvatarKey);
+    if(isSelected) img.classList.add("sel");
+    img.addEventListener("click", function(){
+      // display 模式下阻擋 dirty；base 模式允許 dirty（等確認時統一切換）
+      if(mode === 'display' && isProfileIdentityDirty()){
+        toast("你已變更玩家 ID。請先按「確認」完成身份切換，再更換顯示頭像。");
+        return;
+      }
+      if(mode === 'base'){
+        if(isProfileIdentityDirty()){
+          // dirty 狀態：只暫存選擇，不 savePlayer / Firebase，等確認時統一切換
+          PLAYER.baseAvatarKey = av.key;
+          var bImg = document.getElementById("base-avatar-preview");
+          if(bImg) bImg.src = getAvatarUrl(av.key);
+          grid.querySelectorAll(".av-item").forEach(function(i){ i.classList.remove("sel"); });
+          img.classList.add("sel");
+          return;
+        }
+        if(!confirm("⚠️ 更換身份頭像會切換玩家身份\n\n你的排行榜身份與解鎖頭像會依新身份重新讀取。\n新身份可能還沒有原本解鎖的頭像。\n\n是否繼續？")) return;
+        PLAYER.baseAvatarKey = av.key;
+        PLAYER.playerKey = makePlayerKey(PLAYER.id, av.key);
+        savePlayerLocal(); // 身份切換，不提前觸發 ensurePlayerProfile
+        loadAvatarCatalog().then(function(){
+          return loadUnlockedAvatars();
+        }).then(function(res){
+          unlockedAvatars = res || {};
+          validateDisplayAvatarForCurrentIdentity();
+          var bImg = document.getElementById("base-avatar-preview");
+          var dImg = document.getElementById("av-preview-img");
+          if(bImg) bImg.src = getAvatarUrl(PLAYER.baseAvatarKey);
+          if(dImg) dImg.src = getAvatarUrl(PLAYER.displayAvatarKey);
+          buildAvGrid("base");
+        });
+      } else {
+        PLAYER.displayAvatarKey = av.key;
+        PLAYER.avatarKey = av.key;
+        PLAYER.avKey = av.key;
+        var selSrc = av.url || av.src || av.file || imgSrc || '';
+        PLAYER.avatarSrc = selSrc; PLAYER.avUrl = selSrc;
+        document.getElementById("av-preview-img").src = selSrc;
+        refreshPlayerMetaUI();
+        localStorage.setItem("vtetris_displayAvatarKey", av.key);
+        localStorage.setItem("vtetris_playerKey", PLAYER.playerKey);
+        // 同步 Firebase profile（只改 displayAvatarKey，不改 baseAvatarKey / playerKey）
+        ensureFirebaseReady().then(function(ok){
+          if(!ok || !firebaseDb || !PLAYER.playerKey) return;
+          firebaseDb.ref(DB_PATHS.players + "/" + PLAYER.playerKey + "/profile").update({
+            displayAvatarKey: av.key,
+            avatarKey: av.key,
+            updatedAt: Date.now()
+          });
+        });
+      }
+      grid.querySelectorAll(".av-item").forEach(function(i){ i.classList.remove("sel"); });
+      img.classList.add("sel");
+    });
+    grid.appendChild(img);
+  });
+
+  // 顯示頭像模式：加入已解鎖頭像
+  if(mode === 'display'){
+    UNLOCKABLE_AVATARS.forEach(function(av){
+      var isUnlocked = isAvatarUnlocked(av.key);
+      var imgSrc = av.src || av.file || "";
+      var img = document.createElement("img");
+      img.src = imgSrc; img.alt = av.name;
+      img.style.cssText = "width:56px;height:56px;border-radius:50%;cursor:" + (isUnlocked?"pointer":"not-allowed") + ";opacity:" + (isUnlocked?"1":"0.35") + ";border:3px solid " + (isUnlocked?"var(--mint)":"#ccc") + ";object-fit:cover;transition:all .15s;";
+      if(av.key === PLAYER.displayAvatarKey) img.style.borderColor = "var(--purple)";
+      if(!isUnlocked){
+        img.title = "🔒 " + av.name + " - " + (av.hint || "尚未解鎖");
+        img.addEventListener("click", function(){
+          var condition = av.unlockText || av.hint || "尚未開放";
+          toast("🔒 " + av.name + " 尚未解鎖\n解鎖條件：" + condition, 4000);
+        });
+      } else {
+        img.title = av.name;
+        img.addEventListener("click", function(){
+          if(isProfileIdentityDirty()){ toast("你已變更玩家 ID。請先按「確認」完成身份切換，再更換顯示頭像。"); return; }
+          var unlSelSrc = av.src || av.file || imgSrc || "";
+          PLAYER.displayAvatarKey = av.key;
+          PLAYER.avatarKey = av.key; PLAYER.avKey = av.key;
+          PLAYER.avatarSrc = unlSelSrc; PLAYER.avUrl = unlSelSrc;
+          document.getElementById("av-preview-img").src = unlSelSrc;
+          refreshPlayerMetaUI();
+          localStorage.setItem("vtetris_displayAvatarKey", av.key);
+          // 同步 Firebase profile
+          ensureFirebaseReady().then(function(ok){
+            if(!ok || !firebaseDb || !PLAYER.playerKey) return;
+            firebaseDb.ref(DB_PATHS.players + "/" + PLAYER.playerKey + "/profile").update({
+              displayAvatarKey: av.key, avatarKey: av.key, updatedAt: Date.now()
+            });
+          });
+          grid.querySelectorAll("img").forEach(function(i){ i.style.borderColor = ""; });
+          img.style.borderColor = "var(--purple)";
+        });
+      }
+      grid.appendChild(img);
+    });
+
+    // ── catalog 頭像（學生/特殊：hiddenUntilUnlocked，已解鎖才顯示）──
+    Object.keys(AVATAR_CATALOG).forEach(function(key){
+      var cat = AVATAR_CATALOG[key];
+      if(!cat) return;
+      // 學生 / 私人頭像：未解鎖時完全不顯示，不顯示鎖頭
+      // hiddenUntilUnlocked 一般特殊頭像：未解鎖可鎖住顯示；學生頭像例外，必須完全隱藏
+      var isPrivateStudent = isStudentOrPrivateAvatar(key, cat);
+      var isHiddenUntilUnlocked = isHiddenUntilUnlockedAvatar(key, cat);
+      var isUnlockedCat = isAvatarUnlocked(key);
+      if(isPrivateStudent && !isUnlockedCat) return;
+      var catSrc = resolveAvatarSrc(cat.src || cat.file || cat.url || '');
+      // 對方塊遊戲：catalog 頭像只顯示在顯示頭像模式
+      var imgCat = document.createElement("img");
+      imgCat.src = catSrc; imgCat.alt = cat.name || key;
+      imgCat.style.cssText = "width:56px;height:56px;border-radius:50%;cursor:" + (isUnlockedCat?"pointer":"not-allowed") + ";opacity:" + (isUnlockedCat?"1":"0.35") + ";border:3px solid " + (isUnlockedCat?"var(--mint)":"#ccc") + ";object-fit:cover;transition:all .15s;";
+      if(key === PLAYER.displayAvatarKey) imgCat.style.borderColor = "var(--purple)";
+      if(!isUnlockedCat){
+        imgCat.title = "🔒 " + (cat.name||key);
+        imgCat.addEventListener("click", function(){
+          var cond = cat.unlockText || cat.hint || '尚未開放';
+          toast("🔒 " + (cat.name||key) + " 尚未解鎖\n解鎖條件：" + cond, 4000);
+        });
+      } else {
+        imgCat.title = cat.name || key;
+        imgCat.addEventListener("click", function(){
+          if(mode === 'display' && isProfileIdentityDirty()){
+            toast("你已變更玩家 ID。請先按「確認」完成身份切換，再更換顯示頭像。"); return;
+          }
+          var selCatSrc = catSrc;
+          PLAYER.displayAvatarKey = key; PLAYER.avatarKey = key; PLAYER.avKey = key;
+          PLAYER.avatarSrc = selCatSrc; PLAYER.avUrl = selCatSrc;
+          document.getElementById("av-preview-img").src = selCatSrc;
+          refreshPlayerMetaUI();
+          localStorage.setItem("vtetris_displayAvatarKey", key);
+          // 同步 Firebase profile
+          ensureFirebaseReady().then(function(ok){
+            if(!ok || !firebaseDb || !PLAYER.playerKey) return;
+            firebaseDb.ref(DB_PATHS.players + "/" + PLAYER.playerKey + "/profile").update({
+              displayAvatarKey: key, avatarKey: key, updatedAt: Date.now()
+            });
+          });
+          grid.querySelectorAll("img").forEach(function(i){ i.style.borderColor = ""; });
+          imgCat.style.borderColor = "var(--purple)";
+        });
+      }
+      grid.appendChild(imgCat);
+    });
+
+    // ── unknown unlocked metadata 頭像（不在任何清單，但 unlockedAvatars 有 metadata）──
+    if(mode === 'display'){
+      Object.keys(unlockedAvatars).forEach(function(key){
+        var uData = unlockedAvatars[key];
+        if(!isAvatarUnlocked(key)) return;
+        // 跳過已在 AVATARS / UNLOCKABLE_AVATARS / AVATAR_CATALOG 的 key
+        if(isBuiltinAvatar(key)) return;
+        if(UNLOCKABLE_AVATARS.some(function(a){ return a.key === key; })) return;
+        if(AVATAR_CATALOG[key]) return;
+        // 必須有 src / file / url / name 才算有效 metadata
+        var uMeta = uData.src || uData.file || uData.url;
+        if(!uMeta && !uData.name) return;
+        var uSrc = resolveAvatarSrc(uData.src || uData.file || uData.url || '');
+        var uName = uData.name || key;
+        var imgU = document.createElement("img");
+        imgU.src = uSrc; imgU.alt = uName;
+        imgU.style.cssText = "width:56px;height:56px;border-radius:50%;cursor:pointer;opacity:1;border:3px solid var(--mint);object-fit:cover;transition:all .15s;";
+        if(key === PLAYER.displayAvatarKey) imgU.style.borderColor = "var(--purple)";
+        imgU.title = uName;
+        imgU.addEventListener("click", function(){
+          if(isProfileIdentityDirty()){
+            toast("你已變更玩家 ID。請先按「確認」完成身份切換，再更換顯示頭像。"); return;
+          }
+          PLAYER.displayAvatarKey = key; PLAYER.avatarKey = key; PLAYER.avKey = key;
+          PLAYER.avatarSrc = uSrc; PLAYER.avUrl = uSrc;
+          document.getElementById("av-preview-img").src = uSrc;
+          refreshPlayerMetaUI();
+          localStorage.setItem("vtetris_displayAvatarKey", key);
+          ensureFirebaseReady().then(function(ok){
+            if(!ok || !firebaseDb || !PLAYER.playerKey) return;
+            firebaseDb.ref(DB_PATHS.players + "/" + PLAYER.playerKey + "/profile").update({
+              displayAvatarKey: key, avatarKey: key, updatedAt: Date.now()
+            });
+          });
+          grid.querySelectorAll("img").forEach(function(i){ i.style.borderColor = ""; });
+          imgU.style.borderColor = "var(--purple)";
+        });
+        grid.appendChild(imgU);
+      });
+    }
+  }
+}
+
+function hideAvGrid(){
+  var wrap = document.getElementById("av-grid-wrap");
+  if(wrap) wrap.style.display = "none";
+  syncProfileDataCollapseByPanels();
+}
+function goProfile(){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  if(!UniverseTetris.isReady()){ UniverseTetris.explainNotReady(); return; }
+  loadPlayer();
+  showDiffSelect();
+}
+document.getElementById("btn-start").addEventListener("click", goProfile);
+document.getElementById("btn-profile-back").addEventListener("click",()=>{hideAvGrid();hideTitleGrid();closeVcoinHistory();showScreen("s-title");});
+document.getElementById("profile-data-toggle").addEventListener("click",function(){
+  var card=document.getElementById("profile-data-card");
+  setProfileDataCollapsed(!(card && card.classList.contains("collapsed")));
+});
+
+// ── 身份頭像按鈕 ──
+document.getElementById("btn-change-base-avatar").addEventListener("click", function(){
+  if (UniverseTetris.identityLocked()) return;  // [Universe 換殼]
+  // ID dirty 時仍允許變更身份頭像（兩者一起在按「確認」時統一切換）
+  var wrap = document.getElementById("av-grid-wrap");
+  var titleEl = document.getElementById("av-grid-title");
+  if(wrap && wrap.style.display !== "none" && titleEl && titleEl.textContent.indexOf("身份") >= 0){
+    hideAvGrid();
+  } else {
+    buildAvGrid("base");
+  }
+});
+
+// ── 顯示頭像按鈕 ──
+document.getElementById("btn-change-display-avatar").addEventListener("click", function(){
+  if (UniverseTetris.identityLocked()) return;  // [Universe 換殼]
+  if(isProfileIdentityDirty()){
+    toast("你已變更玩家 ID。請先按「確認」完成身份切換，再更換顯示頭像。");
+    return;
+  }
+  var wrap = document.getElementById("av-grid-wrap");
+  var titleEl = document.getElementById("av-grid-title");
+  if(wrap && wrap.style.display !== "none" && titleEl && titleEl.textContent.indexOf("顯示") >= 0){
+    hideAvGrid();
+  } else {
+    // 先讀 Firebase 再 render
+    loadAvatarCatalog().then(function(){
+      return loadUnlockedAvatars();
+    }).then(function(res){
+      unlockedAvatars = res || {};
+      buildAvGrid("display");
+    });
+  }
+});
+
+// ── 頭像收藏按鈕 ──
+document.getElementById("btn-unlock-collection").addEventListener("click", function(){
+  if (UniverseTetris.notReady('avatarUnlocks')) return;  // [Universe 換殼]
+  hideTitleGrid();
+  closeVcoinHistory();
+  if(isProfileIdentityDirty()){
+    toast("你已變更玩家 ID。請先按「確認」完成身份切換，再查看頭像收藏。");
+    return;
+  }
+  var wrap = document.getElementById("av-grid-wrap");
+  if(wrap && wrap.style.display !== "none"){
+    hideAvGrid();
+  } else {
+    // 先讀 catalog + unlockedAvatars 再 render
+    loadAvatarCatalog().then(function(){
+      return loadUnlockedAvatars();
+    }).then(function(res){
+      unlockedAvatars = res || {};
+      // 標題改為「頭像收藏」
+      var titleEl = document.getElementById("av-grid-title");
+      buildAvGrid("display");
+      if(titleEl) titleEl.textContent = "🏆 頭像收藏";
+    });
+  }
+});
+
+document.getElementById("btn-title-collection").addEventListener("click", function(){
+  if(isProfileIdentityDirty()){
+    toast("你已變更玩家 ID。請先按「確認」完成身份切換，再查看稱號收藏。");
+    return;
+  }
+  toggleTitleCollection();
+});
+document.getElementById("btn-vcoin-history").addEventListener("click",toggleVcoinHistory);
+
+
+function escapeHtml(text){
+  return String(text == null ? '' : text).replace(/[&<>"']/g,function(ch){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch];
+  });
+}
+function formatVcoinLogTime(log){
+  if(!log) return '時間未記錄';
+  var raw = log.ts || log.createdAt || log.date || '';
+  if(!raw) return '時間未記錄';
+  if(typeof raw === 'number'){
+    var d = new Date(raw);
+    if(!isNaN(d.getTime())) return d.toLocaleString('zh-TW',{hour12:false});
+  }
+  if(typeof raw === 'string'){
+    var n = Number(raw);
+    if(raw.length >= 10 && !isNaN(n)){
+      var d2 = new Date(n);
+      if(!isNaN(d2.getTime())) return d2.toLocaleString('zh-TW',{hour12:false});
+    }
+    return raw;
+  }
+  return '時間未記錄';
+}
+function getVcoinGameLabel(gameId){
+  var map = { tetris:'方塊遊戲', quiz:'問答遊戲', rhythm:'節奏遊戲', adventure:'冒險遊戲' };
+  return map[gameId] || 'V宇宙';
+}
+function getVcoinSourceLabel(log){
+  if(!log) return 'V幣異動';
+  var source = log.source || log.reason || '';
+  var map = {
+    daily_game_complete:'每日完成獎勵',
+    quiz_daily_challenge:'問答今日挑戰',
+    achievement:'成就獎勵',
+    tetris_daily_complete:'每日完成獎勵',
+    adventure_level_1_first_clear:'成就獎勵'
+  };
+  return map[source] || log.title || log.message || source || 'V幣異動';
+}
+function normalizeVcoinLog(raw, key){
+  raw = raw || {};
+  var amount = Number(raw.amount);
+  if(isNaN(amount)) amount = 0;
+  var tsNum = Number(raw.ts || raw.createdAt || 0);
+  if(isNaN(tsNum)) tsNum = 0;
+  return {
+    key: key || '',
+    amount: amount,
+    gameId: raw.gameId || raw.game || '',
+    gameLabel: getVcoinGameLabel(raw.gameId || raw.game || ''),
+    sourceLabel: getVcoinSourceLabel(raw),
+    timeText: formatVcoinLogTime(raw),
+    ts: tsNum,
+    balanceAfter: raw.balanceAfter
+  };
+}
+function normalizeVcoinLogSnapshot(snap){
+  var rows = [];
+  if(snap && snap.forEach){
+    snap.forEach(function(child){
+      try{
+        rows.push(normalizeVcoinLog(child.val() || {}, child.key));
+      }catch(e){
+        console.warn("[VCoins] skip malformed log:", child && child.key, e);
+      }
+    });
+  }
+  rows.sort(function(a,b){
+    return Number(b.ts || b.createdAt || 0) - Number(a.ts || a.createdAt || 0);
+  });
+  return rows.slice(0,20);
+}
+function loadVcoinHistory(playerKey){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return Promise.resolve({ balance: null, logs: [], notImplemented: true });
+}
+
+function getTetrisDailyChallengeCatalog(){
+  return [
+    {
+      challengeKey: 'complete_game',
+      name: '完成一場方塊遊戲',
+      description: '完成一場遊戲，不論分數',
+      amount: 10,
+      conditionType: 'complete_game'
+    },
+    {
+      challengeKey: 'score_500',
+      name: '單場分數達 500',
+      description: '單場分數達 500',
+      amount: 10,
+      conditionType: 'score',
+      target: 500
+    },
+    {
+      challengeKey: 'clear_5_lines',
+      name: '單場消除 5 行',
+      description: '單場消除 5 行',
+      amount: 10,
+      conditionType: 'lines',
+      target: 5
+    },
+    {
+      challengeKey: 'reach_level_2',
+      name: '達到 Level 2',
+      description: '單場達到 Level 2',
+      amount: 10,
+      conditionType: 'level',
+      target: 2
+    },
+    {
+      challengeKey: 'combo_2',
+      name: '最高連消達 2',
+      description: '單場最高連消達 2',
+      amount: 10,
+      conditionType: 'maxCombo',
+      target: 2
+    }
+  ];
+}
+
+function getTetrisDailyChallengeForDate(yyyyMMdd){
+  var list = getTetrisDailyChallengeCatalog();
+  var n = Number(String(yyyyMMdd || '').slice(-2)) || 1;
+  return list[n % list.length] || list[0];
+}
+
+function isTetrisDailyChallengeCompleted(challenge, result){
+  challenge = challenge || {};
+  result = result || {};
+  var scoreVal = Number(result.score || 0);
+  var linesVal = Number(result.lines || 0);
+  var levelVal = Number(result.level || 0);
+  var comboVal = Number(result.maxCombo || result.peakCombo || 0);
+  if(challenge.conditionType === 'complete_game') return true;
+  if(challenge.conditionType === 'score') return scoreVal >= Number(challenge.target || 0);
+  if(challenge.conditionType === 'lines') return linesVal >= Number(challenge.target || 0);
+  if(challenge.conditionType === 'level') return levelVal >= Number(challenge.target || 0);
+  if(challenge.conditionType === 'maxCombo') return comboVal >= Number(challenge.target || 0);
+  return false;
+}
+
+function buildTetrisDailyChallengeResultSnapshot(result){
+  result = result || {};
+  return {
+    score: Number(result.score || 0),
+    lines: Number(result.lines || 0),
+    level: Number(result.level || 0),
+    maxCombo: Number(result.maxCombo || result.peakCombo || 0)
+  };
+}
+
+function claimTetrisDailyChallengeReward(result){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return Promise.resolve({ status: 'notImplemented', balance: null });
+}
+
+function buildVcoinRewardResultMessage(commonResult, challengeResult){
+  commonResult = commonResult || {};
+  challengeResult = challengeResult || {};
+  var parts = [];
+  var total = 0;
+
+  if(commonResult.status === 'claimed'){
+    parts.push('今日遊玩獎勵：+30 V幣');
+    total += 30;
+  }else if(commonResult.status === 'already'){
+    parts.push('今日遊玩獎勵已領取');
+  }else if(commonResult.status === 'offline' || commonResult.status === 'error'){
+    parts.push('今日遊玩獎勵暫時無法確認');
+  }
+
+  var challenge = challengeResult.challenge || getTetrisDailyChallengeForDate(getTaiwanDateKey());
+  var amount = Number(challengeResult.amount || (challenge && challenge.amount) || 10);
+  if(challengeResult.status === 'claimed'){
+    parts.push('方塊今日挑戰完成：+' + amount + ' V幣');
+    total += amount;
+  }else if(challengeResult.status === 'already'){
+    parts.push('方塊今日挑戰今日已完成');
+  }else if(challengeResult.status === 'not_completed'){
+    parts.push('方塊今日挑戰：' + (challenge.name || '今日任務') + '，尚未完成，再挑戰一次吧！');
+  }else if(challengeResult.status === 'offline' || challengeResult.status === 'error'){
+    parts.push('方塊今日挑戰暫時無法確認');
+  }
+
+  if(total > 0) parts.push('合計獲得：+' + total + ' V幣');
+  return {
+    text: parts.join('｜'),
+    type: total > 0 ? 'success' : 'already'
+  };
+}
+
+function runVcoinRewardsAfterGame(result){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  setResultVCoinMessage(UniverseTetris.resultVcoinText(), 'offline');
+  return Promise.resolve(null);
+}
+
+function loadVcoinWalletStatus(playerKey){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return Promise.resolve({ balanceError: true, commonDailyRewardError: true, tetrisDailyChallengeError: true, notImplemented: true, yyyyMMdd: getTaiwanDateKey() });
+}
+
+function renderVcoinWalletPanel(status){
+  return renderVcoinHistory(status);
+}
+
+function refreshVcoinWalletStatus(){
+  return loadVcoinWalletStatus(PLAYER && PLAYER.playerKey).then(function(status){
+    renderVcoinWalletPanel(status);
+    return status;
+  });
+}
+
+
+function renderVcoinHistory(data){
+  var summary = document.getElementById('vcoin-history-summary');
+  var list = document.getElementById('vcoin-history-list');
+  if(!summary || !list) return;
+
+  data = data || {};
+  var fallbackBalance = getCurrentDisplayedVcoinBalanceFallback();
+  var balance = Number(data.balance);
+  if(isNaN(balance) && fallbackBalance !== null) balance = fallbackBalance;
+
+  if(data.balanceError === true && fallbackBalance === null){
+    summary.textContent = '目前餘額：暫時無法取得';
+  }else{
+    if(isNaN(balance)) balance = 0;
+    setLastKnownVcoinBalance(balance);
+    summary.textContent = '目前餘額：' + balance + ' V幣';
+  }
+
+  var challenge = data.tetrisDailyChallenge || getTetrisDailyChallengeForDate(data.yyyyMMdd || getTaiwanDateKey());
+  var commonDone = data.commonDailyRewardClaimed === true;
+  var commonUnknown = data.commonDailyRewardError === true;
+  var tetrisDone = data.tetrisDailyChallengeClaimed === true;
+  var tetrisUnknown = data.tetrisDailyChallengeError === true;
+
+  list.innerHTML =
+    '<div class="vcoin-wallet-guide">' +
+      '<div class="vcoin-wallet-section-title">今日可賺 V幣：</div>' +
+      '<div class="vcoin-task-card' + (commonDone ? ' done' : '') + '">' +
+        '<div class="vcoin-task-title">🎮 每日遊玩獎勵</div>' +
+        '<div class="vcoin-task-reward">任一遊戲完成一次：+30 V幣<br>每日限領一次</div>' +
+        '<div class="vcoin-task-note">這是跨遊戲共用獎勵，不是每款遊戲各 +30。</div>' +
+        '<div class="vcoin-task-status">' + (commonUnknown ? '狀態暫時無法確認' : (commonDone ? '✅ 今日已領取' : '尚未領取')) + '</div>' +
+        (commonDone ? '<span class="vcoin-task-stamp">已得獎勵</span>' : '') +
+      '</div>' +
+      '<div class="vcoin-task-card' + (tetrisDone ? ' done' : '') + '">' +
+        '<div class="vcoin-task-title">🧱 方塊今日挑戰</div>' +
+        '<div class="vcoin-task-reward">今日任務：' + escapeHtml(challenge.name || '今日任務') + '<br>完成獎勵：+10 V幣<br>每日限領一次</div>' +
+        '<div class="vcoin-task-note">' + escapeHtml(challenge.description || '') + '</div>' +
+        '<div class="vcoin-task-status">' + (tetrisUnknown ? '狀態暫時無法確認' : (tetrisDone ? '✅ 今日已完成' : '尚未完成，完成任務即可獲得 +10 V幣。')) + '</div>' +
+        (tetrisDone ? '<span class="vcoin-task-stamp">已得獎勵</span>' : '') +
+      '</div>' +
+      '<div class="vcoin-task-card">' +
+        '<div class="vcoin-task-title">📚 問答今日挑戰</div>' +
+        '<div class="vcoin-task-reward">完成指定年級與科目：+10 V幣<br>每日限領一次</div>' +
+        '<div class="vcoin-task-note">前往問答遊戲完成挑戰。</div>' +
+      '</div>' +
+      '<div class="vcoin-task-card">' +
+        '<div class="vcoin-task-title">🎵 節奏今日挑戰</div>' +
+        '<div class="vcoin-task-reward">完成指定歌曲或難度任務：+10 V幣<br>每日限領一次</div>' +
+        '<div class="vcoin-task-note">即將開放。</div>' +
+      '</div>' +
+      '<div class="vcoin-wallet-coming">V幣明細未來開放，敬請期待。</div>' +
+    '</div>';
+}
+function openVcoinHistory(){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  var wrap = document.getElementById('vcoin-history-wrap');
+  if(!wrap) return;
+  hideAvGrid();
+  hideTitleGrid();
+  wrap.style.display = 'block';
+  setProfileDataCollapsed(true);
+  UniverseTetris.renderNotReadyPanel('wallet', document.getElementById('vcoin-history-summary'), document.getElementById('vcoin-history-list'));
+}
+function closeVcoinHistory(){
+  var wrap = document.getElementById('vcoin-history-wrap');
+  if(wrap) wrap.style.display = 'none';
+  syncProfileDataCollapseByPanels();
+}
+function toggleVcoinHistory(){
+  var wrap = document.getElementById('vcoin-history-wrap');
+  if(!wrap) return;
+  if(wrap.style.display === 'none' || !wrap.style.display) openVcoinHistory();
+  else closeVcoinHistory();
+}
+
+document.getElementById("btn-profile-ok").addEventListener("click",function(){
+  if (UniverseTetris.identityLocked()) { showScreen("s-title"); return; }  // [Universe 換殼]
+  var rawName = document.getElementById("player-id-input").value.trim();
+  if(!rawName){ toast("請輸入你的名字！"); return; }
+  var newId = normalizePlayerId(rawName);
+  var newBase = PLAYER.baseAvatarKey || "boy1"; // 含玩家本次選擇的身份頭像
+  var newPlayerKey = makePlayerKey(newId, newBase);
+  var isChangingIdentity = newPlayerKey !== makePlayerKey(profileOriginalId || PLAYER.id, profileOriginalBaseAvatarKey || newBase);
+  if(isChangingIdentity){
+    if(!confirm("⚠️ 更改玩家 ID 或身份頭像會切換玩家身份\n\n你的排行榜身份與解鎖頭像會依新身份重新讀取。\n新身份可能還沒有原本解鎖的頭像。\n\n是否繼續？")){
+      // 取消：還原原始身份
+      PLAYER.id = profileOriginalId;
+      PLAYER.name = profileOriginalId;
+      PLAYER.baseAvatarKey = profileOriginalBaseAvatarKey;
+      PLAYER.playerKey = makePlayerKey(profileOriginalId, profileOriginalBaseAvatarKey);
+      document.getElementById("player-id-input").value = profileOriginalId;
+      var bImg = document.getElementById("base-avatar-preview");
+      if(bImg) bImg.src = getAvatarUrl(profileOriginalBaseAvatarKey);
+      var hint = document.getElementById("profile-id-dirty-hint");
+      if(hint) hint.style.display = "none";
+      hideAvGrid();
+      return;
+    }
+  }
+  // 確認：正式更新身份
+  PLAYER.id = newId; PLAYER.name = newId;
+  PLAYER.baseAvatarKey = newBase;
+  PLAYER.playerKey = newPlayerKey;
+  // 保守重設 displayAvatarKey 為 baseAvatarKey，等 loadUnlockedAvatars 後再驗證
+  PLAYER.displayAvatarKey = newBase;
+  PLAYER.avatarKey = newBase;
+  PLAYER.avKey = newBase;
+  PLAYER.avatarSrc = getAvatarUrl(newBase);
+  PLAYER.avUrl = PLAYER.avatarSrc;
+  document.getElementById("profile-id-dirty-hint").style.display = "none";
+  savePlayerLocal(); // 只存 localStorage，不提前觸發 ensurePlayerProfile
+  // 身份切換順序：loadAvatarCatalog → loadUnlockedAvatars → ensurePlayerProfile → validate
+  loadAvatarCatalog().then(function(){
+    return loadUnlockedAvatars();
+  }).then(function(res){
+    unlockedAvatars = res || {};
+    return ensurePlayerProfile();
+  }).then(function(){
+    validateDisplayAvatarForCurrentIdentity();
+    var baseImg = document.getElementById("base-avatar-preview");
+    var dispImg = document.getElementById("av-preview-img");
+    var gAv = document.getElementById("g-avatar");
+    if(baseImg) baseImg.src = getAvatarUrl(PLAYER.baseAvatarKey);
+    if(dispImg) dispImg.src = getAvatarUrl(PLAYER.displayAvatarKey);
+    if(gAv) gAv.src = PLAYER.avatarSrc || getAvatarUrl(PLAYER.displayAvatarKey);
+    var gname = document.getElementById("g-name");
+    if(gname) gname.textContent = PLAYER.id;
+    hideAvGrid();
+    refreshPlayerMetaUI();
+    showDiffSelect("profile");
+  });
+});
+
+// input dirty hint: 用 playerKey 判斷
+// input dirty hint: 用 playerKey 判斷
+document.getElementById("player-id-input").addEventListener("input", function(){
+  var inputId = normalizePlayerId(this.value);
+  var inputKey = makePlayerKey(inputId, PLAYER.baseAvatarKey || "boy1");
+  var origKey = makePlayerKey(profileOriginalId || PLAYER.id, profileOriginalBaseAvatarKey || PLAYER.baseAvatarKey || "boy1");
+  var hint = document.getElementById("profile-id-dirty-hint");
+  if(hint) hint.style.display = (inputKey !== origKey) ? "block" : "none";
+});
+
+// ── DIFFICULTY SELECT ──
+var diffBackTarget = "title";
+
+function showDiffSelect(backTarget){
+  diffBackTarget = backTarget || "title";
+  showScreen("s-game");
+  document.getElementById("g-overlay").classList.remove("off");
+  document.getElementById("ov-title").textContent="🎈 選擇難度";
+  document.getElementById("ov-sub").textContent="選一個你喜歡的難度開始！";
+  const row=document.getElementById("ov-btns"); row.innerHTML="";
+  [["🌸 輕鬆","btn-s","easy"],["🎪 普通","btn-p","normal"],["🔥 挑戰","btn-y","hard"]].forEach(([txt,cls,diff])=>{
+    const b=document.createElement("button");
+    b.className=`btn ${cls}`; b.textContent=txt;
+    b.addEventListener("click",()=>startGame(diff));
+    row.appendChild(b);
+  });
+  // 返回按鈕
+  const bBack=document.createElement("button");
+  bBack.className="btn btn-outline btn-sm";
+  bBack.textContent="← 返回";
+  bBack.style.cssText="margin-top:8px;width:100%;max-width:240px;";
+  bBack.addEventListener("click",()=>{
+    document.getElementById("g-overlay").classList.add("off");
+    if(diffBackTarget === "profile"){
+      var baseImg = document.getElementById("base-avatar-preview");
+      var dispImg = document.getElementById("av-preview-img");
+      var inp = document.getElementById("player-id-input");
+      if(baseImg) baseImg.src = getAvatarUrl(PLAYER.baseAvatarKey);
+      if(dispImg) dispImg.src = getAvatarUrl(PLAYER.displayAvatarKey);
+      if(inp) inp.value = PLAYER.id;
+      hideAvGrid();
+      showScreen("s-profile");
+    } else {
+      showScreen("s-title");
+    }
+  });
+  row.appendChild(bBack);
+}
+
+// ── TETRIS ──
+const COLS=10, ROWS=20;
+let CELL=30;
+const PIECES={
+  I:{cells:[[0,1],[1,1],[2,1],[3,1]],color:"#4fc3f7"},
+  O:{cells:[[0,0],[1,0],[0,1],[1,1]],color:"#ff85a1"},
+  T:{cells:[[1,0],[0,1],[1,1],[2,1]],color:"#c77dff"},
+  S:{cells:[[1,0],[2,0],[0,1],[1,1]],color:"#3ecf8e"},
+  Z:{cells:[[0,0],[1,0],[1,1],[2,1]],color:"#ff6b9d"},
+  L:{cells:[[2,0],[0,1],[1,1],[2,1]],color:"#ffd166"},
+  J:{cells:[[0,0],[0,1],[1,1],[2,1]],color:"#ffb347"},
+  H:{cells:[[0,0],[1,0],[0,1],[2,1]],color:"#ff85a1"},
+  B:{cells:[[1,0],[0,1],[1,1],[1,2]],color:"#c77dff"},
+};
+const PKEYS=Object.keys(PIECES);
+const DIFF={
+  easy:  {spd:900,dec:60,lperlv:8, mult:1.0},
+  normal:{spd:700,dec:80,lperlv:10,mult:1.5},
+  hard:  {spd:500,dec:100,lperlv:12,mult:2.0},
+};
+
+let board,cur,nxt,cx,cy,score,lines,level,combo,peakCombo,running,paused,diff,dropAcc,lastT,raf;
+let bCanvas,bCtx,nCanvas,nCtx,pCanvas,pCtx,particles=[];
+let balloonImg=null, balloonCache={};
+
+function $ (id){return document.getElementById(id)}
+
+
+function isGameScreenActive(){
+  var game = document.getElementById("s-game");
+  return !!(game && !game.classList.contains("off"));
+}
+
+function shouldShowMobileControls(){
+  var w = window.innerWidth || document.documentElement.clientWidth || 0;
+  if(w > 900) return false;
+  if(!isGameScreenActive()) return false;
+  return true;
+}
+
+function updateMobileControlsVisibility(){
+  var show = shouldShowMobileControls();
+  var mob = document.getElementById("mob-ctrl");
+  if(mob){
+    mob.style.display = show ? "flex" : "none";
+  }
+  var game = document.getElementById("s-game");
+  if(game){
+    game.style.paddingBottom = show ? "170px" : "0px";
+  }
+  if(document && document.body){
+    document.body.classList.toggle("game-active", isGameScreenActive());
+  }
+}
+
+function syncMobileControlsVisibility(){
+  updateMobileControlsVisibility();
+}
+
+function initCanvas(){
+  bCanvas=$("board-canvas"); bCtx=bCanvas.getContext("2d");
+  nCanvas=$("next-canvas");  nCtx=nCanvas.getContext("2d");
+  pCanvas=$("particle-canvas"); pCtx=pCanvas.getContext("2d");
+  syncMobileControlsVisibility();
+  const isMob = shouldShowMobileControls();
+  // Mobile controls height: dpad is about 160px + padding
+  const mobCtrlH = isMob ? 170 : 0;
+  const sideW = Math.min(130, Math.max(88, window.innerWidth * 0.13)) * 2;
+  const maxH  = window.innerHeight - mobCtrlH - 16;
+  const maxW  = window.innerWidth - sideW - 16;
+  CELL = Math.floor(Math.min(maxH / ROWS, maxW / COLS));
+  CELL = Math.max(18, Math.min(CELL, 38));
+  bCanvas.width  = COLS * CELL;
+  bCanvas.height = ROWS * CELL;
+  pCanvas.width  = window.innerWidth;
+  pCanvas.height = window.innerHeight;
+}
+
+function randPiece(){
+  const k=PKEYS[Math.floor(Math.random()*PKEYS.length)];
+  return {key:k,...PIECES[k],cells:PIECES[k].cells.map(c=>[...c])};
+}
+function newBoard(){return Array.from({length:ROWS},()=>Array(COLS).fill(null))}
+
+function startGame(d){
+  diff=d||"normal";
+  board=newBoard(); score=0; lines=0; level=1; combo=0; peakCombo=0;
+  cur=randPiece(); nxt=randPiece(); cx=3; cy=0;
+  running=true; paused=false; particles=[]; balloonCache={};
+  dropAcc=0;
+  // Auto-start music if not already playing
+  if(!mPlaying && SONGS.length){
+    if(!mAudio.src || mAudio.src===window.location.href){
+      loadSong(0, true);
+    } else {
+      playSong();
+    }
+  }
+  // Reset danger + sticker state from previous game
+  $("danger-img").classList.remove("show");
+  $("board-wrap").classList.remove("danger");
+  const si=$("sticker-img"); si.className=""; si.src="";
+  $("g-overlay").classList.add("off");
+  $("g-avatar").src=PLAYER.avatarSrc||PLAYER.avUrl||"";
+  $("g-name").textContent=PLAYER.id||PLAYER.name||"Player";
+  $("pause-btn").textContent="⏸ 暫停";
+  updateHUD();
+  if(raf) cancelAnimationFrame(raf);
+  // Double rAF: first frame lets flex layout compute, second frame we measure
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      syncMobileControlsVisibility();
+  initCanvas();
+      lastT=performance.now();
+      raf=requestAnimationFrame(loop);
+    });
+  });
+}
+
+function loop(t){
+  if(!running){return;}
+  const dt=Math.min(t-lastT,150); lastT=t;
+  if(!paused){
+    dropAcc+=dt;
+    const interval=Math.max(80, DIFF[diff].spd-(level-1)*DIFF[diff].dec);
+    if(dropAcc>=interval){ dropAcc=0; if(!mDown()) lock(); }
+  }
+  draw(); updParticles(dt); drawParticles();
+  raf=requestAnimationFrame(loop);
+}
+
+// movement
+function rotate(p){
+  const maxX=Math.max(...p.cells.map(c=>c[0]));
+  return p.cells.map(([x,y])=>[maxX-y,x]); // wrong rotation fix below
+}
+function tryRotate(){
+  if(!running||paused) return;
+  // Proper SRS rotation
+  const r=cur.cells.map(([x,y])=>[-(y - Math.floor((Math.max(...cur.cells.map(c=>c[1]))+1)/2)),
+                                    x - Math.floor((Math.max(...cur.cells.map(c=>c[0]))+1)/2)+Math.floor((Math.max(...cur.cells.map(c=>c[1]))+1)/2)]);
+  // Simpler: just rotate 90deg
+  const maxCol=Math.max(...cur.cells.map(c=>c[0]));
+  const rotated=cur.cells.map(([x,y])=>[y, maxCol-x]);
+  for(const kick of [0,-1,1,-2,2]){
+    if(valid(rotated,cx+kick,cy)){
+      cur={...cur,cells:rotated}; cx+=kick; sfx.rotate(); return;
+    }
+  }
+}
+function valid(cells,ox,oy){
+  return cells.every(([x,y])=>{
+    const nx=x+ox,ny=y+oy;
+    return nx>=0&&nx<COLS&&ny<ROWS&&(ny<0||!board[ny][nx]);
+  });
+}
+function mLeft(){ if(valid(cur.cells,cx-1,cy)){cx--; sfx.move();} }
+function mRight(){ if(valid(cur.cells,cx+1,cy)){cx++; sfx.move();} }
+function mDown(){
+  if(valid(cur.cells,cx,cy+1)){cy++; return true;}
+  return false;
+}
+function hardDrop(){
+  if(!running||paused) return;
+  sfx.drop(); let d=0;
+  while(mDown()) d++;
+  score+=d*2; lock();
+}
+
+function lock(){
+  const abs=cur.cells.map(([x,y])=>[x+cx,y+cy]);
+  if(abs.some(([x,y])=>y<0)){gameOver(); return;}
+  abs.forEach(([x,y])=>{board[y][x]=cur.color;});
+  sfx.lock(); clearLines();
+  cur=nxt; nxt=randPiece(); cx=3; cy=0; dropAcc=0;
+  checkDanger();
+  if(!valid(cur.cells,cx,cy)){gameOver();}
+}
+
+function clearLines(){
+  const full=[];
+  for(let r=0;r<ROWS;r++) if(board[r].every(c=>c!==null)) full.push(r);
+  if(!full.length){combo=0; updateHUD(); return;}
+  combo++;
+  if(combo>peakCombo) peakCombo=combo;
+  const n=full.length;
+  const gained=Math.round(100*n*n*level*DIFF[diff].mult*(1+(combo-1)*0.5));
+  score+=gained; lines+=n;
+  // flash text
+  const msgs={1:"NICE!",2:"DOUBLE!",3:"TRIPLE!",4:"TETRIS!"};
+  const cols={1:"#3ecf8e",2:"#ffd166",3:"#ff85a1",4:"#c77dff"};
+  const cf=$("cl-flash");
+  cf.textContent=(msgs[n]||"CLEAR!")+"  +"+gained;
+  cf.style.color=cols[n]||"#fff";
+  cf.classList.remove("show"); void cf.offsetWidth; cf.classList.add("show");
+  // sticker + sfx
+  const key=getStickerKey(n,combo);
+  showSticker(key);
+  sfx[key]? sfx[key]() : sfx.clear1();
+  // particles
+  const rect=$("board-wrap").getBoundingClientRect();
+  full.forEach(r=>{
+    for(let c=0;c<COLS;c++) spawnParticles(rect.left+(c+.5)*CELL, rect.top+(r+.5)*CELL, n);
+  });
+  // remove rows
+  full.reverse().forEach(r=>{ board.splice(r,1); board.unshift(Array(COLS).fill(null)); });
+  // level up
+  const prevLv=level;
+  level=Math.floor(lines/DIFF[diff].lperlv)+1;
+  if(level!==prevLv){ showLvFlash(); sfx.levelUp(); }
+  updateHUD();
+  // 全消判斷：棋盤完全清空
+  const isEmpty = board.every(row=>row.every(c=>c===null));
+  if(isEmpty){
+    const allClearBonus = Math.round(500 * level * DIFF[diff].mult);
+    score += allClearBonus;
+    // 全消特效
+    const cf2=$("cl-flash");
+    cf2.textContent="✨ ALL CLEAR! ✨  +" + allClearBonus;
+    cf2.style.color="#ffd166";
+    cf2.classList.remove("show"); void cf2.offsetWidth; cf2.classList.add("show");
+    showSticker("allclear");
+    sfx.allClear && sfx.allClear();
+    updateHUD();
+  }
+  // 連鎖檢查：消完後再檢查有沒有新的滿排（方塊掉落填滿）
+  const chainFull=[];
+  for(let r=0;r<ROWS;r++) if(board[r].every(c=>c!==null)) chainFull.push(r);
+  if(chainFull.length>0){
+    setTimeout(()=>clearLines(), 80);
+  }
+}
+
+function getStickerKey(n,combo){
+  if(n===4) return "clear4";
+  if(n===3) return "clear3";
+  if(n===2) return "clear2";
+  if(combo>0&&combo%10===0) return "clear10";
+  if(combo>0&&combo%5===0)  return "clear5";
+  return "clear1";
+}
+
+function updateHUD(){
+  $("hud-score").textContent=score.toLocaleString();
+  // Show current streak; if 0 show peak in grey
+  if(combo>0){
+    $("hud-combo").textContent="×"+combo;
+    $("hud-combo").style.color="var(--yellow)";
+  } else {
+    $("hud-combo").textContent=peakCombo?"最高×"+peakCombo:"×0";
+    $("hud-combo").style.color=peakCombo?"rgba(255,209,102,.5)":"";
+  }
+  $("hud-lines").textContent=lines;
+  $("hud-level").textContent=level;
+}
+
+// ── Drawing ──
+function lighten(hex,a){
+  const n=parseInt(hex.replace("#",""),16);
+  return `rgb(${Math.min(255,(n>>16)+a)},${Math.min(255,((n>>8)&255)+a)},${Math.min(255,(n&255)+a)})`;
+}
+function darken(hex,a){
+  const n=parseInt(hex.replace("#",""),16);
+  return `rgb(${Math.max(0,(n>>16)-a)},${Math.max(0,((n>>8)&255)-a)},${Math.max(0,(n&255)-a)})`;
+}
+
+function initBalloon(){
+  balloonImg=new Image();
+  balloonImg.onload=()=>{ balloonCache={}; }; // clear cache when image loads
+  balloonImg.src=IMG.balloon;
+}
+
+function getTinted(color){
+  if(balloonCache[color]) return balloonCache[color];
+  const sz=64, oc=document.createElement("canvas");
+  oc.width=sz; oc.height=sz;
+  const octx=oc.getContext("2d");
+  // Step 1: fill with tinted gradient
+  const g=octx.createRadialGradient(sz*.36,sz*.3,1,sz*.5,sz*.46,sz*.46);
+  g.addColorStop(0,lighten(color,70));
+  g.addColorStop(.5,color);
+  g.addColorStop(1,darken(color,25));
+  octx.fillStyle=g;
+  octx.fillRect(0,0,sz,sz);
+  // Step 2: clip to balloon shape using PNG alpha channel
+  if(balloonImg && balloonImg.complete && balloonImg.naturalWidth>0){
+    octx.globalCompositeOperation="destination-in";
+    octx.drawImage(balloonImg,0,0,sz,sz);
+    // Step 3: add shine overlay
+    octx.globalCompositeOperation="source-over";
+    const sg=octx.createRadialGradient(sz*.34,sz*.27,0,sz*.34,sz*.27,sz*.15);
+    sg.addColorStop(0,"rgba(255,255,255,.6)");
+    sg.addColorStop(1,"rgba(255,255,255,0)");
+    octx.fillStyle=sg;
+    octx.fillRect(0,0,sz,sz);
+  }
+  balloonCache[color]=oc;
+  return oc;
+}
+
+function drawCell(ctx,c,r,color,alpha=1){
+  const x=c*CELL,y=r*CELL,s=CELL,pad=1;
+  ctx.globalAlpha=alpha;
+  ctx.shadowColor=color; ctx.shadowBlur=8;
+  ctx.drawImage(getTinted(color),x+pad,y+pad,s-pad*2,s-pad*2);
+  ctx.shadowBlur=0;
+  // shine
+  ctx.globalCompositeOperation="screen";
+  const sg=ctx.createRadialGradient(x+s*.33,y+s*.27,0,x+s*.33,y+s*.27,s*.14);
+  sg.addColorStop(0,"rgba(255,255,255,.7)");
+  sg.addColorStop(1,"rgba(255,255,255,0)");
+  ctx.fillStyle=sg; ctx.beginPath();
+  ctx.arc(x+s*.33,y+s*.27,s*.14,0,Math.PI*2); ctx.fill();
+  ctx.globalCompositeOperation="source-over";
+  // string
+  ctx.strokeStyle=darken(color,10)+"88"; ctx.lineWidth=1.5; ctx.lineCap="round";
+  ctx.beginPath(); ctx.moveTo(x+s*.5,y+s*.87);
+  ctx.quadraticCurveTo(x+s*.54,y+s*.95,x+s*.5,y+s*.99); ctx.stroke();
+  ctx.globalAlpha=1;
+}
+
+function drawRopes(ctx,cells){
+  cells.forEach(({x,y,c})=>{
+    const right=cells.find(o=>o.x===x+1&&o.y===y&&o.c===c);
+    if(right){
+      ctx.strokeStyle=darken(c,10)+"99"; ctx.lineWidth=2; ctx.lineCap="round";
+      ctx.beginPath();
+      ctx.moveTo((x+.85)*CELL,(y+.9)*CELL);
+      ctx.quadraticCurveTo((x+1)*CELL,(y+1)*CELL,(x+1.15)*CELL,(y+.9)*CELL);
+      ctx.stroke();
+    }
+    const below=cells.find(o=>o.x===x&&o.y===y+1&&o.c===c);
+    if(below){
+      ctx.strokeStyle=darken(c,10)+"99"; ctx.lineWidth=2; ctx.lineCap="round";
+      ctx.beginPath();
+      ctx.moveTo((x+.5)*CELL,(y+.9)*CELL);
+      ctx.quadraticCurveTo((x+.55)*CELL,(y+1)*CELL,(x+.5)*CELL,(y+1.1)*CELL);
+      ctx.stroke();
+    }
+  });
+}
+
+function draw(){
+  if(!bCtx) return;
+  bCtx.clearRect(0,0,bCanvas.width,bCanvas.height);
+  bCtx.fillStyle="rgba(8,4,20,.97)";
+  bCtx.fillRect(0,0,bCanvas.width,bCanvas.height);
+  // grid
+  bCtx.strokeStyle="rgba(255,255,255,.04)"; bCtx.lineWidth=1;
+  for(let c=0;c<=COLS;c++){bCtx.beginPath();bCtx.moveTo(c*CELL,0);bCtx.lineTo(c*CELL,ROWS*CELL);bCtx.stroke();}
+  for(let r=0;r<=ROWS;r++){bCtx.beginPath();bCtx.moveTo(0,r*CELL);bCtx.lineTo(COLS*CELL,r*CELL);bCtx.stroke();}
+  // board
+  const bCells=[];
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(board[r][c]){drawCell(bCtx,c,r,board[r][c]); bCells.push({x:c,y:r,c:board[r][c]});}
+  // ghost
+  if(running&&!paused&&cur){
+    let gy=cy; while(valid(cur.cells,cx,gy+1)) gy++;
+    if(gy!==cy) cur.cells.forEach(([x,y])=>{ if(y+gy>=0) drawCell(bCtx,x+cx,y+gy,cur.color,.18); });
+  }
+  // current + ropes
+  if(running&&!paused&&cur){
+    const curCells=[];
+    cur.cells.forEach(([x,y])=>{ if(y+cy>=0){drawCell(bCtx,x+cx,y+cy,cur.color); curCells.push({x:x+cx,y:y+cy,c:cur.color});}});
+    drawRopes(bCtx,curCells);
+  }
+  drawRopes(bCtx,bCells);
+  drawNext();
+}
+
+function drawNext(){
+  if(!nCtx||!nxt) return;
+  const sz=nCanvas.width;
+  nCtx.clearRect(0,0,sz,sz);
+  const cs=nxt.cells;
+  const mxX=Math.max(...cs.map(c=>c[0]))+1;
+  const mxY=Math.max(...cs.map(c=>c[1]))+1;
+  const cell=Math.min((sz-12)/mxX,(sz-12)/mxY);
+  const ox=(sz-mxX*cell)/2, oy=(sz-mxY*cell)/2;
+  cs.forEach(([x,y])=>{
+    const px=ox+x*cell,py=oy+y*cell,s=cell,pad=2;
+    nCtx.globalAlpha=1;
+    nCtx.shadowColor=nxt.color; nCtx.shadowBlur=6;
+    nCtx.drawImage(getTinted(nxt.color),px+pad,py+pad,s-pad*2,s-pad*2);
+    nCtx.shadowBlur=0;
+  });
+}
+
+// particles
+function spawnParticles(wx,wy,n){
+  const cols=["#ff85a1","#ffd166","#3ecf8e","#c77dff","#4fc3f7","#ffb347"];
+  const em=["🎈","✨","⭐","💕","🎊","🎀"];
+  for(let i=0;i<8+n*3;i++){
+    particles.push({x:wx,y:wy,vx:(Math.random()-.5)*9,vy:-(Math.random()*7+2),
+      color:cols[Math.floor(Math.random()*cols.length)],
+      emoji:Math.random()<.25?em[Math.floor(Math.random()*em.length)]:null,
+      life:1,decay:.018+Math.random()*.02,size:4+Math.random()*6});
+  }
+}
+function updParticles(dt){
+  particles=particles.filter(p=>p.life>0);
+  particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.3;p.vx*=.95;p.life-=p.decay;});
+}
+function drawParticles(){
+  if(!pCtx) return;
+  pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);
+  particles.forEach(p=>{
+    pCtx.globalAlpha=p.life;
+    if(p.emoji){pCtx.font=`${p.size*2}px serif`;pCtx.fillText(p.emoji,p.x,p.y);}
+    else{pCtx.fillStyle=p.color;pCtx.shadowColor=p.color;pCtx.shadowBlur=5;
+      pCtx.beginPath();pCtx.arc(p.x,p.y,p.size,0,Math.PI*2);pCtx.fill();pCtx.shadowBlur=0;}
+  });
+  pCtx.globalAlpha=1;
+}
+
+// sticker
+let stkTmr=null;
+function showSticker(key){
+  if(!IMG[key]) return;
+  const img=$("sticker-img");
+  img.src=IMG[key];
+  img.className="pop-in";
+  clearTimeout(stkTmr);
+  stkTmr=setTimeout(()=>{
+    img.className="pop-out";
+    setTimeout(()=>{img.className="";img.src="";},200);
+  },700);
+}
+
+
+function isBuiltinAvatar(key) {
+  return AVATARS.some(function(a){ return a.key === key; });
+}
+
+function isAvatarUnlocked(key) {
+  var data = unlockedAvatars && unlockedAvatars[key];
+  return data === true || (data && data.unlocked === true);
+}
+
+function isStudentOrPrivateAvatar(key, cat) {
+  key = String(key || '');
+  cat = cat || {};
+  return key.indexOf('student_') === 0 ||
+         key.indexOf('student-') === 0 ||
+         cat.type === 'student' ||
+         cat.category === 'student' ||
+         cat.group === 'student' ||
+         cat.tier === 'student' ||
+         cat.studentOnly === true ||
+         cat.private === true ||
+         !!cat.ownerPlayerKey ||
+         !!cat.exclusivePlayerKey;
+}
+
+function isHiddenUntilUnlockedAvatar(key, cat) {
+  cat = cat || {};
+  return cat.hiddenUntilUnlocked === true ||
+         cat.visibility === 'hiddenUntilUnlocked' ||
+         cat.unlockMode === 'hiddenUntilUnlocked';
+}
+
+function isDisplayAvatarAllowed(key) {
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return !!key && key === PLAYER.baseAvatarKey;  // 展示頭像解鎖尚未接入：只允許身份頭像
+}
+
+function validateDisplayAvatarForCurrentIdentity() {
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  PLAYER.displayAvatarKey = PLAYER.baseAvatarKey;
+  PLAYER.avatarKey = PLAYER.baseAvatarKey;
+  PLAYER.avKey = PLAYER.baseAvatarKey;
+  PLAYER.avatarSrc = getAvatarUrl(PLAYER.baseAvatarKey);
+  PLAYER.avUrl = PLAYER.avatarSrc;
+  return true;
+}
+
+
+function clearGameVisualState(){
+  var danger = document.getElementById("danger-img");
+  if(danger){ danger.classList.remove("show"); danger.style.opacity = ""; }
+  var boardWrap = document.getElementById("board-wrap");
+  if(boardWrap) boardWrap.classList.remove("danger");
+  var sticker = document.getElementById("sticker-img");
+  if(sticker){ sticker.className = ""; sticker.src = ""; }
+}
+
+// danger
+function checkDanger(){
+  let highest=ROWS;
+  for(let r=0;r<ROWS;r++) if(board[r].some(c=>c!==null)){highest=r;break;}
+  const danger=highest<5;
+  const di=$("danger-img"), bw=$("board-wrap");
+  const wasDanger=di.classList.contains("show");
+  if(danger){
+    if(!wasDanger) sfx.danger();
+    di.classList.add("show"); bw.classList.add("danger");
+  } else {
+    di.classList.remove("show"); bw.classList.remove("danger");
+  }
+}
+
+// level flash
+function showLvFlash(){
+  const el=$("lv-flash");
+  el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
+}
+
+// game over
+
+// ── 解鎖通知 ──
+function showUnlockNotice(keys){
+  if(!keys || !keys.length) return;
+  var names = keys.map(function(k){
+    var av = UNLOCKABLE_AVATARS.find(function(a){ return a.key===k; });
+    return av ? av.name : k;
+  });
+  var nameList = names.map(function(n){ return '・' + n; }).join('\n');
+  var msg = '🎉 恭喜解鎖新頭像！\n你已解鎖：\n' + nameList;
+  // 建立通知覆蓋層
+  var ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(10,5,25,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;';
+  var title = document.createElement('div');
+  title.style.cssText = 'font-size:20px;font-weight:900;color:#ffd166;text-align:center;white-space:pre-line;';
+  title.textContent = msg;
+  var avatarRow = document.createElement('div');
+  avatarRow.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;justify-content:center;';
+  keys.forEach(function(k){
+    var av = UNLOCKABLE_AVATARS.find(function(a){ return a.key===k; });
+    if(av){
+      var img = document.createElement('img');
+      img.src = av.src || av.file || ''; img.style.cssText = 'width:64px;height:64px;border-radius:50%;border:3px solid #ffd166;';
+      avatarRow.appendChild(img);
+    }
+  });
+  var btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;justify-content:center;';
+  var btnEquip = document.createElement('button');
+  btnEquip.className = 'btn btn-y'; btnEquip.textContent = '前往頭像收藏';
+  btnEquip.onclick = function(){ document.body.removeChild(ov); showScreen('s-profile'); };
+  var btnSkip = document.createElement('button');
+  btnSkip.className = 'btn btn-outline'; btnSkip.textContent = '稍後再說';
+  btnSkip.onclick = function(){ document.body.removeChild(ov); };
+  btnRow.appendChild(btnEquip); btnRow.appendChild(btnSkip);
+  ov.appendChild(title); ov.appendChild(avatarRow); ov.appendChild(btnRow);
+  document.body.appendChild(ov);
+}
+
+
+// ── V幣 Foundation：品牌宇宙每日完成獎勵 ──
+
+function getTetrisTitleCatalog(){
+  return TETRIS_TITLES;
+}
+
+function checkTetrisTitleUnlocks(result){
+  result = result || {};
+  var keys = [];
+  keys.push('tetris_first_clear');
+  if(Number(result.score || 0) >= 1000) keys.push('tetris_score_1000');
+  if(Number(result.score || 0) >= 2000) keys.push('tetris_score_2000');
+  if(Number(result.peakCombo || 0) >= 3) keys.push('tetris_peak_combo_3');
+  if(Number(result.level || 0) >= 5) keys.push('tetris_level_5');
+  return keys;
+}
+
+function buildTetrisTitleResultSnapshot(result){
+  result = result || {};
+  return {
+    score: Number(result.score || 0),
+    level: Number(result.level || 1),
+    lines: Number(result.lines || 0),
+    peakCombo: Number(result.peakCombo || 0),
+    difficulty: result.difficulty || diff || 'normal'
+  };
+}
+
+function unlockTetrisTitle(titleKey, source, result){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return Promise.resolve(null);
+}
+
+function checkAndUnlockTetrisTitles(result){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return Promise.resolve([]);  // 共用稱號 API 尚未完成（NOT_IMPLEMENTED）
+}
+
+function showTitleUnlockNotice(newTitles){
+  if(!newTitles || !newTitles.length) return;
+  var nameList = newTitles.map(function(t){ return '・' + (t.name || t.titleKey || '新稱號'); }).join('\n');
+  toast('🎖 解鎖新稱號！\n' + nameList, 4200);
+}
+
+function getSharedTitleCatalog(){
+  return {
+    tetris: {
+      gameId: 'tetris',
+      gameName: '方塊遊戲',
+      emoji: '🧱',
+      titles: getTetrisTitleCatalog()
+    }
+  };
+}
+
+function getTitleGameMeta(gameId){
+  var catalog = getSharedTitleCatalog();
+  return catalog[gameId] || { gameId: gameId || '', gameName: gameId || '未知遊戲', emoji: '🎖', titles: {} };
+}
+
+function getEquippedTitleKey(){
+  return (window.currentEquippedTitleData && window.currentEquippedTitleData.titleKey) || '';
+}
+
+function getEquippedTitleGameId(){
+  return (window.currentEquippedTitleData && window.currentEquippedTitleData.gameId) || '';
+}
+
+function isTitleEquipped(gameId, titleKey){
+  return getEquippedTitleGameId() === gameId && getEquippedTitleKey() === titleKey;
+}
+
+function loadUnlockedTitlesByGame(playerKey){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return Promise.resolve({});
+}
+
+function getUnlockedTitleMapForGame(gameId, unlockedByGame){
+  return (unlockedByGame && unlockedByGame[gameId]) || {};
+}
+
+function loadTetrisUnlockedTitles(){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return Promise.resolve({});
+}
+
+function buildSharedTitleCollectionItems(filterGameId, unlockedByGame){
+  var catalog = getSharedTitleCatalog();
+  var games = filterGameId === 'all' ? ['tetris','quiz','rhythm','adventure'] : [filterGameId];
+  var items = [];
+  games.forEach(function(gameId){
+    var meta = catalog[gameId];
+    if(!meta || gameId === 'all') return;
+    var titles = meta.titles || {};
+    Object.keys(titles).forEach(function(titleKey){
+      var title = titles[titleKey];
+      var unlockedMap = getUnlockedTitleMapForGame(gameId, unlockedByGame);
+      var isUnlocked = !!(unlockedMap[titleKey] && unlockedMap[titleKey].unlocked === true);
+      items.push({
+        gameId: gameId,
+        gameName: meta.gameName,
+        emoji: meta.emoji,
+        titleKey: titleKey,
+        title: title,
+        unlocked: isUnlocked
+      });
+    });
+  });
+  return items;
+}
+
+function renderSharedTitleCollection(filterGameId){
+  titleCollectionFilter = 'tetris';
+  var grid = document.getElementById('title-grid');
+  var titleEl = document.getElementById('title-grid-title');
+  if(!grid) return Promise.resolve();
+  if(titleEl) titleEl.textContent = '🎖 方塊稱號收藏';
+  grid.innerHTML = '<div class="title-empty-msg">🎈 載入方塊稱號中...</div>';
+
+  return Promise.all([loadTetrisUnlockedTitles(), loadEquippedTitleForCurrentPlayer()]).then(function(values){
+    var unlockedMap = values[0] || {};
+    var titles = getTetrisTitleCatalog() || {};
+    var items = Object.keys(titles).map(function(titleKey){
+      var title = titles[titleKey] || {};
+      var unlockedData = unlockedMap[titleKey] || {};
+      var isUnlocked = unlockedData.unlocked === true;
+      return {
+        gameId: 'tetris',
+        gameName: '方塊遊戲',
+        emoji: '🧱',
+        titleKey: titleKey,
+        title: title,
+        unlocked: isUnlocked
+      };
+    });
+
+    if(!items.length){
+      grid.innerHTML = '<div class="title-empty-msg">目前尚未開放方塊稱號。</div>';
+      return;
+    }
+
+    grid.innerHTML = items.map(function(item){
+      var title = item.title || {};
+      var isUnlocked = item.unlocked === true;
+      var isEquipped = isUnlocked && isTitleEquipped('tetris', item.titleKey);
+      var icon = isUnlocked ? '🎖' : '🔒';
+      var titleName = title.name || '未命名方塊稱號';
+      var conditionText = title.conditionText || '尚未設定條件';
+      var actionHtml = '';
+      if(isUnlocked){
+        actionHtml = isEquipped
+          ? '<span class="title-badge">已裝備</span>'
+          : '<button class="title-equip-btn" data-game-id="tetris" data-title-key="' + item.titleKey + '">裝備</button>';
+      }else{
+        actionHtml = '<span class="title-badge">🔒 尚未解鎖</span>';
+      }
+      return '<div class="title-item' + (isUnlocked ? '' : ' locked') + (isEquipped ? ' equipped' : '') + '" data-game-id="tetris" data-title-key="' + item.titleKey + '">' +
+        '<div class="title-name">' + icon + ' ' + escapeHtml(titleName) + '</div>' +
+        '<div class="title-condition">條件：' + escapeHtml(conditionText) + '</div>' +
+        '<div class="title-status">狀態：' + (isUnlocked ? '已解鎖' : '尚未解鎖') + '</div>' +
+        '<div class="title-actions">' + actionHtml + '</div>' +
+      '</div>';
+    }).join('');
+
+    grid.querySelectorAll('.title-equip-btn').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        equipSharedTitle('tetris', btn.getAttribute('data-title-key'));
+      });
+    });
+    grid.querySelectorAll('.title-item.locked').forEach(function(item){
+      item.addEventListener('click', function(){
+        var titleKey = item.getAttribute('data-title-key');
+        var title = titles[titleKey] || {};
+        toast('🔒 解鎖條件：' + (title.conditionText || '尚未設定條件'));
+      });
+    });
+  }).catch(function(e){
+    console.warn('[TetrisTitleCollection] render failed:', e && e.message ? e.message : e);
+    grid.innerHTML = '<div class="title-empty-msg">⚠️ 方塊稱號收藏暫時無法載入</div>';
+  });
+}
+
+function setTitleCollectionFilter(gameId){
+  titleCollectionFilter = 'tetris';
+  renderSharedTitleCollection('tetris');
+}
+
+function buildTitleGrid(){
+  return renderSharedTitleCollection('tetris');
+}
+
+function hideTitleGrid(){
+  var wrap = document.getElementById('title-grid-wrap');
+  if(wrap) wrap.style.display = 'none';
+  syncProfileDataCollapseByPanels();
+}
+
+function toggleTitleCollection(){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  UniverseTetris.notReady('titles');
+}
+
+function equipSharedTitle(gameId, titleKey){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  UniverseTetris.notReady('titles');
+  return Promise.resolve(false);
+}
+
+function equipTitleFromCollection(titleKey){
+  return equipSharedTitle('tetris', titleKey);
+}
+
+
+function getTaiwanDateKey(){
+  var parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Taipei',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(new Date());
+  var y = '', m = '', d = '';
+  parts.forEach(function(part){
+    if(part.type === 'year') y = part.value;
+    if(part.type === 'month') m = part.value;
+    if(part.type === 'day') d = part.value;
+  });
+  return y + m + d;
+}
+
+function setResultVCoinMessage(text, type){
+  var el = document.getElementById('res-vcoin-msg');
+  if(!el) return;
+  el.textContent = text || '';
+  el.className = text ? (type || '') : 'hidden';
+}
+
+function claimDailyVCoinsForTetris(){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return Promise.resolve({ status: 'notImplemented', balance: null });
+}
+
+function gameOver(){
+  running=false;
+  clearGameVisualState();
+  sfx.gameOver();
+  // ── 方塊遊戲自動解鎖 ──
+  newlyUnlockedThisGame = [];
+  var unlockPromises = [];
+  // 1. xiaov_base：完成任一場方塊遊戲
+  unlockPromises.push(unlockAvatar('xiaov_base', 'tetris_complete'));
+  // 2. balloon_brother_01：單場分數達 2000 分
+  if(score >= 2000) unlockPromises.push(unlockAvatar('balloon_brother_01', 'tetris_score_2000'));
+  // 等解鎖完成後顯示提示
+  Promise.all(unlockPromises).then(function() {
+    if(newlyUnlockedThisGame.length > 0) {
+      window._pendingUnlockNotice = newlyUnlockedThisGame.slice();
+    }
+  });
+  const prev=UniverseTetris.getLocalBest();  // [Universe 換殼] 最佳分數依 playerId 分開（原版為全裝置共用）
+  const isNew=score>prev;
+  if(isNew){ UniverseTetris.setLocalBest(score); updateBestDisp(); }
+  var titleResult = {
+    score: score,
+    level: level,
+    lines: lines,
+    difficulty: diff,
+    peakCombo: peakCombo || 0,
+    maxCombo: peakCombo || 0
+  };
+  checkAndUnlockTetrisTitles(titleResult).then(function(newTitles){
+    if(newTitles && newTitles.length){
+      window._pendingTitleUnlockNotice = newTitles;
+      setTimeout(function(){
+        if(window._pendingTitleUnlockNotice && window._pendingTitleUnlockNotice.length){
+          showTitleUnlockNotice(window._pendingTitleUnlockNotice);
+          window._pendingTitleUnlockNotice = [];
+        }
+      }, 900);
+    }
+    refreshPlayerMetaUI();
+  }).catch(function(e){
+    console.warn('[TetrisTitle] gameOver title check failed:', e && e.message ? e.message : e);
+  });
+  saveLB();
+  updateBestDisp();
+  runVcoinRewardsAfterGame(titleResult).then(function(){ refreshPlayerMetaUI(); });
+  setTimeout(()=>{
+    $("res-score").textContent=score.toLocaleString();
+    $("res-level").textContent=level;
+    $("res-lines").textContent=lines;
+    $("res-combo").textContent=peakCombo;
+    const em=["😅","🎈","🎪","🎉","🌟","🏆"];
+    $("res-emoji").textContent=em[Math.min(level-1,em.length-1)];
+    $("new-best").style.display=isNew?"block":"none";
+    showScreen("s-result");
+  // 顯示本場新解鎖頭像通知
+  setTimeout(function(){
+    if(window._pendingUnlockNotice && window._pendingUnlockNotice.length > 0){
+      showUnlockNotice(window._pendingUnlockNotice);
+      window._pendingUnlockNotice = [];
+    }
+  }, 800);
+  },500);
+}
+
+// pause
+document.getElementById("pause-btn").addEventListener("click",togglePause);
+function togglePause(){
+  if(!running) return;
+  paused=!paused;
+  $("pause-btn").textContent=paused?"▶ 繼續":"⏸ 暫停";
+  if(paused){
+    // 記錄暫停前音樂狀態，並暫停音樂
+    musicWasPlayingBeforePause = mPlaying;
+    if(mPlaying) pauseSong();
+
+    $("g-overlay").classList.remove("off");
+    $("ov-title").textContent="⏸ 暫停"; $("ov-sub").textContent="遊戲暫停中";
+    const row=$("ov-btns"); row.innerHTML="";
+    const b1=document.createElement("button"); b1.className="btn btn-p"; b1.textContent="▶ 繼續";
+    b1.addEventListener("click",()=>{
+      paused=false;
+      $("pause-btn").textContent="⏸ 暫停";
+      $("g-overlay").classList.add("off");
+      lastT=performance.now();
+      // 只恢復原本有播放的音樂
+      if(musicWasPlayingBeforePause) playSong();
+      musicWasPlayingBeforePause=false;
+    });
+    const b2=document.createElement("button"); b2.className="btn btn-outline"; b2.textContent="🏠 離開";
+    b2.addEventListener("click",()=>{running=false;if(raf)cancelAnimationFrame(raf);clearGameVisualState();showScreen("s-title");});
+    row.appendChild(b1); row.appendChild(b2);
+  } else {
+    // ESC 直接恢復（不經由按鈕）
+    $("g-overlay").classList.add("off");
+    lastT=performance.now();
+    if(musicWasPlayingBeforePause) playSong();
+    musicWasPlayingBeforePause=false;
+  }
+}
+document.getElementById("btn-quit").addEventListener("click",()=>{
+  if(!running||confirm("確定要離開嗎？")){running=false;if(raf)cancelAnimationFrame(raf);showScreen("s-title");}
+});
+
+// keyboard
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){togglePause();return;}
+  if(!running||paused) return;
+  if(e.key==="ArrowLeft"){e.preventDefault();mLeft();}
+  else if(e.key==="ArrowRight"){e.preventDefault();mRight();}
+  else if(e.key==="ArrowDown"){e.preventDefault();if(!mDown())lock();}
+  else if(e.key==="ArrowUp"){e.preventDefault();tryRotate();}
+  else if(e.key===" "){e.preventDefault();hardDrop();}
+  else if(e.key==="z"||e.key==="Z") tryRotate();
+});
+
+// mobile
+document.getElementById("mob-left").addEventListener("click",mLeft);
+document.getElementById("mob-right").addEventListener("click",mRight);
+document.getElementById("mob-down").addEventListener("click",()=>{if(running&&!paused){if(!mDown())lock();}});
+document.getElementById("mob-rotl").addEventListener("click",()=>{if(running&&!paused)tryRotate();});
+document.getElementById("mob-drop").addEventListener("click",hardDrop);
+
+// touch swipe on board
+let tx0=0,ty0=0,tyL=0;
+document.getElementById("board-canvas").addEventListener("touchstart",e=>{tx0=e.touches[0].clientX;ty0=tyL=e.touches[0].clientY;},{passive:true});
+document.getElementById("board-canvas").addEventListener("touchmove",e=>{
+  if(!running||paused) return;
+  const dy=e.touches[0].clientY-tyL; tyL=e.touches[0].clientY;
+  if(dy>8){if(!mDown())lock();}
+},{passive:true});
+document.getElementById("board-canvas").addEventListener("touchend",e=>{
+  const dx=e.changedTouches[0].clientX-tx0,dy=e.changedTouches[0].clientY-ty0;
+  if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)){dx>0?mRight():mLeft();}
+  else if(dy<-40) tryRotate();
+  else if(dy>60) hardDrop();
+},{passive:true});
+
+// ── SOUND EFFECTS ──
+let audioCtx=null;
+function getACtx(){
+  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==="suspended") audioCtx.resume();
+  return audioCtx;
+}
+function tone(freq,type,dur,vol=.3,delay=0){
+  try{
+    const c=getACtx(),o=c.createOscillator(),g=c.createGain();
+    o.connect(g);g.connect(c.destination);
+    o.type=type;o.frequency.setValueAtTime(freq,c.currentTime+delay);
+    g.gain.setValueAtTime(vol,c.currentTime+delay);
+    g.gain.exponentialRampToValueAtTime(.001,c.currentTime+delay+dur);
+    o.start(c.currentTime+delay);o.stop(c.currentTime+delay+dur);
+  }catch(e){}
+}
+function noise(dur,vol=.15){
+  try{
+    const c=getACtx(),n=c.sampleRate*dur,b=c.createBuffer(1,n,c.sampleRate);
+    const d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1);
+    const s=c.createBufferSource();s.buffer=b;
+    const g=c.createGain();s.connect(g);g.connect(c.destination);
+    g.gain.setValueAtTime(vol,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,c.currentTime+dur);
+    s.start();s.stop(c.currentTime+dur);
+  }catch(e){}
+}
+const sfx={
+  move(){ tone(220,"sine",.06,.08); },
+  rotate(){ tone(330,"sine",.08,.1); tone(440,"sine",.06,.08,.04); },
+  drop(){ tone(180,"sine",.1,.15); tone(120,"sine",.08,.1,.05); },
+  lock(){ tone(200,"triangle",.06,.12); tone(160,"triangle",.08,.1,.03); },
+  clear1(){ tone(523,"sine",.1,.25); tone(659,"sine",.1,.2,.08); tone(784,"sine",.15,.18,.16); },
+  clear2(){ [523,659,784,1047].forEach((f,i)=>tone(f,"sine",.1,.22,i*.06)); },
+  clear3(){ [523,659,784,1047,1319].forEach((f,i)=>tone(f,"sine",.12,.25,i*.055)); },
+  clear4(){ [659,784,880,1047,880,784,659].forEach((f,i)=>tone(f,"square",.1,.3,i*.07)); setTimeout(()=>noise(.3,.08),200); },
+  clear5(){ [440,554,659,880,1109].forEach((f,i)=>tone(f,"sawtooth",.1,.2,i*.05)); noise(.2,.06); },
+  clear10(){ [523,659,784,1047,1319,1047,784,1319].forEach((f,i)=>tone(f,"square",.12,.35,i*.06)); setTimeout(()=>noise(.5,.12),100); },
+  levelUp(){ [523,659,784,1047,1319].forEach((f,i)=>tone(f,"sine",.15,.3,i*.08)); },
+  allClear(){ [523,659,784,1047,1319,1568,2093].forEach((f,i)=>tone(f,"sine",.18,.35,i*.07)); setTimeout(()=>noise(.6,.15),300); },
+  gameOver(){ [440,392,349,330,294,262].forEach((f,i)=>tone(f,"sawtooth",.2,.25,i*.12)); noise(.4,.1); },
+  danger(){ tone(220,"sawtooth",.15,.2); tone(110,"sawtooth",.15,.15,.1); },
+};
+
+// ── MUSIC PLAYER ──
+const SONG_BASE="https://vashyang1120.github.io/vparty-rhythm-game/";
+const EMOJIS=["🎈","🎤","✨","💫","🌟","🎵","🎶","🎀","🎪","⭐"];
+let SONGS=[];
+let mAudio=new Audio(), mIdx=0, mPlaying=false, musicWasPlayingBeforePause=false, mLoop="all", mShuf=false, mProgTmr=null;
+mAudio.volume=.1;
+
+async function loadSongs(){
+  try{
+    const r=await fetch(SONG_BASE+"songs.json");
+    const d=await r.json();
+    SONGS=d.map((s,i)=>({id:s.id,title:s.title,artist:s.artist||"氣球小V",
+      duration:s.duration||120,audio:s.audioUrl,emoji:EMOJIS[i%EMOJIS.length]}));
+  }catch(e){
+    SONGS=[
+      {id:"song001",title:"在小V派對裡夢想",artist:"氣球小V",duration:122,audio:"songs/song001/audio.mp3",emoji:"🎈"},
+      {id:"song002",title:"V-MEN",artist:"氣球小V",duration:128,audio:"songs/song002/audio.mp3",emoji:"🎤"},
+      {id:"song003",title:"掌心的初光",artist:"氣球小V",duration:123,audio:"songs/song003/audio.mp3",emoji:"✨"},
+      {id:"song004",title:"一顆氣球的重量",artist:"氣球小V",duration:259,audio:"songs/song004/audio.mp3",emoji:"💫"},
+    ];
+  }
+}
+function fmt(s){s=Math.floor(s||0);return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;}
+function loadSong(i,play=false){
+  mIdx=((i%SONGS.length)+SONGS.length)%SONGS.length;
+  if(!SONGS.length) return;
+  const s=SONGS[mIdx];
+  mAudio.src=SONG_BASE+s.audio; mAudio.load();
+  $("mp-nt").textContent=s.title; $("mp-disc").textContent=s.emoji;
+  $("mp-dur").textContent=fmt(s.duration); $("mp-cur").textContent="0:00";
+  $("mp-fill").style.width="0%";
+  $("mini-title").textContent=`${s.emoji} ${s.title}`;
+  updateSongList();
+  if(play) playSong();
+}
+function playSong(){
+  mAudio.play().then(()=>{mPlaying=true;updPlayBtns();$("mp-disc").classList.add("playing");startProg();updEq();}).catch(()=>{});
+}
+function pauseSong(){mAudio.pause();mPlaying=false;updPlayBtns();$("mp-disc").classList.remove("playing");stopProg();updEq();}
+function updPlayBtns(){const ic=mPlaying?"⏸":"▶";$("mp-play2").textContent=ic;$("mc-play").textContent=ic;}
+function updEq(){document.querySelectorAll(".mp-eq").forEach((el,i)=>{el.style.display=i===mIdx&&mPlaying?"":"none";});}
+function startProg(){
+  stopProg();
+  mProgTmr=setInterval(()=>{
+    const dur=mAudio.duration||SONGS[mIdx]?.duration||120;
+    const cur=mAudio.currentTime;
+    $("mp-cur").textContent=fmt(cur);
+    $("mp-fill").style.width=dur?(cur/dur*100)+"%":"0%";
+  },500);
+}
+function stopProg(){if(mProgTmr){clearInterval(mProgTmr);mProgTmr=null;}}
+mAudio.addEventListener("ended",()=>{
+  if(mLoop==="one"){mAudio.currentTime=0;playSong();}
+  else if(mLoop==="all"){loadSong(mIdx+1,true);}
+  else{mPlaying=false;updPlayBtns();$("mp-disc").classList.remove("playing");stopProg();}
+});
+function togglePlay(){
+  if(mPlaying){pauseSong();}
+  else{if(!mAudio.src||!SONGS.length){loadSong(0,true);}else{playSong();}}
+}
+function updateSongList(){
+  const list=$("mp-list"); list.innerHTML="";
+  SONGS.forEach((s,i)=>{
+    const item=document.createElement("div");
+    item.className="mp-item"+(i===mIdx?" on":"");
+    item.innerHTML=`<div class="mp-item-num">${i+1}</div><div class="mp-item-info"><div class="mp-item-name">${s.emoji} ${s.title}</div><div class="mp-item-dur">${s.artist} · ${fmt(s.duration)}</div></div><div class="mp-eq" style="display:${i===mIdx&&mPlaying?"":"none"}">🎵</div>`;
+    item.addEventListener("click",()=>loadSong(i,true));
+    list.appendChild(item);
+  });
+}
+function openMusic(){
+  updateSongList(); $("music-modal").classList.add("show");
+}
+function closeMusic(){$("music-modal").classList.remove("show");}
+$("mc-prev").addEventListener("click",()=>{if(SONGS.length)loadSong(mIdx-1,mPlaying);});
+$("mc-next").addEventListener("click",()=>{if(SONGS.length)loadSong(mIdx+1,mPlaying);});
+$("mc-play").addEventListener("click",togglePlay);
+$("mc-list").addEventListener("click",openMusic);
+$("mp-prev2").addEventListener("click",()=>{if(SONGS.length)loadSong(mIdx-1,mPlaying);});
+$("mp-next2").addEventListener("click",()=>{if(SONGS.length)loadSong(mIdx+1,mPlaying);});
+$("mp-play2").addEventListener("click",togglePlay);
+$("mp-close").addEventListener("click",closeMusic);
+$("music-modal").addEventListener("click",e=>{if(e.target===$("music-modal"))closeMusic();});
+$("mp-prog").addEventListener("click",e=>{
+  const r=$("mp-prog").getBoundingClientRect();
+  const pct=(e.clientX-r.left)/r.width;
+  const dur=mAudio.duration||SONGS[mIdx]?.duration||120;
+  mAudio.currentTime=pct*dur;
+});
+$("mp-vol").addEventListener("input",e=>{mAudio.volume=e.target.value/100;});
+$("mp-shuf").addEventListener("click",()=>{
+  mShuf=!mShuf; $("mp-shuf").classList.toggle("act",mShuf);
+  toast(mShuf?"🔀 隨機開啟":"🔀 隨機關閉");
+});
+$("mp-loop").addEventListener("click",()=>{
+  const modes=["all","one","none"],labels=["全部循環","單曲循環","不循環"],icons=["🔁","🔂","➡"];
+  mLoop=modes[(modes.indexOf(mLoop)+1)%3];
+  const i=modes.indexOf(mLoop);
+  $("mp-loop").textContent=icons[i]; $("mp-badge").textContent=labels[i];
+  $("mp-loop").classList.toggle("act",mLoop!=="none");
+  toast("循環模式："+labels[i]);
+});
+$("btn-music-title").addEventListener("click",openMusic);
+
+// ── LEADERBOARD ──
+
+async function saveLB(){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return UniverseTetris.submitScore({ score: score, level: level, lines: lines, difficulty: diff, peakCombo: peakCombo || 0 });
+}
+
+
+async function loadLeaderboardTitles(entries){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return entries || [];
+}
+
+async function loadLB(){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return UniverseTetris.renderMockLeaderboard($("lb-list"), getAvatarUrl);
+}
+function parseVcoinNumber(text){
+  var s = String(text || "");
+  var m = s.match(/-?\d+/);
+  if(!m) return null;
+  var n = Number(m[0]);
+  return isFinite(n) ? n : null;
+}
+function setLastKnownVcoinBalance(value){
+  var n = Number(value);
+  if(isFinite(n) && n >= 0){
+    LAST_KNOWN_VCOIN_BALANCE = n;
+    return n;
+  }
+  return LAST_KNOWN_VCOIN_BALANCE;
+}
+
+function getLastKnownVcoinBalance(){
+  var n = Number(LAST_KNOWN_VCOIN_BALANCE);
+  return isFinite(n) && n >= 0 ? n : null;
+}
+
+
+function getCurrentDisplayedVcoinBalanceFallback(){
+  var cached = getLastKnownVcoinBalance();
+  if(cached !== null) return cached;
+
+  var candidates = [];
+  var profileEl = document.getElementById("profile-vcoin-balance");
+  if(profileEl) candidates.push(parseVcoinNumber(profileEl.textContent));
+  var topEl = document.getElementById("top-vcoin-balance");
+  if(topEl) candidates.push(parseVcoinNumber(topEl.textContent));
+
+  for(var i=0;i<candidates.length;i++){
+    var n = Number(candidates[i]);
+    if(isFinite(n) && n >= 0){
+      setLastKnownVcoinBalance(n);
+      return n;
+    }
+  }
+  return null;
+}
+
+
+$("btn-lb").addEventListener("click",()=>{showScreen("s-lb");loadLB();});
+$("btn-lb-back").addEventListener("click",()=>{ refreshPlayerMetaUI(); showScreen("s-title"); });
+$("btn-res-lb").addEventListener("click",()=>{showScreen("s-lb");loadLB();});
+$("btn-res-home").addEventListener("click",()=>{ refreshPlayerMetaUI(); showScreen("s-title"); });
+$("btn-res-profile").addEventListener("click", openProfileFromTopCard);
+$("btn-replay").addEventListener("click",showDiffSelect);
+
+// ── BEST SCORE ──
+function getLocalBestScore(){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return UniverseTetris.getLocalBest();
+}
+
+function renderBestScore(value){
+  var n = parseInt(value || "0", 10) || 0;
+  $("best-disp").textContent = n ? n.toLocaleString() : "—";
+}
+
+function getLocalBestScore(){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return UniverseTetris.getLocalBest();
+}
+
+function renderBestScore(value){
+  var n = parseInt(value || "0", 10) || 0;
+  $("best-disp").textContent = n ? n.toLocaleString() : "—";
+}
+
+function updateBestDisp(){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  var b = UniverseTetris.getLocalBest();
+  renderBestScore(b);
+  return Promise.resolve(b);
+}
+
+// ── ADMIN ──
+const ADMIN_PW_KEY = "vtetris_admin_pw";
+function getAdminPw(){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return "";  // 前端預設管理密碼已移除（管理後台停用）
+}
+
+// 標題點5下進後台
+let logoTapCount=0, logoTapTimer=null;
+document.getElementById("logo-title").addEventListener("click",()=>{
+  if (UniverseTetris.adminDisabled()) return;  // [Universe 換殼] 測試版停用舊管理後台
+  logoTapCount++;
+  clearTimeout(logoTapTimer);
+  logoTapTimer=setTimeout(()=>{ logoTapCount=0; },2000);
+  if(logoTapCount>=5){
+    logoTapCount=0;
+    document.getElementById("pwd-modal").style.display="flex";
+    document.getElementById("pwd-input").value="";
+    document.getElementById("pwd-err").style.display="none";
+  }
+});
+
+// Password modal
+document.getElementById("btn-pwd-ok").addEventListener("click",()=>{
+  const pw=document.getElementById("pwd-input").value;
+  if(pw===getAdminPw()){
+    document.getElementById("pwd-modal").style.display="none";
+    showScreen("s-admin");
+    loadAdminData();
+  } else {
+    document.getElementById("pwd-err").style.display="block";
+  }
+});
+document.getElementById("btn-pwd-cancel").addEventListener("click",()=>{
+  document.getElementById("pwd-modal").style.display="none";
+});
+document.getElementById("pwd-input").addEventListener("keydown",e=>{
+  if(e.key==="Enter") document.getElementById("btn-pwd-ok").click();
+});
+document.getElementById("btn-admin-out").addEventListener("click",()=>showScreen("s-title"));
+document.getElementById("btn-admin-refresh").addEventListener("click",()=>loadAdminData());
+
+// Load admin data
+let allAdminEntries=[];
+let adminSortMode='time_desc'; // time_desc, time_asc, score_desc, score_asc
+async function loadAdminData(){
+  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
+  return;
+}
+
+function setAdminSort(mode){
+  adminSortMode = mode;
+  // Update button styles
+  ['time_desc','time_asc','score_desc','score_asc'].forEach(m=>{
+    const btn = document.getElementById('sort-'+m);
+    if(!btn) return;
+    if(m===mode){
+      btn.style.background='linear-gradient(135deg,#3ecf8e,#2ab377)';
+      btn.style.color='#fff';
+    } else {
+      btn.style.background='#f0fff8';
+      btn.style.color='#3ecf8e';
+    }
+  });
+  renderAdminList();
+}
+
+function renderAdminList(){
+  const list=document.getElementById("adm-lb-list");
+  list.innerHTML="";
+  const countEl=document.getElementById("adm-count");
+  if(countEl) countEl.textContent="共 "+allAdminEntries.length+" 筆記錄";
+  // 依照選擇排序
+  const sorted=[...allAdminEntries];
+  if(adminSortMode==='time_desc') sorted.sort((a,b)=>(b.ts||0)-(a.ts||0));
+  else if(adminSortMode==='time_asc') sorted.sort((a,b)=>(a.ts||0)-(b.ts||0));
+  else if(adminSortMode==='score_desc') sorted.sort((a,b)=>b.score-a.score);
+  else if(adminSortMode==='score_asc') sorted.sort((a,b)=>a.score-b.score);
+  sorted.forEach((e,i)=>{
+    const admDisplayKey=e.displayAvatarKey||e.avatarKey||e.avKey||e.baseAvatarKey||"boy1";
+    const admAvUrl=getAvatarUrl(admDisplayKey);
+    const date=e.ts?new Date(e.ts).toLocaleDateString("zh-TW"):"";
+    const dLabel={easy:"輕鬆",normal:"普通",hard:"挑戰"}[e.difficulty]||"";
+    const row=document.createElement("div");
+    row.style.cssText="display:flex;align-items:center;gap:8px;background:#f0fff8;border-radius:12px;padding:8px 12px;";
+    row.innerHTML=`
+      <div style="width:22px;text-align:center;font-family:'Fredoka One',cursive;font-size:14px;color:#9b7a8a;">${i+1}</div>
+      <div style="width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#e0f7ef;display:flex;align-items:center;justify-content:center;">
+        <img src="${admAvUrl}" style="width:100%;height:100%;object-fit:cover;" onerror="this.textContent='🎈'">
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:800;color:#5a3a4a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${e.name||"?"}</div>
+        <div style="font-size:10px;color:#9b7a8a;">LV${e.level||1} · ${e.lines||0}行 ${dLabel?"· "+dLabel:""} · ${date}${e._source==="gameLogs"?" · <span style=color:#3ecf8e>GL</span>":""}</div>
+      </div>
+      <div style="font-family:'Fredoka One',cursive;font-size:16px;color:#3ecf8e;flex-shrink:0;">${(e.score||0).toLocaleString()}</div>
+      <button onclick="deleteEntry('${e.fbKey}')" style="background:none;border:none;cursor:pointer;font-size:16px;color:#ff6b6b;padding:2px 4px;flex-shrink:0;">×</button>
+    `;
+    list.appendChild(row);
+  });
+}
+
+window.deleteEntry=async function(fbKey){
+  if (UniverseTetris.adminDisabled()) return;  // [Universe 換殼]
+  if(!confirm("確定刪除這筆紀錄？")) return;
+  const ok = await ensureFirebaseReady();
+  if(!ok){ toast("Firebase 尚未就緒"); return; }
+  try{
+    // 嘗試從 legacy 刪除（若是 legacy 資料）
+    await db.ref(DB_PATHS.legacyLeaderboard+"/"+fbKey).remove();
+    allAdminEntries=allAdminEntries.filter(e=>e.fbKey!==fbKey);
+    // Update stats
+    const players=new Set(allAdminEntries.map(e=>e.name+"|"+e.avKey)).size;
+    const topScore=allAdminEntries[0]?.score||0;
+    document.getElementById("adm-total").textContent=allAdminEntries.length;
+    document.getElementById("adm-players").textContent=players;
+    document.getElementById("adm-topscore").textContent=topScore.toLocaleString();
+    renderAdminList();
+    toast("已刪除");
+  }catch(e){ toast("刪除失敗"); }
+};
+
+document.getElementById("btn-adm-clear").addEventListener("click",async()=>{
+  if(!confirm("這會清空排行榜資料（tetris-balloon/leaderboard 與 leaderboards/tetris），但會保留遊玩紀錄 gameLogs/tetris。確定繼續？")) return;
+  const ok = await ensureFirebaseReady();
+  if(!ok){ toast("Firebase 尚未就緒"); return; }
+  try{
+    await db.ref(DB_PATHS.legacyLeaderboard).remove();
+    await db.ref(DB_PATHS.leaderboards).remove();
+    allAdminEntries=[];
+    document.getElementById("adm-total").textContent="0";
+    document.getElementById("adm-players").textContent="0";
+    document.getElementById("adm-topscore").textContent="0";
+    renderAdminList();
+    toast("排行榜已清空（遊玩紀錄保留）");
+  }catch(e){ toast("操作失敗"); }
+});
+
+document.getElementById("btn-adm-export").addEventListener("click",()=>{
+  if(!allAdminEntries.length){ toast("沒有資料可匯出"); return; }
+  const json=JSON.stringify(allAdminEntries,null,2);
+  const blob=new Blob([json],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="tetris_gamelogs_"+new Date().toISOString().slice(0,10)+".json";
+  a.click();
+  toast("已匯出 JSON");
+});
+
+document.getElementById("btn-adm-pw").addEventListener("click",()=>{
+  const pw1=document.getElementById("adm-pw1").value.trim();
+  const pw2=document.getElementById("adm-pw2").value.trim();
+  if(!pw1){ toast("請輸入新密碼"); return; }
+  if(pw1!==pw2){ toast("兩次密碼不一致"); return; }
+  if(pw1.length<4){ toast("密碼至少4位"); return; }
+  localStorage.setItem(ADMIN_PW_KEY,pw1);
+  document.getElementById("adm-pw1").value="";
+  document.getElementById("adm-pw2").value="";
+  toast("密碼已更改 ✅");
+});
+
+// ── INIT ──
+// 通知父頁面調整 iframe 高度
+function notifyParentHeight(){
+  var h = Math.max(document.documentElement.scrollHeight, window.innerHeight, 700);
+  try{ window.parent.postMessage({type:'iframeHeight', height:h}, '*'); }catch(e){}
+}
+window.addEventListener('resize', notifyParentHeight);
+setTimeout(notifyParentHeight, 500);
+
+// [Universe 換殼] 不初始化 Firebase；由遊戲宇宙 SDK 讀取玩家（網址 ?bvPlayerId=）
+UniverseTetris.wrapStartGame();
+UniverseTetris.boot(function(){
+  loadPlayer();
+  var baseImg = document.getElementById("base-avatar-preview");
+  var dispImg = document.getElementById("av-preview-img");
+  if(baseImg) baseImg.src = getAvatarUrl(PLAYER.baseAvatarKey);
+  if(dispImg) dispImg.src = getAvatarUrl(PLAYER.displayAvatarKey);
+  refreshPlayerMetaUI();
+  updateBestDisp();
+});
+initBalloon();
+$("danger-img").src=IMG.danger;
+loadPlayer();
+// 同步 profile 頁頭像預覽
+(function(){
+  var baseImg = document.getElementById("base-avatar-preview");
+  var dispImg = document.getElementById("av-preview-img");
+  if(baseImg) baseImg.src = getAvatarUrl(PLAYER.baseAvatarKey);
+  if(dispImg) dispImg.src = getAvatarUrl(PLAYER.displayAvatarKey);
+})();
+refreshPlayerMetaUI();
+updateBestDisp();
+loadSongs();
+
+document.getElementById("btn-how").addEventListener("click",()=>{
+  toast("← → 移動　↑ 旋轉　↓ 加速　空白 落下　Esc 暫停",4000);
+});
+document.getElementById("btn-change-profile").addEventListener("click", openProfileFromTopCard);
+var topPlayerCard = document.getElementById("top-player-card");
+if(topPlayerCard){
+  topPlayerCard.addEventListener("click", openProfileFromTopCard);
+  topPlayerCard.addEventListener("keydown", function(e){
+    if(e.key === "Enter" || e.key === " "){
+      e.preventDefault();
+      openProfileFromTopCard();
+    }
+  });
+}
+
+window.addEventListener("resize",()=>{
+  if($("s-game").classList.contains("off")) return;
+  syncMobileControlsVisibility();
+  initCanvas(); draw();
+});
+
+
+// PIN 解鎖
+$("btn-adm-pin").addEventListener("click", async function(){
+  if (UniverseTetris.adminDisabled()) return;  // [Universe 換殼]
+  var pin = ($("adm-pin-input").value || "").trim();
+  var targetKey = ($("adm-pin-playerkey").value || "").trim() || PLAYER.playerKey;
+  if(!pin){ toast("請輸入 PIN 碼"); return; }
+  var avatarKey = REMOTE_UNLOCK_PINS[pin];
+  if(!avatarKey){ toast("PIN 碼無效"); return; }
+  if(!targetKey){ toast("請輸入玩家 playerKey"); return; }
+  var ok = await ensureFirebaseReady();
+  if(!ok){ toast("Firebase 未就緒"); return; }
+  try{
+    await db.ref("players/" + targetKey + "/unlockedAvatars/" + avatarKey).set({
+      unlocked: true, source: "remote_pin_" + pin, ts: Date.now()
+    });
+    toast("✅ 已解鎖 " + avatarKey + " → " + targetKey);
+    $("adm-pin-input").value = "";
+  }catch(e){ toast("解鎖失敗：" + e.message); }
+});
+
+window.addEventListener("orientationchange",function(){
+  setTimeout(function(){
+    updateMobileControlsVisibility();
+    if(!$("s-game").classList.contains("off")){
+      initCanvas();
+      draw();
+    }
+  },250);
+});
+</script>
+</body>
+</html>
