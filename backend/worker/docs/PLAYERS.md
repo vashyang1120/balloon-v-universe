@@ -103,6 +103,11 @@ identityKey = "i1_" + base64url( SHA-256( "bv-identity-v1" ␀ displayId ␀ bas
 
 ## 6. 固定身份圖案（`src/players/base-avatars.js`）
 - 沿用大廳 v0.3.3 的 17 款識別鍵：boy1、girl1、boy2、girl2、cat1、cat2、fat1、girl3、curl1、boy3、girl4、girl5、curl2、dog1、dog2、dog3、dog4。
+- v0.3.4 新增 16 款（第 18～33 款，`catalogVersion` 2）：識別鍵＝美術檔名去掉 `.png`——
+  avatar_rabbit_hoodie、avatar_koala_hoodie、avatar_unicorn_cape、avatar_boy_star_hat、avatar_turtle、avatar_girl_bow、
+  avatar_panda_hoodie、avatar_fox_blue_hat、avatar_leopard_gecko、avatar_blue_tongue_skink、avatar_bearded_dragon、
+  avatar_hamster_hoodie、avatar_green_iguana、avatar_corn_snake、avatar_dragon_purple_robe、avatar_penguin_hoodie。
+  新增圖案不改變 identityKey 的計算方式，既有玩家不受影響。
 - 每筆有 `status`：只有 `active` 會出現在清單、能用來建立新玩家；新圖案先以 `planned` 加入，素材上線才改 `active`。
 - 找回時接受所有「已知」圖案（含日後若改為下架的），所以下架圖案不會讓舊玩家找不回。
 - 展示用頭像（xiaov_base 等）不能當身份圖案。
