@@ -1,0 +1,41 @@
+/* 氣球小V方塊派對 — 遊戲宇宙換殼層樣式（只新增，不覆蓋原版遊戲畫面樣式） */
+
+/* 測試版標示：固定在畫面左下角，不擋操作 */
+#bv-test-banner {
+  position: fixed; left: 8px; bottom: 8px; z-index: 9999; max-width: calc(100vw - 16px);
+  padding: 4px 10px; border-radius: 999px; pointer-events: none;
+  background: #ff8a00; color: #fff; font-size: 11px; font-weight: 800; line-height: 1.4;
+  box-shadow: 0 2px 8px rgba(0,0,0,.18); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+body.bv-sandbox #bv-test-banner { background: #7a4dff; }
+#bv-test-banner .bv-short, #bv-test-banner .bv-tiny { display: none; }
+@media (max-width: 720px) {
+  #bv-test-banner { white-space: normal; text-align: center; left: 8px; right: 8px; }
+  #bv-test-banner .bv-long { display: none; }
+  #bv-test-banner .bv-short { display: inline; }
+}
+/* 遊戲進行中：縮成小標籤、移到畫面上方中央空白處，不擋手機操作按鈕 */
+body:has(#s-game:not(.off)) #bv-test-banner { top: 6px; bottom: auto; left: 50%; right: auto; transform: translateX(-50%); white-space: nowrap; opacity: .92; }
+body:has(#s-game:not(.off)) #bv-test-banner .bv-long,
+body:has(#s-game:not(.off)) #bv-test-banner .bv-short { display: none; }
+body:has(#s-game:not(.off)) #bv-test-banner .bv-tiny { display: inline; }
+.bv-ver-tag { color: #ff8a00; font-weight: 800; letter-spacing: 0; }
+
+/* 玩家讀取中／錯誤卡 */
+.bv-identity-card { margin: 0 0 10px; padding: 10px 12px; border-radius: 14px; font-size: 13px; font-weight: 700; line-height: 1.5; text-align: center; }
+.bv-identity-card.is-loading { background: #f3ecff; color: #6a3fd0; }
+.bv-identity-card.is-error { background: #fff0f0; color: #c0392b; border: 1.5px solid #ffc9c9; }
+.bv-identity-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+
+/* 角色設定改為唯讀：隱藏原本的「變更身份／確認身份」控制 */
+body.bv-universe #btn-change-base-avatar,
+body.bv-universe #btn-change-display-avatar,
+body.bv-universe #btn-profile-ok,
+body.bv-universe #profile-id-dirty-hint { display: none !important; }
+body.bv-universe #player-id-input[readonly] { background: #f6f3fb !important; color: #6b5a86 !important; cursor: default; }
+
+/* 測試資料說明 */
+.bv-note { margin: 8px auto 0; max-width: 420px; padding: 6px 10px; border-radius: 10px; background: #fff4e5; color: #a35a00; font-size: 12px; font-weight: 700; line-height: 1.5; text-align: center; }
+#bv-lb-note { margin-bottom: 8px; }
+.bv-mock-tag { display: inline-block; padding: 0 6px; border-radius: 6px; background: #ffe2bf; color: #a35a00; font-size: 10px; font-weight: 800; }
+.bv-not-ready { padding: 14px 10px; font-weight: 700; color: #6b5a86; }
