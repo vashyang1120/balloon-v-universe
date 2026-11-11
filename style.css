@@ -1053,3 +1053,29 @@ html.page-hidden .actor, html.page-hidden .actor * { animation-play-state: pause
    ========================================================== */
 .rpg--noshield .rpg__wrap { pointer-events: none; }
 .rpg--noshield .rpg__box { pointer-events: auto; }
+
+/* ==========================================================
+   v0.3.4 test-3（只加不改）：tryZone「四個入口各自獨立高亮」
+   - 只有 showSpot(..., { holes: true }) 時生效；其他教學步驟仍用原本的矩形聚光燈
+   - 一張全畫面 SVG 遮罩壓暗背景，每個入口挖一個圓角、邊緣柔和的洞
+   - 每個入口一圈柔和金色光暈（只動 opacity，手機也流暢；減少動態效果時自動不閃）
+   - 全部 pointer-events:none，點擊仍由原本的入口按鈕接收
+   ========================================================== */
+.spot__mask { position: fixed; left: 0; top: 0; display: none; pointer-events: none; }
+.spot__dim { fill: rgba(20,10,40,.55); }
+.spot--holes .spot__mask { display: block; }
+.spot--holes .spot__block, .spot--holes .spot__ring { display: none; }
+.spot__glow {
+  position: fixed; border-radius: 30px; pointer-events: none;
+  box-shadow: 0 0 24px 6px rgba(255,216,77,.42);
+}
+.spot__glow::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  box-shadow: 0 0 34px 12px rgba(255,226,110,.62);
+  opacity: 0; animation: spotGlowPulse 1.6s ease-in-out infinite;
+}
+.spot__glow.is-shake { animation: ringShake .45s ease 1; }
+/* 入口緊鄰（手機）：光暈畫在入口內側，不溢到隔壁入口 */
+.spot--tight .spot__glow { box-shadow: inset 0 0 0 2px rgba(255,216,77,.75), inset 0 0 12px 2px rgba(255,216,77,.45); }
+.spot--tight .spot__glow::after { box-shadow: inset 0 0 0 3px rgba(255,243,176,.95), inset 0 0 16px 4px rgba(255,226,110,.6); }
+@keyframes spotGlowPulse { 50% { opacity: 1; } }
