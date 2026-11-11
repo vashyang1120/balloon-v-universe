@@ -1043,3 +1043,13 @@ html.page-hidden .actor, html.page-hidden .actor * { animation-play-state: pause
 .av--pick.av--full { --zoom: 1; --face-y: 50%; }
 .pass__face--full img { object-fit: contain; transform: scale(.96); }
 .flow__hint--idchanged { color: #7a3d00; background: #fff1c9; border-radius: 10px; padding: 6px 10px; }
+
+/* ==========================================================
+   v0.3.4 test-2（只加不改）：教學實際操作時，對話框上方「為半身像預留的透明空間」不攔截點擊
+   原因：.rpg__wrap 的 padding-top（--actor-bust-vis）是透明的，卻會擋住後面的遊戲入口；
+   半身像本來就不攔截點擊（.actor pointer-events:none），點擊一律只由對話框本體 .rpg__box 處理
+   （對話框、略過、選項、紫色箭頭都在 .rpg__box 內，維持可點）。
+   只限沒有保護層的對話（教學步驟）；一般對話仍由保護層處理點擊，行為不變。
+   ========================================================== */
+.rpg--noshield .rpg__wrap { pointer-events: none; }
+.rpg--noshield .rpg__box { pointer-events: auto; }
