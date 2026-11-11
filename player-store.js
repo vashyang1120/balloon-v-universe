@@ -1,30 +1,30 @@
 /* ==========================================================
-   氣球小V遊戲宇宙 — 玩家資料層（v0.3.0 新增）
-   balloon-v-universe-v0.3.0-unified-player-lobby-test-1
+   氣球小V遊戲宇宙 — 玩家資料層
+   v0.3.0 新增；v0.3.4 改接遊戲宇宙共用玩家 API
+   universe-lobby-v0.3.4-shared-player-avatar-expansion-test-1
 
-   ■ 資料來源：與四款遊戲相同的 Firebase Realtime Database
-       players/{playerKey}/profile            { id, name, playerKey, baseAvatarKey, displayAvatarKey, avatarKey, createdAt, updatedAt }
-       players/{playerKey}/wallet/balance     V幣餘額
-       players/{playerKey}/equippedTitle      目前稱號（遊戲優先讀這裡）
-       players/{playerKey}/quizEquippedTitle  舊版問答稱號（遊戲的備援讀法）
-       players/{playerKey}/unlockedAvatars    已解鎖頭像 { key: { unlocked: true, ... } }
-       players/{playerKey}/titles/{gameId}    各遊戲已解鎖稱號
-       players/{playerKey}/quizTitles         問答遊戲稱號（舊路徑）
-       avatarCatalog                          頭像目錄（只讀）
+   ■ 正式資料來源：Cloudflare Worker（MAP_CONFIG.player.apiBaseUrl）
+       POST /v1/players            建立玩家（ID＋固定身份圖案）→ 伺服器產生 playerId
+       POST /v1/players/resolve    用 ID＋身份圖案找回 playerId
+       GET  /v1/players/:playerId  公開基本資料
+       GET  /v1/avatars/base       後端開放的固定身份圖案清單
+     大廳不再載入 Firebase SDK、不再連線舊專案 vparty-rhythm-game。
+     API 失敗時只會顯示錯誤讓玩家重試，「絕不」退回舊 Firebase 建立身份。
 
-   ■ 大廳「唯一」會寫入 Firebase 的地方：
-       建立新玩家時，用 transaction 寫入 players/{playerKey}/profile，
-       而且只有在 profile 完全不存在時才會寫入（存在就自動放棄）。
-       欄位與四款遊戲建立 profile 時完全相同，不新增任何欄位。
-       大廳不會寫入 V幣、稱號、收藏、遊戲紀錄。
+   ■ 尚未接入的資料（V幣、稱號、展示頭像解鎖、遊戲紀錄）：
+     data.features 全部為 false，畫面顯示「準備中／未開放」，不會假裝餘額是 0。
 
-   ■ 本機記憶（大廳自己的鍵，不會覆蓋四款遊戲的本機資料）：
-       bvUniverse_rememberedPlayers_v1   本機記住的玩家清單
-       bvUniverse_currentPlayerKey_v1    目前選用的玩家
-       bvUniverse_lobbyTutorialDone_v1__{playerKey}  大廳教學是否看過
+   ■ 本機記憶（v2 新鍵；舊 v1 鍵保留不讀不刪，舊身份不會被當成新玩家）：
+       bvUniverse_v2_rememberedPlayers      這台裝置用過的玩家 [{ playerId, id, baseAvatarKey, displayAvatarKey, rememberedAt }]
+       bvUniverse_v2_currentPlayerId        目前選用的玩家
+       bvUniverse_v2_lobbyTutorialDone__{playerId}
+     本機記憶只是方便，不是身份來源；每次切換都會向伺服器重新讀取。
 
-   ■ ?sandbox=1 測試沙盒：
-       使用分頁內的記憶體資料庫，不連線 Firebase，本機鍵也加上 Sandbox 前綴。
+   ■ ?sandbox=1：使用分頁內的「模擬 API」（sessionStorage），完全不連網，
+     本機鍵也加上 Sandbox 前綴。在沙盒建立的玩家不存在於正式資料庫。
+
+   ⚠ ID＋圖案屬於「低信任」的身份找回：知道這兩項就能找回同一個 playerId，
+     不能當成未來 V幣消費的授權。
    ========================================================== */
 
 (function () {
@@ -34,10 +34,11 @@
   var P = CFG.player;
   var ID = window.PlayerIdentity;
   var SANDBOX = /[?&]sandbox=1\b/.test(location.search);
-  var LS_PREFIX = SANDBOX ? "bvUniverseSandbox_" : "bvUniverse_";
-  var KEY_REMEMBERED = LS_PREFIX + "rememberedPlayers_v1";
-  var KEY_CURRENT = LS_PREFIX + "currentPlayerKey_v1";
-  var KEY_TUTORIAL = LS_PREFIX + "lobbyTutorialDone_v1__";
+  var LS_PREFIX = SANDBOX ? "bvUniverseSandbox_v2_" : "bvUniverse_v2_";
+  var KEY_REMEMBERED = LS_PREFIX + "rememberedPlayers";
+  var KEY_CURRENT = LS_PREFIX + "currentPlayerId";
+  var KEY_TUTORIAL = LS_PREFIX + "lobbyTutorialDone__";
+  var PLAYER_ID = /^p_[a-z2-7]{20}$/;
 
   /* ---------- 安全的本機存取 ---------- */
   function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -45,232 +46,218 @@
   function lsJson(k, fallback) {
     try { var v = JSON.parse(lsGet(k)); return v == null ? fallback : v; } catch (e) { return fallback; }
   }
+  function uuid() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    var b = new Uint8Array(16); crypto.getRandomValues(b);
+    return Array.from(b, function (x) { return ("0" + x.toString(16)).slice(-2); }).join("");
+  }
 
   /* ==========================================================
-     資料庫轉接：Firebase（正式）或 Sandbox（記憶體）
-     兩者提供相同介面：ready() / get(path) / createIfAbsent(path, value)
+     錯誤：統一成大廳看得懂的種類＋給孩子看的中文訊息
      ========================================================== */
-
-  function loadScript(src) {
-    return new Promise(function (resolve, reject) {
-      var s = document.createElement("script");
-      s.src = src;
-      s.onload = resolve;
-      s.onerror = function () { reject(new Error("無法載入 " + src)); };
-      document.head.appendChild(s);
-    });
+  function StoreError(kind, userMessage, extra) {
+    var e = new Error(userMessage);
+    e.kind = kind;               // validation / rateLimited / network / server
+    e.userMessage = userMessage;
+    if (extra) Object.keys(extra).forEach(function (k) { e[k] = extra[k]; });
+    return e;
+  }
+  function errorFrom(res) {
+    var err = res.body && res.body.error;
+    if (res.status === 400 && err) {
+      var field = err.details && err.details.errors && err.details.errors[0];
+      return StoreError("validation", err.message || "資料格式不正確", { field: field && field.field, issue: field && field.issue });
+    }
+    if (res.status === 429) return StoreError("rateLimited", "現在太多人同時操作了，請等 1 分鐘再試一次");
+    return StoreError("server", "伺服器暫時無法使用，請稍後再試", { status: res.status, code: err && err.code });
   }
 
-  function withTimeout(promise, ms, label) {
-    return new Promise(function (resolve, reject) {
-      var t = setTimeout(function () { reject(new Error((label || "操作") + "逾時")); }, ms);
-      promise.then(function (v) { clearTimeout(t); resolve(v); }, function (e) { clearTimeout(t); reject(e); });
-    });
-  }
-
-  var FirebaseAdapter = {
-    mode: "firebase",
-    _db: null,
-    _ready: null,
-    ready: function () {
-      var self = this;
-      if (self._ready) return self._ready;
-      var v = P.firebaseSdkVersion;
-      var base = "https://www.gstatic.com/firebasejs/" + v + "/";
-      self._ready = loadScript(base + "firebase-app-compat.js")
-        .then(function () { return loadScript(base + "firebase-auth-compat.js"); })
-        .then(function () { return loadScript(base + "firebase-database-compat.js"); })
-        .then(function () {
-          if (!firebase.apps.length) firebase.initializeApp(P.firebaseConfig);
-          // 與四款遊戲相同：匿名登入後才讀寫
-          return withTimeout(firebase.auth().signInAnonymously(), 15000, "匿名登入");
-        })
-        .then(function () { self._db = firebase.database(); return true; })
-        .catch(function (e) { self._ready = null; throw e; });
-      return self._ready;
-    },
-    get: function (path) {
-      var self = this;
-      return self.ready().then(function () {
-        return withTimeout(self._db.ref(path).once("value"), 15000, "讀取");
-      }).then(function (snap) { return snap.val(); });
-    },
-    /* 只有節點不存在時才寫入；存在時放棄，回傳 { created: false } */
-    createIfAbsent: function (path, value) {
-      var self = this;
-      return self.ready().then(function () {
-        return withTimeout(self._db.ref(path).transaction(function (current) {
-          if (current === null) return value;
-          return; // undefined = 放棄，不改動既有資料
-        }, undefined, false), 20000, "建立");
-      }).then(function (res) { return { created: !!(res && res.committed) }; });
+  /* ==========================================================
+     API 轉接：正式（Worker）或 Sandbox（分頁內模擬）
+     兩者回傳相同格式：{ status, body }；網路錯誤丟 StoreError("network")
+     ========================================================== */
+  var RealApi = {
+    mode: "api",
+    label: "遊戲宇宙 API",
+    request: function (method, path, body) {
+      var ctrl = typeof AbortController === "function" ? new AbortController() : null;
+      var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, P.apiTimeoutMs || 15000) : null;
+      var init = { method: method, headers: { accept: "application/json" }, cache: "no-store", credentials: "omit", referrerPolicy: "no-referrer" };
+      if (ctrl) init.signal = ctrl.signal;
+      if (body !== undefined) { init.headers["content-type"] = "application/json"; init.body = JSON.stringify(body); }
+      return fetch(P.apiBaseUrl + path, init).then(function (res) {
+        return res.json().catch(function () { return null; }).then(function (json) { return { status: res.status, body: json }; });
+      }, function () {
+        throw StoreError("network", "網路連線不穩定，請檢查網路後再試一次");
+      }).finally(function () { if (timer) clearTimeout(timer); });
     }
   };
 
-  var SandboxAdapter = {
+  /* 模擬 API：規則盡量與後端一致（NFKC、空白合併、1～20 字、保留字、ID＋圖案唯一），但只存在這個分頁 */
+  var SandboxApi = {
     mode: "sandbox",
-    _key: "bvUniverseSandbox_db",
-    _read: function () { try { return JSON.parse(sessionStorage.getItem(this._key)) || {}; } catch (e) { return {}; } },
+    label: "測試沙盒（模擬 API，不連線、不寫入正式資料庫）",
+    _key: "bvUniverseSandbox_v2_api",
+    _read: function () { try { return JSON.parse(sessionStorage.getItem(this._key)) || { identities: {}, players: {} }; } catch (e) { return { identities: {}, players: {} }; } },
     _write: function (db) { try { sessionStorage.setItem(this._key, JSON.stringify(db)); } catch (e) {} },
-    _at: function (db, path) {
-      return path.split("/").reduce(function (node, part) { return node == null ? null : (node[part] == null ? null : node[part]); }, db);
+    _norm: function (raw) {
+      if (typeof raw !== "string") return { ok: false, msg: "請輸入玩家 ID" };
+      var s = raw.normalize("NFKC").replace(/[\s　]+/g, " ").trim();
+      if (!s) return { ok: false, msg: "請輸入玩家 ID" };
+      if (/[\u0000-\u001f\u007f​‌‎‏‪-‮⁠-⁤﻿]/.test(s)) return { ok: false, msg: "玩家 ID 裡有看不見或無法使用的特殊字元，請重新輸入" };
+      var n = 0;
+      try { var it = new Intl.Segmenter("zh-Hant", { granularity: "grapheme" }).segment(s); for (var x of it) n++; } catch (e) { n = Array.from(s).length; }
+      if (n > 20) return { ok: false, msg: "玩家 ID 最多 20 個字" };
+      if (s === "玩家") return { ok: false, msg: "「玩家」是遊戲的預設名稱，請換一個 ID" };
+      return { ok: true, value: s, changed: s !== raw.trim() };
     },
-    ready: function () { return Promise.resolve(true); },
-    get: function (path) {
-      var self = this;
-      return new Promise(function (r) { setTimeout(function () { r(JSON.parse(JSON.stringify(self._at(self._read(), path)))); }, 120); });
+    _pid: function () {
+      var a = "abcdefghijklmnopqrstuvwxyz234567", b = new Uint8Array(20), s = "p_";
+      crypto.getRandomValues(b); for (var i = 0; i < 20; i++) s += a[b[i] & 31];
+      return s;
     },
-    createIfAbsent: function (path, value) {
+    _pub: function (p) {
+      return { playerId: p.playerId, displayId: p.displayId, baseAvatarKey: p.baseAvatarKey, displayAvatarKey: p.baseAvatarKey, createdAt: new Date(p.createdAt).toISOString() };
+    },
+    request: function (method, path, body) {
       var self = this;
-      return new Promise(function (r) {
+      return new Promise(function (resolve) {
         setTimeout(function () {
-          var db = self._read();
-          if (self._at(db, path) !== null) return r({ created: false });
-          var parts = path.split("/"), node = db;
-          for (var i = 0; i < parts.length - 1; i++) { node[parts[i]] = node[parts[i]] || {}; node = node[parts[i]]; }
-          node[parts[parts.length - 1]] = value;
-          self._write(db);
-          r({ created: true });
-        }, 200);
+          var db = self._read(), out;
+          var bad = function (msg, issue) { return { status: 400, body: { ok: false, error: { code: "VALIDATION_FAILED", message: msg, details: { errors: [{ field: "displayId", issue: issue || "INVALID" }] } } } }; };
+          if (method === "GET" && path === "/v1/avatars/base") {
+            out = { status: 200, body: { ok: true, data: { catalogVersion: 2, avatars: ID.builtinAvatars.map(function (a) { return { key: a.key, label: a.label, order: a.order }; }) } } };
+          } else if (method === "POST" && (path === "/v1/players" || path === "/v1/players/resolve")) {
+            var n = self._norm(body.displayId);
+            if (!n.ok) out = bad(n.msg);
+            else if (!ID.isBuiltinAvatar(body.baseAvatarKey)) out = bad("請選擇一個身份圖案", "AVATAR_NOT_AVAILABLE");
+            else {
+              var key = n.value + "\u0000" + body.baseAvatarKey, rec = db.identities[key];
+              if (path === "/v1/players/resolve") {
+                out = rec ? { status: 200, body: { ok: true, data: { status: "found", displayIdChanged: n.changed, player: self._pub(db.players[rec.playerId]) } } }
+                          : { status: 404, body: { ok: false, error: { code: "IDENTITY_NOT_FOUND", message: "找不到這位玩家，請確認玩家 ID 和當初選的身份圖案" } } };
+              } else if (rec && rec.createRequestId === body.createRequestId) {
+                out = { status: 200, body: { ok: true, data: { status: "created", replayed: true, displayIdChanged: n.changed, player: self._pub(db.players[rec.playerId]) } } };
+              } else if (rec) {
+                out = { status: 409, body: { ok: false, error: { code: "IDENTITY_EXISTS", message: "這個玩家 ID 和身份圖案已經有人使用", details: { canResolve: true } } } };
+              } else {
+                var p = { playerId: self._pid(), displayId: n.value, baseAvatarKey: body.baseAvatarKey, createdAt: Date.now() };
+                db.identities[key] = { playerId: p.playerId, createRequestId: body.createRequestId };
+                db.players[p.playerId] = p;
+                self._write(db);
+                out = { status: 201, body: { ok: true, data: { status: "created", replayed: false, displayIdChanged: n.changed, player: self._pub(p) } } };
+              }
+            }
+          } else if (method === "GET" && path.indexOf("/v1/players/") === 0) {
+            var pl = db.players[decodeURIComponent(path.slice(12))];
+            out = pl ? { status: 200, body: { ok: true, data: { player: self._pub(pl) } } } : { status: 404, body: { ok: false, error: { code: "PLAYER_NOT_FOUND", message: "找不到這位玩家" } } };
+          } else {
+            out = { status: 404, body: { ok: false, error: { code: "NOT_FOUND", message: "找不到這個 API" } } };
+          }
+          resolve(out);
+        }, 150);
       });
     }
   };
 
-  var DB = SANDBOX ? SandboxAdapter : FirebaseAdapter;
+  var API = SANDBOX ? SandboxApi : RealApi;
 
-  function playerPath(key, sub) { return P.playersPath + "/" + key + (sub ? "/" + sub : ""); }
+  /* ---------- 伺服器回傳 → 大廳畫面用的玩家資料（只屬於這位玩家） ---------- */
+  function toLobbyData(player) {
+    var created = Date.parse(player.createdAt);
+    return {
+      playerId: player.playerId,
+      id: player.displayId,
+      baseAvatarKey: player.baseAvatarKey,
+      displayAvatarKey: ID.isDisplayAvatarAllowed(player.displayAvatarKey) ? player.displayAvatarKey : player.baseAvatarKey,
+      createdAt: isFinite(created) ? created : null,
+      // 尚未接入的功能：明確標示「沒有資料來源」，不是 0 或空清單
+      features: { wallet: false, titles: false, avatarUnlocks: false, records: false },
+      balance: null,
+      title: null,
+      unlockedAvatars: {},
+      unlockedAvatarKeys: [],
+      unlockedTitles: []
+    };
+  }
 
-  /* ---------- 頭像目錄（只讀，失敗不影響其他功能） ---------- */
-  var catalogPromise = null;
-  function loadCatalog() {
-    if (!catalogPromise) {
-      catalogPromise = DB.get("avatarCatalog").then(function (cat) {
-        ID.setRemoteCatalog(cat || {});
-      }).catch(function (e) { console.warn("[PlayerStore] avatarCatalog 讀取失敗：", e.message); });
+  /* ---------- 固定身份圖案清單（讀到後才開放新款；失敗時維持原有 17 款） ---------- */
+  var avatarsPromise = null;
+  function loadBaseAvatars() {
+    if (!avatarsPromise) {
+      avatarsPromise = API.request("GET", "/v1/avatars/base").then(function (res) {
+        if (res.status !== 200 || !res.body || !res.body.ok) throw errorFrom(res);
+        var keys = res.body.data.avatars.map(function (a) { return a.key; });
+        ID.setServerActiveKeys(keys);
+        return keys;
+      }).catch(function (e) {
+        avatarsPromise = null; // 下次再試
+        console.warn("[PlayerStore] 身份圖案清單讀取失敗，暫時只顯示原有 17 款：", e && e.message);
+        return null;
+      });
     }
-    return catalogPromise;
+    return avatarsPromise;
   }
 
   /* ==========================================================
-     身份是否存在
-     只要下列任何一個節點有資料，就視為「這組 ID＋圖案已經有人使用」，
-     包含沒有 profile 但已有其他遊戲資料的早期玩家。
+     建立玩家
+     同一組 ID＋圖案在「同一次建立」中重試（例如逾時後再按一次）會沿用同一個 createRequestId，
+     伺服器認得是同一個請求，不會建立第二位玩家。
      ========================================================== */
-  var EXIST_PROBES = ["profile", "wallet", "unlockedAvatars", "equippedTitle", "quizEquippedTitle", "titles", "quizTitles", "quizProgress"];
+  var pendingCreate = {};   // "ID␀圖案" → createRequestId
 
-  function identityExists(playerKey) {
-    return Promise.all(EXIST_PROBES.map(function (sub) { return DB.get(playerPath(playerKey, sub)); }))
-      .then(function (vals) { return vals.some(function (v) { return v !== null && v !== undefined; }); });
+  function createPlayer(id, baseAvatarKey) {
+    var k = id + "\u0000" + baseAvatarKey;
+    var rid = pendingCreate[k] || (pendingCreate[k] = uuid());
+    return API.request("POST", "/v1/players", { displayId: id, baseAvatarKey: baseAvatarKey, createRequestId: rid }).then(function (res) {
+      var b = res.body;
+      if ((res.status === 201 || res.status === 200) && b && b.ok) {
+        delete pendingCreate[k];
+        return { status: "created", replayed: !!b.data.replayed, displayIdChanged: !!b.data.displayIdChanged, data: toLobbyData(b.data.player) };
+      }
+      if (res.status === 409 && b && b.error && b.error.code === "IDENTITY_EXISTS") {
+        delete pendingCreate[k];
+        return { status: "duplicate" };
+      }
+      var e = errorFrom(res);
+      if (e.kind === "validation") delete pendingCreate[k];
+      throw e;
+    });
   }
 
-  /* ---------- 建立新玩家：與遊戲建立 profile 的欄位完全相同 ---------- */
-  function createPlayer(id, baseAvatarKey) {
-    if (!ID.isBuiltinAvatar(baseAvatarKey)) return Promise.reject(new Error("身份圖案必須是內建頭像"));
-    var playerKey = ID.makePlayerKey(id, baseAvatarKey);
-    return identityExists(playerKey).then(function (exists) {
-      if (exists) return { status: "duplicate", playerKey: playerKey };
-      var now = Date.now();
-      var profile = {
-        id: id,
-        name: id,
-        playerKey: playerKey,
-        baseAvatarKey: baseAvatarKey,
-        displayAvatarKey: baseAvatarKey,
-        avatarKey: baseAvatarKey,
-        createdAt: now,
-        updatedAt: now
-      };
-      return DB.createIfAbsent(playerPath(playerKey, "profile"), profile).then(function (res) {
-        // 放棄寫入 = 同時間有別人建立了同一組身份 → 一律當作重複處理
-        if (!res.created) return { status: "duplicate", playerKey: playerKey };
-        return { status: "created", playerKey: playerKey, profile: profile };
-      });
+  /* ---------- 找回玩家（我玩過了） ---------- */
+  function resolvePlayer(id, baseAvatarKey) {
+    return API.request("POST", "/v1/players/resolve", { displayId: id, baseAvatarKey: baseAvatarKey }).then(function (res) {
+      var b = res.body;
+      if (res.status === 200 && b && b.ok) return { status: "found", displayIdChanged: !!b.data.displayIdChanged, data: toLobbyData(b.data.player) };
+      if (res.status === 404 && b && b.error && b.error.code === "IDENTITY_NOT_FOUND") return { status: "notFound" };
+      throw errorFrom(res);
+    });
+  }
+
+  /* ---------- 讀取一位玩家（切換玩家、重新整理後） ---------- */
+  function loadPlayerData(playerId) {
+    if (!PLAYER_ID.test(String(playerId))) return Promise.resolve({ status: "notFound" });
+    return API.request("GET", "/v1/players/" + encodeURIComponent(playerId)).then(function (res) {
+      var b = res.body;
+      if (res.status === 200 && b && b.ok) return { status: "ok", data: toLobbyData(b.data.player) };
+      if (res.status === 404) return { status: "notFound" };
+      throw errorFrom(res);
     });
   }
 
   /* ==========================================================
-     讀取一位玩家的完整資料（只讀）
-     回傳的物件只屬於這位玩家，畫面只從這個物件顯示，避免兩人資料混用。
-     ========================================================== */
-  function normalizeTitle(raw) {
-    if (!raw) return null;
-    var name = raw.name || raw.title || raw.label || "";
-    if (!name) return null;
-    return { titleKey: raw.titleKey || raw.key || raw.id || "", name: String(name), gameId: raw.gameId || "" };
-  }
-  function isUnlockedRecord(rec) {
-    if (rec === true) return true;
-    if (!rec) return false;
-    return rec.unlocked === true || rec.claimed === true || rec.owned === true || rec.active === true;
-  }
-
-  function loadPlayerData(playerKey, fallbackIdentity) {
-    var subs = ["profile", "wallet/balance", "equippedTitle", "quizEquippedTitle", "unlockedAvatars", "titles", "quizTitles"];
-    return Promise.all([loadCatalog()].concat(subs.map(function (s) { return DB.get(playerPath(playerKey, s)); })))
-      .then(function (r) {
-        var profile = r[1], balance = r[2], eq = r[3], quizEq = r[4], unlocked = r[5] || {}, titles = r[6] || {}, quizTitles = r[7] || {};
-        var hasAny = profile || balance != null || eq || quizEq || r[5] || r[6] || r[7];
-        if (!hasAny) return { status: "notFound", playerKey: playerKey };
-
-        var fb = fallbackIdentity || {};
-        var id = (profile && profile.id) || fb.id || "";
-        var base = (profile && profile.baseAvatarKey) || fb.baseAvatarKey || "";
-        // 與遊戲相同：雲端 displayAvatarKey 必須通過驗證才使用，否則退回身份圖案
-        var cloudDisplay = profile && (profile.displayAvatarKey || profile.avatarKey);
-        var display = ID.isDisplayAvatarAllowed(cloudDisplay, unlocked) ? cloudDisplay : base;
-
-        // 與遊戲相同：先讀 equippedTitle，沒有才讀 quizEquippedTitle
-        var title = normalizeTitle(eq) || normalizeTitle(quizEq);
-        var bal = Number(balance);
-
-        var unlockedTitles = [];
-        P.gameIds.forEach(function (g) {
-          var group = titles[g] || {};
-          Object.keys(group).forEach(function (k) {
-            if (isUnlockedRecord(group[k])) unlockedTitles.push({ gameId: g, titleKey: k, name: (group[k] && group[k].name) || k });
-          });
-        });
-        Object.keys(quizTitles).forEach(function (k) {
-          var rec = quizTitles[k];
-          if (!isUnlockedRecord(rec) && !(rec && rec.name)) return;
-          var dup = unlockedTitles.some(function (t) { return t.gameId === "quiz" && t.titleKey === k; });
-          if (!dup) unlockedTitles.push({ gameId: "quiz", titleKey: k, name: (rec && rec.name) || k });
-        });
-
-        var unlockedAvatarKeys = Object.keys(unlocked).filter(function (k) { return unlocked[k] && unlocked[k].unlocked; });
-
-        return {
-          status: "ok",
-          data: {
-            playerKey: playerKey,
-            id: id,
-            baseAvatarKey: base,
-            displayAvatarKey: display,
-            hasProfile: !!profile,
-            createdAt: profile && profile.createdAt || null,
-            balance: isFinite(bal) && balance !== null ? bal : 0,
-            balanceExists: balance !== null && balance !== undefined,
-            title: title,
-            unlockedAvatars: unlocked,
-            unlockedAvatarKeys: unlockedAvatarKeys,
-            unlockedTitles: unlockedTitles
-          }
-        };
-      });
-  }
-
-  /* ==========================================================
-     本機記憶（只寫大廳自己的鍵）
+     本機記憶（只寫大廳自己的 v2 鍵）
      ========================================================== */
   function getRemembered() {
     var list = lsJson(KEY_REMEMBERED, []);
-    return Array.isArray(list) ? list.filter(function (p) { return p && p.playerKey && p.id && p.baseAvatarKey; }) : [];
+    return Array.isArray(list) ? list.filter(function (p) { return p && PLAYER_ID.test(String(p.playerId)) && p.id && ID.isBuiltinAvatar(p.baseAvatarKey); }) : [];
   }
   function remember(entry) {
     var list = getRemembered();
-    var i = list.findIndex(function (p) { return p.playerKey === entry.playerKey; });
+    var i = list.findIndex(function (p) { return p.playerId === entry.playerId; });
     var row = {
-      playerKey: entry.playerKey,
+      playerId: entry.playerId,
       id: entry.id,
       baseAvatarKey: entry.baseAvatarKey,
       displayAvatarKey: entry.displayAvatarKey || entry.baseAvatarKey,
@@ -280,45 +267,32 @@
     lsSet(KEY_REMEMBERED, JSON.stringify(list));
     return list;
   }
-  function getCurrentKey() { return lsGet(KEY_CURRENT); }
-  function setCurrentKey(k) { lsSet(KEY_CURRENT, k); }
-  function tutorialDone(k) { return lsGet(KEY_TUTORIAL + k) === "1"; }
-  function markTutorialDone(k) { lsSet(KEY_TUTORIAL + k, "1"); }
+  function getCurrentPlayerId() { var v = lsGet(KEY_CURRENT); return PLAYER_ID.test(String(v)) ? v : null; }
+  function setCurrentPlayerId(id) { if (PLAYER_ID.test(String(id))) lsSet(KEY_CURRENT, id); }
+  function tutorialDone(id) { return lsGet(KEY_TUTORIAL + id) === "1"; }
+  function markTutorialDone(id) { lsSet(KEY_TUTORIAL + id, "1"); }
 
-  /* 讀取這台裝置上「四款遊戲」本機記住的身份（只讀，不修改任何遊戲資料）
-     僅在同一網域（vashyang1120.github.io）下才讀得到。 */
-  function detectGameLocalIdentities() {
-    var found = [];
-    function add(id, base, source) {
-      id = (id || "").trim();
-      if (!id || id === "玩家" || id === "Player" || !ID.isBuiltinAvatar(base)) return;
-      var key = ID.makePlayerKey(id, base);
-      var row = found.find(function (f) { return f.playerKey === key; });
-      if (row) { if (row.sources.indexOf(source) < 0) row.sources.push(source); }
-      else found.push({ playerKey: key, id: id, baseAvatarKey: base, sources: [source] });
-    }
-    var shared = lsJson("vPartyPlayerProfile", null);
-    if (shared) add(shared.id, shared.baseAvatarKey, "共用紀錄");
-    add(lsGet("vquiz_playerId"), lsGet("vquiz_baseAvatarKey"), "知識挑戰");
-    add(lsGet("vtetris_playerId"), lsGet("vtetris_baseAvatarKey"), "方塊派對");
-    var adv = lsJson("balloonVAdventurePlayerProfile", null);
-    if (adv) add(adv.id, adv.baseAvatarKey, "派對島大作戰");
-    return found;
+  /* 這台裝置上是否有「舊系統」（v0.3.3 大廳）的玩家紀錄 —— 只用來提示，不讀取、不匯入、不刪除 */
+  function hasLegacyLocalPlayers() {
+    if (SANDBOX) return false;
+    var old = lsJson("bvUniverse_rememberedPlayers_v1", []);
+    return Array.isArray(old) && old.length > 0;
   }
 
   /* ==========================================================
      身份交接（大廳端介面，本版只產生測試資料，不會自動跳轉）
-     ⚠ 這些資料只是「告訴遊戲現在是誰」，不是安全的登入證明。
-     ⚠ 四款遊戲目前都沒有接收外部 playerKey 的程式，需要後續修改遊戲。
+     ⚠ 這只是「告訴遊戲現在是誰」，屬於低信任資訊，不是登入證明，也不能用於 V幣消費。
+     ⚠ 四款遊戲目前都還不能接收 playerId，需要後續改版。
      ========================================================== */
   var Handoff = {
     payload: function (player, gameId) {
       if (!player) return null;
       return {
         type: "bv-universe-identity",
-        version: 1,
+        version: 2,
+        trust: "recoverable-identity",
         gameId: gameId || "",
-        playerKey: player.playerKey,
+        playerId: player.playerId,
         id: player.id,
         baseAvatarKey: player.baseAvatarKey,
         displayAvatarKey: player.displayAvatarKey,
@@ -328,7 +302,7 @@
     launchUrl: function (player, gameId) {
       var url = P.gameUrls[gameId];
       if (!url || !player) return "";
-      return url + "?bvPlayerKey=" + encodeURIComponent(player.playerKey);
+      return url + "?bvPlayerId=" + encodeURIComponent(player.playerId);
     },
     /* 給未來 iframe 整合用：只送到指定 origin，不用 "*" */
     postToFrame: function (frameWindow, targetOrigin, player, gameId) {
@@ -336,30 +310,26 @@
       frameWindow.postMessage(this.payload(player, gameId), targetOrigin);
       return true;
     },
-    /* 共用鍵 vPartyPlayerProfile：預設關閉（見 zones.js player.writeSharedProfileKey） */
-    writeSharedProfile: function (player) {
-      if (!P.writeSharedProfileKey || SANDBOX || !player) return false;
-      return lsSet("vPartyPlayerProfile", JSON.stringify({
-        id: player.id, baseAvatarKey: player.baseAvatarKey,
-        displayAvatarKey: player.displayAvatarKey, avatarKey: player.displayAvatarKey, playerKey: player.playerKey
-      }));
-    }
+    /* v0.3.4 起停用：舊遊戲讀的共用鍵 vPartyPlayerProfile 是舊身份格式，不再寫入 */
+    writeSharedProfile: function () { return false; }
   };
 
   window.PlayerStore = {
     sandbox: SANDBOX,
-    mode: DB.mode,
-    ready: function () { return DB.ready(); },
-    identityExists: identityExists,
+    mode: API.mode,
+    sourceLabel: API.label,
+    ready: function () { return Promise.resolve(true); },
+    loadBaseAvatars: loadBaseAvatars,
     createPlayer: createPlayer,
+    resolvePlayer: resolvePlayer,
     loadPlayerData: loadPlayerData,
     getRemembered: getRemembered,
     remember: remember,
-    getCurrentKey: getCurrentKey,
-    setCurrentKey: setCurrentKey,
+    getCurrentPlayerId: getCurrentPlayerId,
+    setCurrentPlayerId: setCurrentPlayerId,
     tutorialDone: tutorialDone,
     markTutorialDone: markTutorialDone,
-    detectGameLocalIdentities: detectGameLocalIdentities,
+    hasLegacyLocalPlayers: hasLegacyLocalPlayers,
     handoff: Handoff
   };
 })();

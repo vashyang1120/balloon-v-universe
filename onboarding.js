@@ -63,7 +63,7 @@
 
   function avatarGrid(selected) {
     return '<div class="pick-grid" role="radiogroup" aria-label="身份圖案">' +
-      ID.builtinAvatars.map(function (a, i) {
+      ID.selectableAvatars().map(function (a, i) {
         var on = a.key === selected;
         return '<button type="button" class="pick' + (on ? " is-on" : "") + '" role="radio" aria-checked="' + on + '" data-key="' + a.key + '" aria-label="' + esc(a.label) + '">' +
           L.avatarHtml(a.key, on ? "gold" : (i % 2 ? "pink" : "blue"), null, "av--pick") +
@@ -163,7 +163,18 @@
     document.getElementById("fBack").addEventListener("click", function () { startGate(draft.fromLobby); });
   }
 
+  /* v0.3.4：先讀後端開放的身份圖案清單（最多等 2.5 秒；讀不到就先顯示原有 17 款） */
+  function withAvatarList(fn) {
+    var done = false;
+    function go() { if (done) return; done = true; fn(); }
+    Store.loadBaseAvatars().then(go, go);
+    setTimeout(go, 2500);
+  }
+
   function stepAvatar(draft) {
+    withAvatarList(function () { renderStepAvatar(draft); });
+  }
+  function renderStepAvatar(draft) {
     showFlow(
       '<div class="flow__head">' +
         '<div class="flow__step">建立通行證 · 2 / 3</div>' +
@@ -226,14 +237,24 @@
           else stepId(draft);   // 保留已輸入的 ID 與圖案，讓玩家修改
         });
       }
-      var entry = { playerKey: res.playerKey, id: draft.id, baseAvatarKey: draft.base, displayAvatarKey: draft.base };
+      // 以伺服器回傳為準：playerId 由伺服器產生；ID 可能被正規化（例如全形變半形）
+      var d = res.data;
+      var entry = { playerId: d.playerId, id: d.id, baseAvatarKey: d.baseAvatarKey, displayAvatarKey: d.displayAvatarKey };
       Store.remember(entry);
-      Store.setCurrentKey(res.playerKey);
-      showPass(entry, res.profile);
+      Store.setCurrentPlayerId(d.playerId);
+      showPass(entry, d, { idChanged: res.displayIdChanged, typed: draft.id });
     }).catch(function (err) {
-      console.warn("[Onboarding] 建立失敗：", err && err.message);
+      console.warn("[Onboarding] 建立失敗：", err && err.kind, err && err.message);
+      if (err && err.kind === "validation") {
+        // ID 不符合規則（以伺服器檢查為準）：回到輸入 ID，顯示伺服器的中文說明
+        stepId(draft);
+        var e1 = document.getElementById("fErr");
+        if (e1) { e1.textContent = err.userMessage; L.sfx("error"); }
+        return;
+      }
       showFlow(previewCard(draft), "flow__card--confirm");
-      D.ask([say(T.createFailed, { ask: T.createFailedAsk, actor: { mood: "remind" }, choices: [
+      var why = err && err.kind === "rateLimited" ? err.userMessage : T.createFailed;
+      D.ask([say(why, { ask: T.createFailedAsk, actor: { mood: "remind" }, choices: [
         { label: "再試一次", value: "retry", primary: true },
         { label: "返回修改", value: "back" }
       ] })], FLOW_OPTS()).then(function (r) {
@@ -243,11 +264,15 @@
   }
 
   /* ---------- 通行證展示 → 轉場進入大廳 ---------- */
-  function showPass(entry, profile) {
+  function showPass(entry, profile, info) {
     var p = { id: entry.id, baseAvatarKey: entry.baseAvatarKey, createdAt: profile && profile.createdAt };
+    // v0.3.4：伺服器把 ID 正規化時（例如全形「Ａ」→ 半形「A」），明確告訴孩子實際的 ID
+    var changed = info && info.idChanged
+      ? '<p class="flow__hint flow__hint--idchanged">你輸入的「' + esc((info.typed || "").trim()) + "」已儲存為「<b>" + esc(entry.id) + "</b>」，以後請用這個 ID 找回通行證。</p>"
+      : "";
     showFlow(
       '<h2 class="flow__title">🎉 你的專屬通行證</h2>' +
-      '<div class="pass-panel">' + L.passPanelHtml(p, "created") + "</div>" +
+      '<div class="pass-panel">' + L.passPanelHtml(p, "created") + "</div>" + changed +
       '<p class="flow__hint">記住你的玩家 ID「' + esc(entry.id) + "」和這個「" + esc(ID.avatarLabel(entry.baseAvatarKey)) + "」圖案，下次就能找回這張通行證。</p>" +
       '<div class="flow__buttons"><button class="btn btn--primary btn--big" id="fEnter" type="button">進入遊樂園 ▶</button></div>',
       "flow__card--pass");
@@ -269,7 +294,7 @@
       L.setLobbyVisible(true);
       L.loadPlayer(entry).then(function (r) {
         if (r.status !== "ok") return;
-        if (opts.tutorial && !Store.tutorialDone(r.data.playerKey)) setTimeout(runTutorial, 400);
+        if (opts.tutorial && !Store.tutorialDone(r.data.playerId)) setTimeout(runTutorial, 400);
         else if (opts.welcomeBack) D.ask([say(T.returningFound.replace("{id}", RT.escape(r.data.id)), { actor: { mood: "happy", enter: true } })]);
       });
     }
@@ -284,19 +309,14 @@
      我玩過了：用 ID ＋ 當初的身份圖案找回通行證
      ========================================================== */
   function returning(opts) {
+    withAvatarList(function () { renderReturning(opts); });
+  }
+  function renderReturning(opts) {
     opts = opts || {};
     var pre = opts.prefill || {};
     var sel = { id: pre.id || "", base: pre.base || "" };
-    var detected = Store.detectGameLocalIdentities().filter(function (d) {
-      return !Store.getRemembered().some(function (r) { return r.playerKey === d.playerKey; });
-    });
-    var quick = detected.length
-      ? '<div class="quick"><p class="flow__hint">在這台裝置找到你玩過的遊戲身份，點一下就能帶入：</p>' +
-        detected.map(function (d, i) {
-          return '<button type="button" class="quick__item" data-i="' + i + '">' + L.avatarHtml(d.baseAvatarKey, "blue", null, "av--sm") +
-            "<span><b>" + esc(d.id) + "</b><small>" + esc(d.sources.join("、")) + "</small></span></button>";
-        }).join("") + "</div>"
-      : "";
+    // v0.3.4：不再從四款舊遊戲的本機紀錄帶入身份（舊身份不遷移，避免把舊資料誤認成新玩家）
+    var quick = "";
     showFlow(
       '<div class="flow__head">' +
         '<div class="flow__step">我玩過了</div>' +
@@ -311,24 +331,17 @@
       pickFoot("返回", "fFind", "找回通行證"), "flow__card--pick");
     markPicked(sel.base);
     bindGrid(function (key) { sel.base = key; });
-    card.querySelectorAll(".quick__item").forEach(function (b) {
-      b.addEventListener("click", function () {
-        var d = detected[+b.dataset.i];
-        returning({ fromLobby: opts.fromLobby, prefill: { id: d.id, base: d.baseAvatarKey } });
-      });
-    });
     document.getElementById("fBack").addEventListener("click", function () { startGate(opts.fromLobby); });
     document.getElementById("fFind").addEventListener("click", function () {
       var errEl = document.getElementById("fErr");
       var id = document.getElementById("fId").value.trim();
       if (!id) { err("fErr", "請輸入玩家 ID"); return; }
       if (!sel.base) { err("fErr", "請選擇當初的身份圖案"); return; }
-      var key = ID.makePlayerKey(id, sel.base);
       var btn = document.getElementById("fFind");
       btn.disabled = true;
       btn.textContent = "尋找中…";
-      Store.loadPlayerData(key, { id: id, baseAvatarKey: sel.base }).then(function (res) {
-        if (res.status !== "ok") {
+      Store.resolvePlayer(id, sel.base).then(function (res) {
+        if (res.status !== "found") {
           // 查詢已經結束：立刻解除「尋找中…」，不保留假的載入狀態
           btn.disabled = false;
           btn.textContent = "找回通行證";
@@ -342,15 +355,15 @@
           });
         }
         var d = res.data;
-        var entry = { playerKey: d.playerKey, id: d.id || id, baseAvatarKey: d.baseAvatarKey || sel.base, displayAvatarKey: d.displayAvatarKey };
+        var entry = { playerId: d.playerId, id: d.id, baseAvatarKey: d.baseAvatarKey, displayAvatarKey: d.displayAvatarKey };
         Store.remember(entry);
-        Store.setCurrentKey(entry.playerKey);
+        Store.setCurrentPlayerId(entry.playerId);
         enterLobby(entry, { welcomeBack: true });
       }).catch(function (e) {
-        console.warn("[Onboarding] 找回失敗：", e && e.message);
+        console.warn("[Onboarding] 找回失敗：", e && e.kind, e && e.message);
         btn.disabled = false;
         btn.textContent = "找回通行證";
-        errEl.textContent = T.loadFailed;
+        errEl.textContent = e && (e.kind === "validation" || e.kind === "rateLimited") ? e.userMessage : T.loadFailed;
         L.sfx("error");
       });
     });
@@ -455,7 +468,7 @@
     var me = L.current();
     if (!me || tutorialRunning) return Promise.resolve();
     tutorialRunning = true;
-    var key = me.playerKey, els = L.els, S = TU.steps;
+    var key = me.playerId, els = L.els, S = TU.steps;
     var ended = false;
     var mapTargets = function () { return L.isDesktop() ? [els.stage] : [els.stage, els.entries]; };
     var myAvatar = function () { return els.avatarRow.querySelector(".av-item.is-current"); };
@@ -572,14 +585,15 @@
 
   function boot() {
     document.body.classList.remove("is-booting");
+    Store.loadBaseAvatars();   // 先在背景讀身份圖案清單（失敗不影響其他功能）
     var list = Store.getRemembered();
     if (!list.length) {
       L.setLobbyVisible(false);
       startGate(false);
       return;
     }
-    var curKey = Store.getCurrentKey();
-    var entry = list.find(function (p) { return p.playerKey === curKey; }) || list[list.length - 1];
+    var curId = Store.getCurrentPlayerId();
+    var entry = list.find(function (p) { return p.playerId === curId; }) || list[list.length - 1];
     L.setLobbyVisible(true);
     L.loadPlayer(entry);
   }

@@ -4,7 +4,14 @@ Balloon V Game Universe - Player Portal &amp; Game Lobby
 氣球小V遊戲宇宙 — 統一玩家入口
 
 ## 目前版本
-`balloon-v-universe-v0.3.3-rpg-ux-polish-test-1`（RPG 體驗修正：半身像站在對話框後、指向判斷、關鍵字強調、長文字分頁、對話專注、ID 排版）
+`universe-lobby-v0.3.4-shared-player-avatar-expansion-test-1`（大廳改接遊戲宇宙共用玩家 API；身份圖案 17 → 33 款）
+
+> v0.3.4 起，下方「玩家資料規則」中關於舊 Firebase（vparty-rhythm-game）與 playerKey 的說明已停用，
+> 以 `player-store.js` 開頭說明與 `backend/worker/docs/PLAYERS.md` 為準：玩家身份由後端 API 產生 `playerId`，
+> 大廳不再讀寫舊 Firebase。身份圖案統一放在 `assets/avatars/base/`（見該資料夾 README）。
+> 一致性檢查：`node --test tests/lobby-avatar-consistency.test.mjs`。
+
+前一版：`balloon-v-universe-v0.3.3-rpg-ux-polish-test-1`（RPG 體驗修正）
 
 ## 檔案
 | 檔案 | 用途 |
@@ -13,8 +20,8 @@ Balloon V Game Universe - Player Portal &amp; Game Lobby
 | `style.css` | 外觀樣式（桌機 / 手機） |
 | `zones.js` | **集中設定檔**：選區、聚焦、角色、UI 素材路徑、遊戲入口位置、玩家系統設定、引導與教學文案 |
 | `main.js` | 地圖互動（v0.2.1 定案）＋大廳：遊戲入口、玩家資訊卡、頭像列、切換玩家、我的通行證 |
-| `identity.js` | 玩家身份工具：playerKey 公式逐字取自四款遊戲（v0.3.0 新增） |
-| `player-store.js` | 玩家資料層：Firebase 讀取、建立新玩家、本機記憶、身份交接介面（v0.3.0 新增） |
+| `identity.js` | 玩家身份工具：33 款身份圖案、圖片網址、ID 檢查（v0.3.4 改版；不再組合 playerKey） |
+| `player-store.js` | 玩家資料層：呼叫遊戲宇宙 API 建立／找回／讀取玩家、v2 本機記憶、sandbox 模擬 API（v0.3.4 改版） |
 | `onboarding.js` | 新手引導、找回通行證、首次入園教學（v0.3.0 新增） |
 | `dialogue.js` | RPG 對話框元件（正式底板、選項、不可略過的提醒、依目標自動定位） |
 | `rpg-text.js` | RPG 對話文字：關鍵字強調 `{t:}` `{i:}` `{n:}`、安全輸出、逐字顯示、依實際可寫範圍自動分頁（v0.3.3 新增；可直接複製到其他小V遊戲） |

@@ -555,6 +555,8 @@
      頭像框（含氣球、星星裝飾）維持原圖完整，不會被裁切 */
   function avatarHtml(key, frame, unlocked, extraClass) {
     var src = ID.avatarSrc(key, unlocked);
+    // v0.3.4：新款透明全身圖加 av--full，完整放進圓框（不放大臉部，避免切到耳朵、角、帽子）
+    if (ID.isFullFigure(key)) extraClass = (extraClass ? extraClass + " " : "") + "av--full";
     var frameSrc = frame === "gold" ? UI.frameGold : frame === "pink" ? UI.framePink : UI.frameBlue;
     return '<span class="av av--' + frame + (extraClass ? " " + extraClass : "") + '">' +
       '<img class="av__frame" src="' + frameSrc + '" alt="" draggable="false">' +
@@ -572,20 +574,30 @@
     return d.getFullYear() + "/" + (d.getMonth() + 1) + "/" + d.getDate();
   }
 
+  /* v0.3.4：V幣與稱號尚未接入共用玩家系統 → 顯示狀態文字，不把「沒有資料」顯示成 0 */
+  function walletText(d) {
+    if (!d || !d.features || !d.features.wallet) return "未開放";
+    return String(d.balance);
+  }
+  function titleText(d) {
+    if (!d || !d.features || !d.features.titles) return "準備中";
+    return d.title ? d.title.name : "未裝備";
+  }
+
   function passPanelHtml(p, mode) {
     // mode = "created"：只顯示 ID、固定身份圖案（與建立日期）
-    // mode = "full"   ：加上 V幣、稱號
+    // mode = "full"   ：加上 V幣、稱號（v0.3.4：共用玩家系統尚未接入，顯示「未開放／準備中」，不顯示 0）
     var lower = "";
     if (mode === "full") {
       lower =
-        '<span class="pass__stat"><b>V幣</b>' + escapeHtml(p.balance) + "</span>" +
-        '<span class="pass__stat"><b>稱號</b>' + escapeHtml(p.title ? p.title.name : "未裝備") + "</span>";
+        '<span class="pass__stat"><b>V幣</b>' + escapeHtml(walletText(p)) + "</span>" +
+        '<span class="pass__stat"><b>稱號</b>' + escapeHtml(titleText(p)) + "</span>";
     } else if (p.createdAt) {
       lower = '<span class="pass__stat"><b>建立日期</b>' + fmtDate(p.createdAt) + "</span>";
     }
     return '<div class="pass">' +
       '<img class="pass__bg" src="' + UI.panelPass + '" alt="" draggable="false">' +
-      '<span class="pass__face">' + (ID.avatarSrc(p.baseAvatarKey) ? '<img src="' + ID.avatarSrc(p.baseAvatarKey) + '" alt="" onerror="this.style.visibility=\'hidden\'">' : "") + "</span>" +
+      '<span class="pass__face' + (ID.isFullFigure(p.baseAvatarKey) ? " pass__face--full" : "") + '">' + (ID.avatarSrc(p.baseAvatarKey) ? '<img src="' + ID.avatarSrc(p.baseAvatarKey) + '" alt="" onerror="this.style.visibility=\'hidden\'">' : "") + "</span>" +
       '<span class="pass__ribbon"><span>' + escapeHtml(p.id) + "</span></span>" +
       '<span class="pass__main">' +
         '<span class="pass__label">玩家 ID</span>' +
@@ -684,28 +696,28 @@
     if (!d) return;
     els.cardAvatar.innerHTML = avatarHtml(d.displayAvatarKey, "gold", d.unlockedAvatars);
     els.cardId.textContent = d.id;
-    els.cardTitle.textContent = d.title ? d.title.name : "未裝備";
-    els.cardCoins.textContent = String(d.balance);
+    els.cardTitle.textContent = titleText(d);
+    els.cardCoins.textContent = walletText(d);
     fitCardId();
   }
 
   function renderAvatarRow() {
     var list = Store.getRemembered();
-    var curKey = state.player.loading ? (state.player.loadingEntry || {}).playerKey : (current() && current().playerKey);
+    var curKey = state.player.loading ? (state.player.loadingEntry || {}).playerId : (current() && current().playerId);
     els.avatarRow.innerHTML = "";
     list.forEach(function (entry, i) {
-      var isCur = entry.playerKey === curKey;
+      var isCur = entry.playerId === curKey;
       var b = document.createElement("button");
       b.type = "button";
       b.className = "av-item" + (isCur ? " is-current" : "");
       b.setAttribute("role", "listitem");
-      b.dataset.key = entry.playerKey;
+      b.dataset.key = entry.playerId;
       b.setAttribute("aria-label", (isCur ? "目前玩家：" : "切換到 ") + entry.id);
       b.innerHTML = avatarHtml(entry.displayAvatarKey || entry.baseAvatarKey, isCur ? "gold" : frameFor(i)) +
         '<span class="av-item__id">' + escapeHtml(entry.id) + "</span>";
       b.addEventListener("click", function () {
         var me = current();
-        var self = !!(me && entry.playerKey === me.playerKey);
+        var self = !!(me && entry.playerId === me.playerId);
         if (!guard(self ? "avatarSelf" : "avatarOther", { entry: entry })) return;
         onAvatarTap(entry);
       });
@@ -742,9 +754,9 @@
     var d = current();
     if (!d) return;
     els.debugBox.hidden = false;
-    els.debugBox.textContent = "playerKey：" + d.playerKey +
+    els.debugBox.textContent = "playerId：" + d.playerId +
       "\nbaseAvatarKey：" + d.baseAvatarKey + "　displayAvatarKey：" + d.displayAvatarKey +
-      "\n資料來源：" + (Store.sandbox ? "測試沙盒" : "Firebase") +
+      "\n資料來源：" + Store.sourceLabel +
       "\n交接網址範例：" + Store.handoff.launchUrl(d, "rhythm");
   }
 
@@ -760,13 +772,13 @@
     p.loadingEntry = entry;
     clearSelection();
     renderAll();
-    return Store.loadPlayerData(entry.playerKey, entry).then(function (res) {
+    return Store.loadPlayerData(entry.playerId).then(function (res) {
       if (token !== p.token) return { status: "stale" };
       if (res.status !== "ok") throw Object.assign(new Error("notFound"), { notFound: true });
       p.data = res.data;
       p.loading = false;
       p.loadingEntry = null;
-      Store.setCurrentKey(res.data.playerKey);
+      Store.setCurrentPlayerId(res.data.playerId);
       Store.remember(res.data);
       renderAll();
       emit("playerChanged", res.data);
@@ -793,7 +805,7 @@
   function onAvatarTap(entry) {
     var d = current();
     if (state.player.loading) return;
-    if (d && entry.playerKey === d.playerKey) {
+    if (d && entry.playerId === d.playerId) {
       emit("avatarTapped", { self: true, entry: entry });
       toast("這是目前的玩家：" + d.id);
       return;
@@ -878,9 +890,18 @@
         row("玩家 ID", escapeHtml(d.id)) +
         row("專屬身份圖案", avatarHtml(d.baseAvatarKey, "blue", null, "av--sm") + "<span>" + escapeHtml(ID.avatarLabel(d.baseAvatarKey)) + '<em class="muted">（固定，不能更換）</em></span>') +
         row("展示頭像", avatarHtml(d.displayAvatarKey, "pink", d.unlockedAvatars, "av--sm") + "<span>" + escapeHtml(ID.avatarLabel(d.displayAvatarKey)) + "</span>") +
-        row("稱號", escapeHtml(d.title ? d.title.name : "未裝備")) +
-        row("V幣", escapeHtml(d.balance) + (d.balanceExists ? "" : '<em class="muted">（尚無 V幣紀錄）</em>')) +
-        row("通行證代碼", '<code class="muted">' + escapeHtml(d.playerKey) + "</code>");
+        row("稱號", escapeHtml(titleText(d)) + (d.features && d.features.titles ? "" : '<em class="muted">（稱號系統準備中）</em>')) +
+        row("V幣", escapeHtml(walletText(d)) + (d.features && d.features.wallet ? "" : '<em class="muted">（V幣功能尚未開放）</em>')) +
+        row("通行證代碼", '<code class="muted">' + escapeHtml(d.playerId) + "</code>");
+    } else if (tab === "collection" && !(d.features && d.features.avatarUnlocks)) {
+      // v0.3.4：展示頭像解鎖與稱號收藏尚未接入共用玩家系統
+      html = '<h4 class="sec">已解鎖頭像</h4><p class="empty">展示頭像解鎖功能準備中，尚未接入遊戲宇宙。</p>' +
+        '<h4 class="sec">已解鎖稱號</h4><p class="empty">稱號收藏功能準備中，尚未接入遊戲宇宙。</p>';
+    } else if (tab !== "collection" && !(d.features && d.features.records)) {
+      html = '<ul class="record-list">' + CFG.player.gameIds.map(function (g) {
+        return "<li><b>" + escapeHtml(names[g]) + "</b><span>尚未接入</span></li>";
+      }).join("") + "</ul>" +
+        '<p class="empty">各遊戲紀錄尚未接入遊戲宇宙；分數與關卡進度請先在各遊戲中查看。</p>';
     } else if (tab === "collection") {
       var av = d.unlockedAvatarKeys;
       html = '<h4 class="sec">已解鎖頭像</h4>' + (av.length
@@ -925,7 +946,7 @@
     if (!z) return;
     els.testDetail.textContent = "已選擇「" + z.name + "」→ " + z.game + (d ? "（玩家：" + d.id + "）" : "");
     els.testHandoff.textContent = d
-      ? "身份交接測試資料：playerKey = " + d.playerKey + "。四款遊戲目前尚未支援接收大廳身份，正式跳轉留待後續版本。"
+      ? "身份交接測試資料：playerId = " + d.playerId + "。四款遊戲目前尚未支援接收大廳身份，正式跳轉留待後續版本。"
       : "";
     els.testModal.hidden = false;
     els.testOk.focus();
