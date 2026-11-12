@@ -1,0 +1,9 @@
+{
+  "schema": "bv-quiz-question-overrides-v1",
+  "status": "not_exported",
+  "note": "已核准的題目修正（停用／品質標記）目前只存在舊 Firebase 的 quizQuestionOverrides。宇宙版不得讀取舊 Firebase，因此需要管理者以唯讀方式匯出後，用 universe/quiz/tools/import_question_overrides.py 轉入本檔。匯入前畫面會標示「題目修正資料尚未同步」。",
+  "allowedFields": ["disabled", "active", "quality", "reviewNote", "reason", "updatedAt", "updatedBy"],
+  "exportedAt": null,
+  "source": null,
+  "overrides": {}
+}

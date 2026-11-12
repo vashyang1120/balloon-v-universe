@@ -184,8 +184,17 @@ replace_body("loadPlayerWalletBalance", "  playerWalletBalance = null;\n  update
 replace_body("loadVcoinHistory", "  return Promise.resolve({ balance: null, logs: [], notImplemented: true });")
 replace_body("loadVcoinWalletStatus", "  return Promise.resolve({ balanceError: true, commonDailyRewardError: true, tetrisDailyChallengeError: true, notImplemented: true, yyyyMMdd: getTaiwanDateKey() });")
 replace_body("claimDailyVCoinsForTetris", "  return Promise.resolve({ status: 'notImplemented', balance: null });")
-replace_body("claimTetrisDailyChallengeReward", "  return Promise.resolve({ status: 'notImplemented', balance: null });")
-replace_body("runVcoinRewardsAfterGame", "  setResultVCoinMessage(UniverseTetris.resultVcoinText(), 'offline');\n  return Promise.resolve(null);")
+# v0.2.0：今日挑戰保留原版完成判定（isTetrisDailyChallengeCompleted），只記錄完成，不發 +10 V幣（待 WalletService 決議）
+replace_body("claimTetrisDailyChallengeReward",
+             "  var yyyyMMdd = getTaiwanDateKey();\n"
+             "  var challenge = getTetrisDailyChallengeForDate(yyyyMMdd);\n"
+             "  var completed = isTetrisDailyChallengeCompleted(challenge, buildTetrisDailyChallengeResultSnapshot(result));\n"
+             "  if (completed) UniverseTetris.markDailyChallengeDone(challenge);\n"
+             "  return Promise.resolve({ status: completed ? 'pending_completed' : 'not_completed', challenge: challenge, amount: 0, balance: null, notImplemented: true });")
+replace_body("runVcoinRewardsAfterGame",
+             "  return claimTetrisDailyChallengeReward(result).then(function(challengeResult){\n"
+             "    setResultVCoinMessage(UniverseTetris.resultVcoinText(challengeResult), 'offline');\n"
+             "    return { common: null, challenge: challengeResult };\n  });")
 replace_body("openVcoinHistory",
              "  var wrap = document.getElementById('vcoin-history-wrap');\n  if(!wrap) return;\n  hideAvGrid();\n  hideTitleGrid();\n"
              "  wrap.style.display = 'block';\n  setProfileDataCollapsed(true);\n"
@@ -226,7 +235,7 @@ rep("initFirebase();\nensureFirebaseReady().then(function(){\n  return loadAvata
     "  if(dispImg) dispImg.src = getAvatarUrl(PLAYER.displayAvatarKey);\n"
     "  refreshPlayerMetaUI();\n  updateBestDisp();\n});\n", "啟動流程")
 
-header = (f"<!-- 遊戲宇宙換殼原型 universe-game-migration-v0.1.0-foundation-test-1\n"
+header = (f"<!-- 遊戲宇宙版 universe-game-migration-v0.2.0-three-games-integration-test-1（v0.1.0 原型起）\n"
           f"     由 {SOURCE_REPO}@{SOURCE_COMMIT} index.html（SHA-256 {sha}）\n"
           f"     經 universe/tetris/tools/build_prototype.py 產生。請勿直接修改正式遊戲 Repository。 -->\n")
 s = s.replace("<!DOCTYPE html>", "<!DOCTYPE html>\n" + header, 1) if s.startswith("<!DOCTYPE html>") else header + s

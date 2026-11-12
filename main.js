@@ -944,9 +944,17 @@
     var z = zoneById[state.selected];
     var d = current();
     if (!z) return;
+    /* v0.2.0：知識學院／音樂舞台／方塊工坊 → 直接進入宇宙版，並帶著目前玩家 playerId（不需要再輸入或選頭像） */
+    var url = d && (CFG.player.universeGameIds || []).indexOf(z.gameId) >= 0 ? Store.handoff.launchUrl(d, z.gameId) : "";
+    if (url) {
+      Store.setCurrentPlayerId(d.playerId);   // 回大廳時仍是同一位玩家
+      emit("playPressed", z.id);
+      location.assign(url);
+      return;
+    }
     els.testDetail.textContent = "已選擇「" + z.name + "」→ " + z.game + (d ? "（玩家：" + d.id + "）" : "");
     els.testHandoff.textContent = d
-      ? "身份交接測試資料：playerId = " + d.playerId + "。四款遊戲目前尚未支援接收大廳身份，正式跳轉留待後續版本。"
+      ? "身份交接測試資料：playerId = " + d.playerId + "。派對島大作戰本版尚未換殼，正式跳轉留待後續版本。"
       : "";
     els.testModal.hidden = false;
     els.testOk.focus();

@@ -1,0 +1,16 @@
+/* 小V知識挑戰 — 遊戲宇宙換殼層樣式（只新增，不覆蓋原版遊戲畫面樣式） */
+
+/* 首頁：狀態標示（一個）＋題目修正狀態（需要時才顯示） */
+#bv-title-notice { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+#bv-title-notice .bv-status-mark { margin-top: 0; }
+.bv-override-note { font-size: 12px; font-weight: 700; color: #a35a00; line-height: 1.5; text-align: center; }
+.bv-override-note[hidden] { display: none !important; }
+
+/* 玩家設定改為唯讀：隱藏「選身份頭像／選顯示頭像／確認身份」 */
+body.bv-universe #btn-pick-base,
+body.bv-universe #btn-pick-display,
+body.bv-universe #btn-save-profile { display: none !important; }
+body.bv-universe #player-id-input[readonly] { background: #f6f3fb; color: #6b5a86; cursor: default; }
+
+#screen-leaderboard #bv-lb-note { margin: 0 auto 10px; }
+#screen-title .bv-identity-card { margin: 0 auto 12px; }

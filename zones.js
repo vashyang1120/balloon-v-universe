@@ -152,13 +152,17 @@ window.MAP_CONFIG = {
     ],
     gameIds: ["quiz", "rhythm", "tetris", "adventure"],
     gameNames: { quiz: "知識挑戰", rhythm: "節奏遊戲", tetris: "方塊派對", adventure: "派對島大作戰" },
-    /* 四款遊戲網址（本版只用於身份交接測試資料，不會自動跳轉；遊戲尚未支援 playerId） */
+    /* 遊戲網址（v0.2.0）：知識學院／音樂舞台／方塊工坊 → 本站 universe/ 宇宙版（相對於大廳），
+       按「開始遊戲」會帶著目前玩家的 playerId 進入（?bvPlayerId=）。
+       派對島大作戰本版不換殼：維持原本行為（只顯示身份交接測試資料，不跳轉）。 */
     gameUrls: {
-      quiz: "https://vashyang1120.github.io/vparty-quiz-game/",
-      rhythm: "https://vashyang1120.github.io/vparty-rhythm-game/",
-      tetris: "https://vashyang1120.github.io/vparty-tetris/",
+      quiz: "universe/quiz/",
+      rhythm: "universe/rhythm/",
+      tetris: "universe/tetris/",
       adventure: "https://vashyang1120.github.io/balloon-v-rush/rpg-test/"
     },
+    /* 會直接跳轉的宇宙版遊戲（不含派對島大作戰） */
+    universeGameIds: ["quiz", "rhythm", "tetris"],
     /* 是否把目前玩家寫入共用鍵 vPartyPlayerProfile。
        目前只有節奏遊戲會讀這個鍵，寫入後會直接改變節奏遊戲下次開啟時的玩家。
        未經使用者確認前保持 false。 */

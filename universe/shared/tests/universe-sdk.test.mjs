@@ -249,3 +249,72 @@ test("網址參數不能取得管理員或消費權限", async () => {
   const p = await s.start();
   assert.equal(p.isAdmin, false); assert.equal(p.canSpendVCoins, false);
 });
+
+/* ---------------- v0.2.0：三款遊戲整合 ---------------- */
+test("v0.2.0 身份交接順序：大廳已切換成 B 時，沒有網址參數也不會沿用本分頁上一位 A", async () => {
+  const api = fakeApi({ [PA]: profile(PA, "小明", "boy1"), [PB]: profile(PB, "小華", "girl1") });
+  const sess = memStorage(), local = memStorage();
+  await session({ search: "?bvPlayerId=" + PA, fetch: api.fetch, sess, local }).start();
+  local.setItem("bvUniverse_v2_currentPlayerId", PB);          // 使用者在大廳換成 B
+  const p = await session({ search: "", fetch: api.fetch, sess, local }).start();
+  assert.equal(p.playerId, PB); assert.equal(p.handoffSource, "lobbyCurrent");
+  // 網址參數永遠最優先
+  const q = await session({ search: "?bvPlayerId=" + PA, fetch: api.fetch, sess, local }).start();
+  assert.equal(q.playerId, PA); assert.equal(q.handoffSource, "url");
+});
+
+test("v0.2.0 回大廳：正式與 Sandbox 各自回到對應大廳；goLobby 只導向大廳網址、不帶任何身份資料", async () => {
+  const assigned = [];
+  const loc = { search: "", assign: (u) => assigned.push(u) };
+  const prod = U.createGameSession({ gameId: "rhythm", gameVersion: "t", location: loc, localStorage: memStorage(), sessionStorage: memStorage() });
+  assert.equal(prod.lobbyUrl(), "../../index.html");
+  assert.equal(prod.goLobby(), "../../index.html");
+  const sbLoc = { search: "?sandbox=1", assign: (u) => assigned.push(u) };
+  const sb = U.createGameSession({ gameId: "quiz", gameVersion: "t", location: sbLoc, localStorage: memStorage(), sessionStorage: memStorage() });
+  sb.goLobby();
+  assert.deepEqual(assigned, ["../../index.html", "../../index.html?sandbox=1"]);
+});
+
+test("v0.2.0 共用標示文字：結算一律「本場成績尚未記入正式排行榜」", () => {
+  assert.equal(U.LABELS.resultNote, "本場成績尚未記入正式排行榜");
+  assert.match(U.LABELS.boardNote, /不是正式排行榜/);
+  assert.match(U.LABELS.dailyRewardPending, /待開放/);
+});
+
+test("v0.2.0 今日挑戰：只記錄完成（依 playerId＋台灣日期），換玩家不共用、隔天重置，不產生任何 V幣", async () => {
+  const api = fakeApi({ [PA]: profile(PA, "小明", "boy1"), [PB]: profile(PB, "小華", "girl1") });
+  const local = memStorage();
+  let now = Date.parse("2026-11-12T03:00:00Z");
+  const a = session({ search: "?bvPlayerId=" + PA, fetch: api.fetch, local, now: () => now });
+  assert.equal(a.dailyChallenge.markDone("x"), false, "沒有玩家時不能記錄");
+  await a.start();
+  assert.equal(a.dailyChallenge.isDoneToday("x"), false);
+  a.dailyChallenge.markDone("x");
+  assert.equal(a.dailyChallenge.isDoneToday("x"), true);
+  assert.equal(a.dailyChallenge.rewardStatus, "pending");
+  const b = session({ search: "?bvPlayerId=" + PB, fetch: api.fetch, local, now: () => now });
+  await b.start();
+  assert.equal(b.dailyChallenge.isDoneToday("x"), false, "B 不會看到 A 的完成紀錄");
+  now = Date.parse("2026-11-12T16:00:00Z");   // 台灣時間隔天 00:00
+  assert.equal(a.dailyChallenge.isDoneToday("x"), false);
+  await assert.rejects(a.services.wallet.getBalance(PA), (e) => e.kind === "notImplemented");
+});
+
+test("v0.2.0 遊戲專屬 Mock 紀錄（問答年級榜／總榜）：依遊戲＋playerId 分開、標示 Mock、正式模式預設 NOT_IMPLEMENTED", async () => {
+  const sess = memStorage();
+  const mk = (gameId, services) => U.createGameSession({ gameId, gameVersion: "t", location: { search: "" }, localStorage: memStorage(), sessionStorage: sess, services });
+  const quiz = mk("quiz", { records: "mock" });
+  await quiz.services.records.put("board-low", PA, { gradeTotalScore: 300 });
+  await quiz.services.records.put("board-low", PB, { gradeTotalScore: 120 });
+  const row = await quiz.services.records.get("board-low", PA);
+  assert.equal(row.gradeTotalScore, 300); assert.equal(row.recordStatus, "mock"); assert.equal(row.serverConfirmed, false); assert.equal(row.playerId, PA);
+  assert.equal((await quiz.services.records.list("board-low")).length, 2);
+  assert.equal(await quiz.services.records.get("board-low", "p_cccccccccccccccccccc"), null);
+  // 其他遊戲讀不到問答的紀錄
+  assert.deepEqual(await mk("tetris", { records: "mock" }).services.records.list("board-low"), []);
+  // 舊 playerKey、錯誤集合名稱一律拒絕
+  await assert.rejects(quiz.services.records.put("board-low", "小明__boy1", {}), (e) => e.kind === "legacyPlayerKey");
+  await assert.rejects(quiz.services.records.put("../x", PA, {}), (e) => e.kind === "validation");
+  // 沒有明確選擇 Mock → NOT_IMPLEMENTED
+  await assert.rejects(mk("quiz", {}).services.records.list("board-low"), (e) => e.kind === "notImplemented");
+});

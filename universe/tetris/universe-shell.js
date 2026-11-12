@@ -13,10 +13,11 @@
 (function () {
   "use strict";
 
-  var GAME_VERSION = "tetris-v1.3.7+universe-v0.1.0-test-1";
+  var GAME_VERSION = "tetris-v1.3.7+universe-v0.2.0-test-1";
   var AV_BASE = "../../assets/avatars/base/";
   var BLANK = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
   var U = window.BVUniverse;
+  var L = U.LABELS;
 
   var S = U.createGameSession({
     gameId: "tetris",
@@ -51,18 +52,9 @@
     document.body.classList.add("bv-universe");
     if (S.isSandbox) document.body.classList.add("bv-sandbox");
 
-    var banner = document.createElement("div");
-    banner.id = "bv-test-banner";
-    banner.setAttribute("role", "status");
-    var modeText = S.isSandbox ? "Sandbox／Test Mode" : "Test Mode";
-    banner.innerHTML =
-      '<span class="bv-long">🧪 遊戲宇宙換殼測試版｜' + modeText + "｜成績只存在這個分頁（Mock），不會寫入正式排行榜</span>" +
-      '<span class="bv-short">🧪 換殼測試版｜' + modeText + "｜成績只存在這個分頁（Mock）</span>" +
-      '<span class="bv-tiny">🧪 測試版｜Mock</span>';
-    document.body.appendChild(banner);
-
+    // v0.2.0：不再使用常駐橫幅；首頁只放一個簡潔的狀態標示（遊戲中不顯示）
     var ver = document.querySelector("#s-title .logo + div");
-    if (ver) ver.insertAdjacentHTML("beforeend", ' <span class="bv-ver-tag">＋遊戲宇宙換殼 test-1</span>');
+    if (ver) ver.insertAdjacentElement("afterend", U.ui.statusMark(S));
 
     var help = document.querySelector("#s-profile .profile-help");
     if (help) help.textContent = "角色設定：玩家 ID 與身份頭像由遊戲宇宙統一管理，這裡只能查看。要切換玩家，請回到遊戲宇宙大廳。";
@@ -74,10 +66,10 @@
     if (input) { input.readOnly = true; input.setAttribute("aria-readonly", "true"); input.maxLength = 40; }
 
     var resMsg = $("res-vcoin-msg");
-    if (resMsg) resMsg.insertAdjacentHTML("afterend", '<div id="bv-result-note" class="bv-note">🧪 測試版：本場成績只記錄在這個分頁（Mock），不會寫入正式排行榜。</div>');
+    if (resMsg) resMsg.insertAdjacentHTML("afterend", '<div id="bv-result-note" class="bv-note">' + esc(L.resultNote) + '</div>');
 
     var lbList = $("lb-list");
-    if (lbList) lbList.insertAdjacentHTML("beforebegin", '<div id="bv-lb-note" class="bv-note">🧪 測試排行榜：只顯示這個分頁的 Mock 成績，不是正式排行榜。</div>');
+    if (lbList) lbList.insertAdjacentHTML("beforebegin", '<div id="bv-lb-note" class="bv-note">' + esc(L.boardNote) + '</div>');
 
     var mainMenu = document.querySelector('#s-title button[onclick*="balloonv.com"]');
     if (mainMenu) {
@@ -114,7 +106,7 @@
     var g = $("bv-go-lobby"); if (g) g.addEventListener("click", goLobby);
   }
 
-  function goLobby() { location.href = S.lobbyUrl(); }
+  function goLobby() { S.goLobby(); }
 
   function loadLabels() {
     if (!window.fetch) return Promise.resolve();
@@ -196,7 +188,13 @@
     },
     walletText: function () { return "未開放"; },
     titleText: function () { return "準備中"; },
-    resultVcoinText: function () { return "🪙 V幣：測試版尚未開放，本場不發放 V幣。"; },
+    /* 結算 V幣說明：不發放；今日挑戰照原版判定是否完成，+10 待開放 */
+    resultVcoinText: function (ch) {
+      var t = L.vcoinResult;
+      if (ch && ch.challenge) t += "｜今日挑戰「" + (ch.challenge.name || "今日任務") + "」" + (ch.status === "pending_completed" ? "已完成（" + L.dailyRewardPending + "）" : "尚未完成");
+      return t;
+    },
+    markDailyChallengeDone: function (challenge) { return S.dailyChallenge.markDone("tetris_" + (challenge && challenge.challengeKey || "daily")); },
     renderNotReadyPanel: function (feature, summaryEl, listEl) {
       if (summaryEl) summaryEl.textContent = feature === "wallet" ? "V幣：未開放" : "準備中";
       if (listEl) listEl.innerHTML = '<div class="vcoin-empty-msg bv-not-ready">' + esc(FEATURE_TEXT[feature] || "準備中") + "</div>";
@@ -222,7 +220,7 @@
     submitScore: function (d) {
       var note = $("bv-result-note");
       if (!player) {
-        if (note) note.textContent = "🧪 測試版：沒有遊戲宇宙玩家，本場成績未記錄。";
+        if (note) note.textContent = L.resultNote + "（沒有遊戲宇宙玩家，本場未記錄）";
         return Promise.resolve(null);
       }
       var now = new Date().toISOString();
@@ -234,10 +232,10 @@
       });
       game.submissionId = sub.submissionId;
       return S.services.scores.submit(sub).then(function (r) {
-        if (note) note.textContent = "🧪 測試版：本場成績已記錄在這個分頁的 Mock 排行榜（未經伺服器確認），不會寫入正式排行榜。";
+        if (note) note.textContent = L.resultNote + "（已存為本分頁測試成績）";
         return r;
       }, function (err) {
-        if (note) note.textContent = "🧪 測試版：本場成績未記錄（" + (err && err.userMessage || "未知錯誤") + "）。";
+        if (note) note.textContent = L.resultNote + "（本場未記錄：" + (err && err.userMessage || "未知錯誤") + "）";
         console.warn("[Universe] Mock 成績提交失敗：", err && err.userMessage);
         return null;
       });
@@ -259,7 +257,7 @@
           row.className = "lb-row " + (i < 1 ? "r1" : i < 2 ? "r2" : i < 3 ? "r3" : "") + (mine ? " mine" : "");
           row.innerHTML = '<div class="lb-rank">' + rank + '</div><div class="lb-av"><img src="' + esc(avatarUrlOf ? avatarUrlOf(key) : S.avatars.imageUrl(key)) + '" alt=""></div>' +
             '<div class="lb-info"><div class="lb-name">' + esc(prof.displayId || r.playerId) + (mine ? " ⭐" : "") + '</div>' +
-            '<div class="lb-meta">LV' + esc(r.scoreData.level) + " · " + esc(r.scoreData.lines) + "行 · " + esc(dLabel[r.scoreData.difficulty] || "") + ' · <span class="bv-mock-tag">Mock</span></div></div>' +
+            '<div class="lb-meta">LV' + esc(r.scoreData.level) + " · " + esc(r.scoreData.lines) + "行 · " + esc(dLabel[r.scoreData.difficulty] || "") + ' · <span class="bv-mock-tag">' + esc(L.mockTag) + '</span></div></div>' +
             '<div class="lb-score">' + Number(r.score || 0).toLocaleString() + "</div>";
           listEl.appendChild(row);
         });

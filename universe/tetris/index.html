@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- 遊戲宇宙換殼原型 universe-game-migration-v0.1.0-foundation-test-1
+<!-- 遊戲宇宙版 universe-game-migration-v0.2.0-three-games-integration-test-1（v0.1.0 原型起）
      由 vashyang1120/vparty-tetris@7f3388562c35ca24572b3fb8cd861f7302f81509 index.html（SHA-256 a2a50b0fa56c8210a7035a4808447d6c5743fa1d9692f80cd341bcaf6f1f9cb9）
      經 universe/tetris/tools/build_prototype.py 產生。請勿直接修改正式遊戲 Repository。 -->
 
@@ -2020,7 +2020,11 @@ function buildTetrisDailyChallengeResultSnapshot(result){
 
 function claimTetrisDailyChallengeReward(result){
   // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
-  return Promise.resolve({ status: 'notImplemented', balance: null });
+  var yyyyMMdd = getTaiwanDateKey();
+  var challenge = getTetrisDailyChallengeForDate(yyyyMMdd);
+  var completed = isTetrisDailyChallengeCompleted(challenge, buildTetrisDailyChallengeResultSnapshot(result));
+  if (completed) UniverseTetris.markDailyChallengeDone(challenge);
+  return Promise.resolve({ status: completed ? 'pending_completed' : 'not_completed', challenge: challenge, amount: 0, balance: null, notImplemented: true });
 }
 
 function buildVcoinRewardResultMessage(commonResult, challengeResult){
@@ -2060,8 +2064,10 @@ function buildVcoinRewardResultMessage(commonResult, challengeResult){
 
 function runVcoinRewardsAfterGame(result){
   // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
-  setResultVCoinMessage(UniverseTetris.resultVcoinText(), 'offline');
-  return Promise.resolve(null);
+  return claimTetrisDailyChallengeReward(result).then(function(challengeResult){
+    setResultVCoinMessage(UniverseTetris.resultVcoinText(challengeResult), 'offline');
+    return { common: null, challenge: challengeResult };
+  });
 }
 
 function loadVcoinWalletStatus(playerKey){
