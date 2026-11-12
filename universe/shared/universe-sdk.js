@@ -1,6 +1,6 @@
 /* ==========================================================
    氣球小V遊戲宇宙 — Universe SDK（三款遊戲共用）
-   universe-game-migration-v0.1.0-foundation-test-1
+   universe-game-migration-v0.2.0-three-games-integration-test-1（v0.1.0 起）
 
    一個檔案、不需打包工具：遊戲用 <script src="../shared/universe-sdk.js"> 載入，
    取得全域 window.BVUniverse；Node 測試用 require() 載入。
@@ -29,7 +29,7 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function (root) {
   "use strict";
 
-  var SDK_VERSION = "0.1.0";
+  var SDK_VERSION = "0.2.0";
   var DEFAULT_API_BASE = "https://balloon-v-universe-api.vashyang1120.workers.dev";
   var PLAYER_ID_RE = /^p_[a-z2-7]{20}$/;
   var AVATAR_KEY_RE = /^[a-z0-9_]{1,40}$/;
@@ -240,6 +240,52 @@
     };
   }
 
+  /* --- 遊戲專屬 Mock 紀錄（v0.2.0）：例如問答的科目進度、年級榜、總榜。
+         依 gameId＋集合＋playerId 分開；只存在這個分頁；每筆都標示 recordStatus "mock"、serverConfirmed false --- */
+  var COLLECTION_RE = /^[a-z0-9_\/-]{1,60}$/;
+  function mockRecordsAdapter(db, gameId, clock) {
+    function check(collection, playerId) {
+      if (!COLLECTION_RE.test(String(collection || ""))) throw UniverseError("validation", { userMessage: "測試紀錄名稱不正確" });
+      if (playerId === undefined) return null;
+      var c = classifyPlayerIdInput(playerId);
+      if (!c.ok) throw UniverseError(c.reason);
+      return c.playerId;
+    }
+    function bucket(d, collection, create) {
+      d.records = d.records || {};
+      var g = d.records[gameId] || (create ? (d.records[gameId] = {}) : null);
+      if (!g) return null;
+      return g[collection] || (create ? (g[collection] = {}) : null);
+    }
+    return {
+      mode: "mock",
+      put: function (collection, playerId, record) {
+        try {
+          var pid = check(collection, playerId);
+          var d = db.read();
+          var row = Object.assign({}, record || {}, { playerId: pid, gameId: gameId, recordStatus: "mock", serverConfirmed: false, mockSavedAt: clock() });
+          bucket(d, collection, true)[pid] = row;
+          db.write(d);
+          return Promise.resolve(JSON.parse(JSON.stringify(row)));
+        } catch (e) { return Promise.reject(e); }
+      },
+      get: function (collection, playerId) {
+        try {
+          var pid = check(collection, playerId);
+          var b = bucket(db.read(), collection, false);
+          return Promise.resolve(b && b[pid] ? b[pid] : null);
+        } catch (e) { return Promise.reject(e); }
+      },
+      list: function (collection) {
+        try {
+          check(collection);
+          var b = bucket(db.read(), collection, false) || {};
+          return Promise.resolve(Object.keys(b).map(function (k) { return b[k]; }));
+        } catch (e) { return Promise.reject(e); }
+      }
+    };
+  }
+
   /* --- V幣：Mock 錢包（只在 sandbox；用來驗證「每人每天一次＋30」契約，不是真的 V幣） --- */
   var DAILY_REWARD_AMOUNT = 30;
   function mockWalletAdapter(db, clock) {
@@ -400,6 +446,45 @@
     };
   }
 
+  /* 畫面標示：簡短、一致；Mock 一律說明「尚未記入正式排行榜」 */
+  var LABELS = {
+    statusMark: "🧪 遊戲宇宙測試版",
+    statusMarkSandbox: "🧪 遊戲宇宙測試版｜Sandbox",
+    resultNote: "本場成績尚未記入正式排行榜",
+    boardNote: "測試排行榜：只含這個分頁的測試成績，不是正式排行榜",
+    mockTag: "測試",
+    vcoinResult: "🪙 V幣：測試版不發放",
+    vcoinClosed: "未開放",
+    titlePending: "準備中",
+    dailyRewardPending: "+10 V幣待開放"
+  };
+
+  /* 極小的畫面工具（只在瀏覽器使用；Node 測試時不做任何事） */
+  var toastTimer = null;
+  var ui = {
+    toast: function (msg, ms) {
+      var d = root && root.document;
+      if (!d || !d.body) return false;
+      var el = d.getElementById("bv-toast");
+      if (!el) { el = d.createElement("div"); el.id = "bv-toast"; el.className = "bv-toast"; el.setAttribute("role", "status"); d.body.appendChild(el); }
+      el.textContent = String(msg || "");
+      el.hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { el.hidden = true; }, ms || 3200);
+      return true;
+    },
+    statusMark: function (session) {
+      var d = root && root.document;
+      if (!d) return null;
+      var el = d.createElement("span");
+      el.className = "bv-status-mark";
+      el.id = "bv-status-mark";
+      el.textContent = session && session.isSandbox ? LABELS.statusMarkSandbox : LABELS.statusMark;
+      el.title = "成績只存在這個分頁（測試資料），尚未記入正式排行榜；V幣不發放";
+      return el;
+    }
+  };
+
   /* ==========================================================
      6. 遊戲 Session：身份交接＋玩家上下文＋服務
      ========================================================== */
@@ -437,6 +522,9 @@
         : notImplementedAdapter("scores", ["submit", "listMine", "getBest"]),
       leaderboard: svc.leaderboard === "mock" ? mockLeaderboardAdapter(store, function (pid) { return profiles[pid] || null; })
         : notImplementedAdapter("leaderboard", ["getBoard"]),
+      /* 遊戲專屬 Mock 紀錄（問答的進度／年級榜／總榜）：遊戲需明確選擇 "mock" */
+      records: svc.records === "mock" ? mockRecordsAdapter(store, opts.gameId, clock)
+        : notImplementedAdapter("records", ["put", "get", "list"]),
       gameLogs: notImplementedAdapter("gameLogs", ["append", "listMine"]),
       titles: notImplementedAdapter("titles", ["listUnlocked", "unlock", "equip"]),
       avatarUnlocks: notImplementedAdapter("avatarUnlocks", ["listUnlocked", "unlock", "equipDisplay"])
@@ -454,15 +542,16 @@
       remove: function (name) { if (state.player) local.remove(playerKeyPrefix(state.player.playerId) + name); }
     };
 
-    /* 身份交接：網址 bvPlayerId → 本分頁先前的玩家 → 大廳目前玩家（同網域） */
+    /* 身份交接：網址 bvPlayerId → 大廳目前玩家（同網域） → 本分頁先前的玩家
+       v0.2.0：大廳目前玩家優先於本分頁暫存，避免大廳已切換成 B，遊戲卻沿用上一位 A */
     function readHandoff() {
       if (params.has("bvPlayerId")) return { raw: params.get("bvPlayerId"), source: "url" };
-      var tab = sess.get(TAB_KEY);
-      if (tab) return { raw: tab, source: "tabSession" };
       if (opts.allowLobbyFallback !== false) {
         var lobby = local.get(LOBBY_CURRENT_KEY);
         if (lobby) return { raw: lobby, source: "lobbyCurrent" };
       }
+      var tab = sess.get(TAB_KEY);
+      if (tab) return { raw: tab, source: "tabSession" };
       return { raw: null, source: "none" };
     }
 
@@ -531,8 +620,25 @@
       onChange: function (fn) { listeners.change.push(fn); },
       onReset: function (fn) { listeners.reset.push(fn); },
       playerStore: playerStore,
-      /* 回大廳（切換玩家請回大廳；遊戲內不建立身份） */
+      /* 回大廳（切換玩家請回大廳；遊戲內不建立身份）。
+         大廳會用自己記住的「目前玩家」（同一個 playerId）顯示，不重建玩家、不重新輸入 ID、不重選頭像 */
       lobbyUrl: function () { return (opts.lobbyUrl || "../../index.html") + (mode === "sandbox" ? "?sandbox=1" : ""); },
+      goLobby: function () { var u = this.lobbyUrl(); if (loc && typeof loc.assign === "function") loc.assign(u); else if (loc) loc.href = u; return u; },
+      /* 畫面用的簡短標示（三款遊戲共用同一套文字） */
+      labels: LABELS,
+      /* 今日挑戰：保留遊戲的完成判定，只記錄「今天完成了」（依 playerId、台灣日期）。
+         +10 V幣 屬於未來 WalletService 規則，這裡不發放、不寫入任何帳本 */
+      dailyChallenge: {
+        rewardStatus: "pending",
+        markDone: function (challengeId) {
+          if (!state.player) return false;
+          playerStore.set("dailyChallenge_" + (challengeId || "main") + "_" + taipeiDateKey(clock()), "done");
+          return true;
+        },
+        isDoneToday: function (challengeId) {
+          return playerStore.get("dailyChallenge_" + (challengeId || "main") + "_" + taipeiDateKey(clock())) === "done";
+        }
+      },
       /* 身份圖案：統一使用遊戲宇宙 assets/avatars/base/，清單以後端 active 為準 */
       avatars: {
         imageUrl: function (key) { return AVATAR_KEY_RE.test(String(key || "")) ? avatarBaseUrl + key + ".png" : ""; },
@@ -570,6 +676,8 @@
     GAME_IDS: GAME_IDS.slice(),
     DAILY_REWARD_AMOUNT: DAILY_REWARD_AMOUNT,
     ERROR_KINDS: ERROR_KINDS,
+    LABELS: LABELS,
+    ui: ui,
     UniverseError: UniverseError,
     isUniverseError: isUniverseError,
     isValidPlayerId: isValidPlayerId,

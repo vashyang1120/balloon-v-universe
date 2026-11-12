@@ -34,9 +34,15 @@ SDK 在正式模式一律回報 `NOT_IMPLEMENTED`，不會偷偷退回舊 Fireba
 - **每日獎勵：每個玩家每天最多一次 +30 V幣**，日期以 `Asia/Taipei` 計算；換遊戲不能再領。
 - 每日領取必須在後端做**原子性＋防重複**；遊戲前端不得改寫餘額。
 
-### 2.2 舊系統的其他 V幣來源（需要決定是否保留）
-方塊／節奏／問答「今日挑戰」各 +10（見 GAME-INVENTORY.md）。本版**不改動**這些規則，只記錄；
-是否在新後端保留、金額多少，需要使用者決定。
+### 2.2 今日挑戰 +10（**待定項目**，等待正式 WalletService 階段決議）
+舊系統：方塊／節奏／問答「今日挑戰」各 +10（見 GAME-INVENTORY.md）。發放限制（每款各一次？跨遊戲合計？金額？）**使用者尚未最終確認**。
+
+v0.2.0 的實際做法（三款一致）：
+- **保留今日挑戰玩法與原版完成判定**（方塊 `isTetrisDailyChallengeCompleted`、節奏「完成任一首歌」、問答 `isRecordMatchingDailyChallenge`，函式未修改）。
+- 完成時只記錄「今天完成了」：SDK `session.dailyChallenge.markDone(id)`，依 playerId＋台灣日期存在本機，換玩家不共用、隔天重置。
+- **不發放 +10 V幣**、不寫任何帳本；畫面顯示「+10 V幣待開放」。`session.dailyChallenge.rewardStatus = "pending"`。
+- 未來 WalletService 若決定保留，提議介面：`POST /v1/rewards/daily-challenge { playerId, gameId, dateKey, submissionId }`，
+  由後端依**已接受**的成績重新判定是否完成，再原子性發放（前端回報的「完成」不能直接當成發放依據）。
 
 ### 2.3 提議 API
 
@@ -149,6 +155,8 @@ GET /v1/leaderboards/quiz/main?limit=30
 3. **主榜 main**：`totalScore = low + middle + high 三個年級的 gradeTotalScore 加總`（只加有完成科目的年級）；
    `gradeSummary = { low, middle, high }`、`completedGrades`（原版 `buildMainRecordFromGradeRecords`）。
 4. 新系統差異只有：歸屬改用 playerId、由後端在成績被接受後計算（前端不再自己寫三層資料）。
+   v0.2.0 宇宙版：在 **Mock** 上直接呼叫原版這三個函式（未修改，SHA-256 鎖定）計算，存在 SDK `services.records`
+   （集合 `progress`／`board-low`／`board-middle`／`board-high`／`board-main`／`academy`，依 playerId 分開、只存在分頁內、標示 `recordStatus: "mock"`）。
 5. 舊資料不遷移；新榜從新紀錄開始累積。
 
 ## 6. 遊戲紀錄（GameLogService）與管理匯出
@@ -167,6 +175,26 @@ GET /v1/leaderboards/quiz/main?limit=30
 | TitleService | listUnlocked／unlock／equip | 稱號由後端依已接受成績授予；遊戲不得自行寫入 |
 | AvatarUnlockService | listUnlocked／unlock／equipDisplay | 展示頭像只影響外觀；不可改變身份（baseAvatarKey） |
 | GameLogService | append／listMine | 見第 6 節 |
+
+## 7.1 題目修正（QuestionOverrideService）— v0.2.0-test-2 已同步（4 筆）
+
+- 原版：管理後台把「已核准的題目修正」寫在舊 Firebase `quizQuestionOverrides/{questionId}`，欄位只有
+  `disabled`、`active`、`quality`、`reviewNote`、`reason`、`updatedAt`、`updatedBy`（只能停用／標記題目，**不改題目文字**）。
+  遊戲以 `applyQuestionOverrides` 合併、`isQuestionEnabled` 過濾（`disabled === true`、`active === false`、`quality === "disabled"` 的題目不出題）。
+- 宇宙版不得讀舊 Firebase → 改讀**唯讀靜態檔** `universe/quiz/approved-question-overrides.json`：
+  `{ schema: "bv-quiz-question-overrides-v1", status: "exported", allowedFields, source: { type, node, count, sha256 }, overrides: { 題目ID: { disabled?, active?, quality? } } }`。
+  套用規則與原版完全相同（函式未修改）；一般玩家無法修改。
+- **公開資料最小化**：原版 `isQuestionEnabled` 只看 `disabled`、`active`、`quality`，公開檔只保留這三個欄位；
+  `reviewNote`（管理備註）、`reason`、`updatedAt`、`updatedBy`（管理帳號）只屬後台，匯入工具與遊戲都會丟棄，不公開。
+  （這些欄位在原版只用於後台題目管理畫面，不影響出題。）匯出原檔不提交到 GitHub。
+- 2026-11-12 已同步：`brain_low_021`、`brain_low_030`、`brain_middle_012`、`brain_middle_027`，皆 `disabled: true`、`quality: "disabled"`。
+  `universe/quiz/tests/quiz-question-overrides.test.mjs` 會在修正檔遺失、退回 not_exported、少題、混入後台資訊時失敗。
+- 日後新增或撤回修正：
+  1. 管理者在 Firebase Console 對 `quizQuestionOverrides` 節點按「匯出 JSON」（唯讀、不需金鑰），交給 Claude 以
+     `universe/quiz/tools/import_question_overrides.py` 轉入（檢查題目 ID 與欄位型別、只保留出題判定欄位；有問題就停止）。
+     同時更新測試中的已核准清單。
+  2. 未來新後端提供唯讀 `GET /v1/quiz/question-overrides`（資料放新 Firebase，只有管理員可寫）。
+- 題目修正功能**沒有取消**：未來共用管理後台要能新增／撤回修正，並保留 `updatedBy`／`updatedAt` 稽核紀錄。
 
 ## 8. 錯誤分類（SDK 統一）
 

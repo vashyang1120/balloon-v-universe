@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<!-- 遊戲宇宙版 universe-game-migration-v0.2.0-three-games-integration-test-1
+     由 vashyang1120/vparty-quiz-game@93df14f2ca3e19f7ebd34309548df7f65aa84967 index.html（SHA-256 b82b88cd7657ac52433e72773b50704cde60c47dad5ddb4523bfa5a70fea885e）產生 -->
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+  <title>小V知識挑戰｜遊戲宇宙版（測試）</title>
+  <!-- [Universe 換殼] 不再載入 Firebase SDK；改用遊戲宇宙共用 SDK（唯讀玩家資料；成績只進 Mock） -->
+  <script src="../shared/universe-sdk.js"></script>
+  <script src="universe-shell.js"></script>
+  <link rel="stylesheet" href="../shared/universe-ui.css">
+  <link rel="stylesheet" href="./style.css?v=quiz-v0.2.44">
+  <link rel="stylesheet" href="universe-shell.css">
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo-bubble">🎈</div>
+        <div>
+          <h1 id="quiz-logo-title">小V知識挑戰</h1>
+          <p>quiz-v0.2.44</p>
+        </div>
+      </div>
+      <div id="top-player-card" class="player-chip" role="button" tabindex="0" title="開啟玩家設定">
+        <img id="top-avatar" alt="玩家頭像">
+        <div>
+          <strong id="top-name">玩家</strong>
+          <span id="top-player-key">尚未設定身份</span>
+          <span id="top-player-title" class="title-chip-inline">稱號：未裝備</span>
+          <span id="top-vcoin-balance" class="wallet-chip-inline">🪙 V幣：—</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section id="screen-title" class="screen active">
+        <div class="hero-card brand-hero-card">
+          <div class="hero-brand-layout">
+            <div class="hero-copy">
+              <div class="hero-deco">🎈📚✨</div>
+              <h2>V學園 Quiz Show</h2>
+              <p>小V主持開問！每題 15 秒限時挑戰，答對累積魔法氣球，連續答對還有 combo 加成。</p>
+            </div>
+            <div class="hero-host-stage">
+              <div class="hero-host-badge">🎤 小V主持人</div>
+              <img id="home-host-image" class="hero-host-image" src="" alt="小V主持人主視覺">
+              <div class="hero-host-note">歡迎來到小V知識挑戰！準備和小V一起累積 V學園知識力吧！</div>
+            </div>
+          </div>
+          <div id="academy-card" class="academy-card compact academy-student-card">
+            <div class="academy-head">
+              <div>
+                <strong>🎓 V學園成績單</strong>
+                <small id="academy-title">V學園新生</small>
+              </div>
+              <span id="academy-updated">尚未載入</span>
+            </div>
+            <div class="academy-power academy-power-hero">
+              <span>知識力</span>
+              <strong id="academy-power">0</strong>
+              <em>Quiz Power</em>
+            </div>
+            <div class="academy-mini-grid">
+              <div><span>已挑戰</span><strong id="academy-completed">0 / 24</strong></div>
+              <div><span>滿分科目</span><strong id="academy-perfect">0</strong></div>
+              <div><span>累積答對</span><strong id="academy-correct">0</strong></div>
+            </div>
+            <div class="academy-grade-lines academy-progress-lines">
+              <div class="academy-grade-row">
+                <div class="academy-grade-top"><span>🌱 低年級</span><strong id="academy-low">0 / 8｜滿分 0</strong></div>
+                <div class="academy-bar"><i id="academy-low-bar"></i></div>
+              </div>
+              <div class="academy-grade-row">
+                <div class="academy-grade-top"><span>🌟 中年級</span><strong id="academy-middle">0 / 8｜滿分 0</strong></div>
+                <div class="academy-bar"><i id="academy-middle-bar"></i></div>
+              </div>
+              <div class="academy-grade-row">
+                <div class="academy-grade-top"><span>🔥 高年級</span><strong id="academy-high">0 / 8｜滿分 0</strong></div>
+                <div class="academy-bar"><i id="academy-high-bar"></i></div>
+              </div>
+            </div>
+            <img id="academy-host-image" class="academy-mascot" src="" alt="小V角色裝飾">
+          </div>
+
+
+
+          <div id="daily-challenge-card" class="daily-challenge-card">
+            <div class="daily-challenge-main">
+              <div class="daily-challenge-icon">🎯</div>
+              <div>
+                <strong id="daily-challenge-title">今日挑戰</strong>
+                <p id="daily-challenge-desc">今日挑戰載入中...</p>
+                <small id="daily-challenge-status">完成今日指定挑戰可領 +10 V幣。</small>
+              </div>
+            </div>
+            <button id="btn-daily-challenge" class="btn secondary small" type="button">開始今日挑戰</button>
+          </div>
+
+          <div class="actions">
+            <button id="btn-go-profile" class="btn primary">👤 玩家設定</button>
+            <button id="btn-go-setup" class="btn secondary">🎮 開始挑戰</button>
+            <button id="btn-go-leaderboard" class="btn ghost">🏆 排行榜</button>
+            <button id="btn-music-title" class="btn ghost">🎵 音樂</button>
+            <button id="btn-game-menu" class="btn ghost">🏠 遊戲選單</button>
+          </div>
+          <div class="notice">
+            每日首次完成任一遊戲可獲得 V幣；本版為問答遊戲每日 V幣獎勵測試版。
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-profile" class="screen">
+        <div class="panel wide">
+          <h2>玩家設定</h2>
+          <p class="muted">ID + 身份頭像就像遊戲身分證，會決定成績、解鎖和排行榜歸在哪一個玩家身上；只要更換 ID 或身份頭像，就會變成另一個玩家身份。顯示頭像只是外觀造型，不會影響成績。</p>
+
+          <label class="field profile-id-field">
+            <span>玩家 ID</span>
+            <input id="player-id-input" maxlength="16" placeholder="輸入玩家 ID">
+          </label>
+
+          <div class="profile-preview-grid">
+            <div class="avatar-box">
+              <h3>🔑 身份頭像</h3>
+              <img id="base-avatar-preview" alt="身份頭像">
+              <p>遊戲身分證：ID + 身份頭像決定成績與解鎖歸屬</p>
+              <button id="btn-pick-base" class="btn ghost small" type="button">選身份頭像</button>
+            </div>
+            <div class="avatar-box">
+              <h3>🎨 顯示頭像</h3>
+              <img id="display-avatar-preview" alt="顯示頭像">
+              <p>外觀造型：只改畫面顯示</p>
+              <button id="btn-pick-display" class="btn ghost small" type="button">選顯示頭像</button>
+            </div>
+          </div>
+
+          <div id="profile-data-card" class="profile-data-card">
+            <button id="profile-data-toggle" class="profile-data-toggle" type="button" aria-expanded="true">
+              <span>👤 玩家資料</span>
+              <em id="profile-data-toggle-hint">點擊可收合</em>
+            </button>
+            <div id="profile-data-content" class="profile-data-content">
+              <div class="profile-status-grid">
+                <div class="identity-box">
+                  <div>目前遊戲身份：</div>
+                  <strong id="profile-identity-label">身份：—</strong>
+                  <code id="profile-player-key">—</code>
+                </div>
+                <div class="profile-wallet-box">
+                  <span>🪙 目前 V幣</span>
+                  <strong id="profile-vcoin-balance">—</strong>
+                </div>
+                <div class="profile-title-panel">
+                  <div class="profile-title-current">
+                    <span>🎖 目前稱號</span>
+                    <strong id="profile-equipped-title">未裝備</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="avatar-picker" class="avatar-picker hidden">
+            <div class="picker-head">
+              <strong id="avatar-picker-title">選擇頭像</strong>
+              <button id="btn-close-picker" class="btn ghost tiny" type="button">關閉</button>
+            </div>
+            <div id="avatar-grid" class="avatar-grid"></div>
+          </div>
+
+          <div id="profile-title-collection" class="profile-title-collection hidden">
+            <div class="picker-head">
+              <strong>🎖 稱號收藏</strong>
+              <button id="btn-close-title-collection" class="btn ghost tiny" type="button">關閉</button>
+            </div>
+            <div id="profile-title-list" class="title-list">尚未解鎖稱號</div>
+          </div>
+
+          <div class="profile-floating-actions">
+            <button id="btn-save-profile" class="btn primary" type="button">🎈 確認身份</button>
+            <button id="btn-profile-avatar-collection" class="btn ghost small" type="button">🏆 頭像收藏</button>
+            <button id="btn-title-collection" class="btn ghost small" type="button">🎖 稱號收藏</button>
+            <button id="btn-profile-back" class="btn ghost small" type="button">回首頁</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-setup" class="screen">
+        <div class="panel wide">
+          <h2>選擇挑戰內容</h2>
+          <p class="muted">本版每局 10 題，每題 15 秒限時；時間到會自動判定答錯。</p>
+
+          <h3>年級區間</h3>
+          <div id="grade-options" class="option-grid"></div>
+
+          <h3>科目</h3>
+          <div id="subject-options" class="option-grid subject-grid"></div>
+
+          <div class="setup-summary">
+            <span id="question-count-hint">題庫載入中...</span>
+          </div>
+
+          <div class="actions">
+            <button id="btn-start-quiz" class="btn primary">開始 10 題挑戰</button>
+            <button id="btn-setup-back" class="btn ghost">回首頁</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-quiz" class="screen">
+        <div class="quiz-shell">
+          <div class="quiz-hud show-hud">
+            <div><span>題數</span><strong id="hud-progress">1 / 10</strong></div>
+            <div><span>分數</span><strong id="hud-score">0</strong></div>
+            <div><span>Combo</span><strong id="hud-combo">0</strong></div>
+            <div><span>總時間</span><strong id="hud-time">0s</strong></div>
+            <button id="btn-sound-toggle" class="sound-toggle" type="button">🔊 音效</button>
+            <button id="btn-pause-quiz" class="pause-toggle" type="button">⏸ 暫停</button>
+            <div class="music-mini quiz-music-mini">
+              <div class="mini-title" id="mini-title">🎵 音樂載入中</div>
+              <div class="mc-row">
+                <button class="mc-btn" id="mc-prev" type="button">⏮</button>
+                <button class="mc-btn" id="mc-play" type="button">▶</button>
+                <button class="mc-btn" id="mc-next" type="button">⏭</button>
+                <button class="mc-btn" id="mc-list" type="button">☰</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="host-card brand-host-card" id="host-card">
+            <div class="host-avatar host-avatar-image">
+              <img id="host-image" src="" alt="小V主持人">
+            </div>
+            <div class="host-lines">
+              <strong>🎤 小V主持人</strong>
+              <span id="host-message">歡迎來到 V學園 Quiz Show！</span>
+            </div>
+          </div>
+
+          <div id="mobile-host-sticker" class="mobile-host-sticker" aria-hidden="true">
+            <img id="mobile-host-image" src="" alt="小V主持人浮動貼紙">
+          </div>
+
+          <div class="timer-card" id="timer-card">
+            <div class="timer-top"><span>⏱ 本題倒數</span><strong id="question-timer-text">15</strong></div>
+            <div class="timer-track"><i id="question-timer-bar"></i></div>
+          </div>
+
+          <div class="question-card show-card">
+            <div class="question-meta">
+              <span id="q-subject">數學</span>
+              <span id="q-grade">低年級</span>
+              <span id="q-difficulty">★</span>
+            </div>
+            <h2 id="question-text">題目載入中...</h2>
+            <div id="choices" class="choices"></div>
+            <div id="explanation-box" class="explanation hidden">
+              <strong id="answer-result">答題結果</strong>
+              <p id="explanation-text"></p>
+              <button id="btn-next-question" class="btn primary">下一題</button>
+            </div>
+          </div>
+
+          <div id="quiz-pause-overlay" class="quiz-pause-overlay hidden" role="dialog" aria-modal="true" aria-label="挑戰暫停">
+            <div class="pause-panel">
+              <img id="pause-host-image" class="pause-host-image" src="" alt="暫停中的小V主持人">
+              <div class="pause-copy">
+                <strong>⏸ 挑戰暫停</strong>
+                <p>題目已遮住，倒數已停止。準備好後再繼續挑戰！</p>
+              </div>
+              <div class="pause-actions">
+                <button id="btn-resume-quiz" class="btn primary" type="button">▶ 繼續挑戰</button>
+                <button id="btn-pause-quit" class="btn ghost" type="button">🏠 離開本局</button>
+              </div>
+            </div>
+          </div>
+
+          <button id="btn-quit-quiz" class="btn ghost small">離開挑戰</button>
+        </div>
+      </section>
+
+      <section id="screen-result" class="screen">
+        <div class="panel result-panel">
+          <div class="result-emoji" id="result-emoji">🎈</div>
+          <img id="result-host-image" class="result-host-image" src="" alt="小V主持人">
+          <h2 id="result-title">挑戰完成！</h2>
+          <div class="result-stats">
+            <div><span>分數</span><strong id="result-score">0</strong></div>
+            <div><span>答對題數</span><strong id="result-correct">0 / 10</strong></div>
+            <div><span>正確率</span><strong id="result-accuracy">0%</strong></div>
+            <div><span>最大 Combo</span><strong id="result-max-combo">0</strong></div>
+            <div><span>使用時間</span><strong id="result-time">0s</strong></div>
+          </div>
+          <div id="result-unlock-banner" class="unlock-banner hidden">
+            <div class="unlock-spark">🎁</div>
+            <div>
+              <strong id="unlock-title">新頭像解鎖！</strong>
+              <p id="unlock-message">你解鎖了新的顯示頭像。</p>
+            </div>
+          </div>
+          <div id="result-vcoin-banner" class="vcoin-banner hidden">
+            <div class="vcoin-spark">🪙</div>
+            <div>
+              <strong id="vcoin-title">V幣獎勵</strong>
+              <p id="vcoin-message">每日獎勵確認中...</p>
+            </div>
+          </div>
+
+          <div id="result-daily-challenge-banner" class="daily-result-banner hidden">
+            <div class="daily-result-spark">🎯</div>
+            <div>
+              <strong id="daily-result-title">今日挑戰完成！</strong>
+              <p id="daily-result-message">你完成了今日指定挑戰。</p>
+            </div>
+          </div>
+          <div id="result-badge-banner" class="badge-banner hidden">
+            <div class="badge-spark">🏅</div>
+            <div>
+              <strong id="badge-unlock-title">新徽章解鎖！</strong>
+              <p id="badge-unlock-message">你解鎖了新的 V學園稱號。</p>
+            </div>
+          </div>
+          <div id="save-status" class="save-status">準備寫入紀錄...</div>
+          <div id="result-academy-progress" class="academy-result hidden">
+            <strong>🎓 V學園進度更新</strong>
+            <div id="result-academy-lines">準備更新...</div>
+          </div>
+          <div class="actions">
+            <button id="btn-play-again" class="btn primary">再挑戰一次</button>
+            <button id="btn-result-leaderboard" class="btn secondary">看排行榜</button>
+            <button id="btn-result-home" class="btn ghost">回首頁</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-leaderboard" class="screen">
+        <div class="panel wide">
+          <h2>排行榜</h2>
+          <div class="leaderboard-brand">
+            <img id="leaderboard-brand-image" class="leaderboard-brand-image" src="" alt="小V主持人">
+            <div class="leaderboard-brand-copy">
+              <strong>🎤 小V排行榜舞台</strong>
+              <span>看看誰是目前 V學園的知識挑戰王！</span>
+            </div>
+          </div>
+          <p id="leaderboard-desc" class="muted">三個年級總分加總的綜合榜。</p>
+          <div class="lb-tabs">
+            <button class="btn ghost small active" data-lb-mode="main">🏆 總榜</button>
+            <button class="btn ghost small" data-lb-mode="low">🌱 低年級榜</button>
+            <button class="btn ghost small" data-lb-mode="middle">🌟 中年級榜</button>
+            <button class="btn ghost small" data-lb-mode="high">🔥 高年級榜</button>
+          </div>
+          <div id="leaderboard-list" class="leaderboard-list">載入中...</div>
+          <div class="lb-floating-actions">
+            <button id="btn-refresh-leaderboard" class="btn btn-outline" type="button">🔄 重新整理</button>
+            <button id="btn-leaderboard-back" class="btn btn-outline" type="button">🏠 回首頁</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-admin" class="screen">
+        <div class="panel wide admin-panel">
+          <div class="admin-head">
+            <div>
+              <h2>⚙ 問答後台管理</h2>
+              <p class="muted">查看最近問答紀錄、題目品質統計與匯出資料。這裡是管理者資訊，不會顯示給一般玩家。</p>
+            </div>
+            <div class="admin-head-actions">
+              <button id="btn-admin-refresh" class="btn secondary small" type="button">🔄 重新整理</button>
+              <button id="btn-admin-out" class="btn ghost small" type="button">回首頁</button>
+            </div>
+          </div>
+
+          <div class="admin-stat-grid">
+            <div class="admin-stat"><span>總紀錄數</span><strong id="adm-total">—</strong></div>
+            <div class="admin-stat"><span>玩家身份數</span><strong id="adm-identities">—</strong></div>
+            <div class="admin-stat"><span>最高分</span><strong id="adm-topscore">—</strong></div>
+            <div class="admin-stat"><span>今日挑戰</span><strong id="adm-today">—</strong></div>
+          </div>
+
+          <div class="admin-card admin-health-card">
+            <div class="admin-card-head">
+              <strong>🧭 版本與資料健康狀態</strong>
+              <span>管理者快速檢查，不顯示給一般玩家</span>
+            </div>
+            <div class="admin-health-grid">
+              <div><span>目前版本</span><strong id="adm-health-version">—</strong></div>
+              <div><span>Firebase</span><strong id="adm-health-firebase">檢查中</strong></div>
+              <div><span>題目覆寫</span><strong id="adm-health-overrides">—</strong></div>
+              <div><span>數學模板</span><strong id="adm-health-templates">—</strong></div>
+              <div><span>gameLogs 索引</span><strong id="adm-health-index">建議補上</strong></div>
+            </div>
+            <div class="admin-note-box">
+              <strong>Firebase rules 建議：</strong>
+              <code>gameLogs/quiz .indexOn: ["playerKey"]</code>
+              <small>這是效能優化，用於依玩家身份重建 V學園進度；不影響目前功能成功與否。</small>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <div class="admin-card-head">
+              <strong>📚 題目品質統計</strong>
+              <span id="adm-question-summary">題庫載入中...</span>
+            </div>
+            <div class="admin-quality-grid">
+              <div><span>總題數</span><strong id="adm-q-total">—</strong></div>
+              <div><span>啟用題</span><strong id="adm-q-enabled">—</strong></div>
+              <div><span>停用題</span><strong id="adm-q-disabled">—</strong></div>
+              <div><span>待檢查</span><strong id="adm-q-review">—</strong></div>
+            </div>
+            <div id="adm-question-groups" class="admin-group-list"></div>
+          </div>
+
+
+          <div class="admin-card">
+            <div class="admin-card-head">
+              <strong>🛠 題目管理</strong>
+              <span>停用 / 恢復題目會寫入 Firebase 覆寫表，不會直接改 quiz_questions.json</span>
+            </div>
+            <div class="admin-question-tools">
+              <select id="adm-q-grade-filter" aria-label="年級篩選">
+                <option value="all">全部年級</option>
+                <option value="low">低年級</option>
+                <option value="middle">中年級</option>
+                <option value="high">高年級</option>
+              </select>
+              <select id="adm-q-subject-filter" aria-label="科目篩選">
+                <option value="all">全部科目</option>
+              </select>
+              <input id="adm-q-search" type="search" placeholder="搜尋題目 / 解析 / ID">
+              <label class="admin-check"><input id="adm-q-only-disabled" type="checkbox"> 只看停用</label>
+              <button id="btn-admin-q-export-csv" class="btn secondary tiny" type="button">📚 匯出題目 CSV</button>
+            </div>
+            <div id="adm-q-manage-count" class="muted">尚未載入題目</div>
+            <div id="adm-q-manage-list" class="admin-question-list"></div>
+          </div>
+
+          <div class="admin-card">
+            <div class="admin-card-head">
+              <strong>📝 最近問答紀錄</strong>
+              <span id="adm-log-count">尚未載入</span>
+            </div>
+            <div class="admin-toolbar">
+              <button class="btn ghost tiny active" data-admin-sort="time_desc" type="button">最新→最舊</button>
+              <button class="btn ghost tiny" data-admin-sort="score_desc" type="button">分數高→低</button>
+              <button class="btn ghost tiny" data-admin-sort="time_asc" type="button">最舊→最新</button>
+              <button id="btn-admin-export" class="btn secondary tiny" type="button">📥 匯出 JSON</button>
+              <button id="btn-admin-export-csv" class="btn secondary tiny" type="button">📊 匯出 CSV</button>
+            </div>
+            <div id="adm-log-list" class="admin-log-list">載入中...</div>
+          </div>
+
+          <div class="admin-card">
+            <div class="admin-card-head"><strong>🔐 更改後台密碼</strong><span>密碼只儲存在本機瀏覽器</span></div>
+            <div class="admin-password-row">
+              <input id="adm-pw1" type="password" maxlength="20" placeholder="新密碼">
+              <input id="adm-pw2" type="password" maxlength="20" placeholder="確認新密碼">
+              <button id="btn-admin-pw" class="btn primary small" type="button">更改</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+
+    <div id="music-modal" class="music-modal">
+      <div class="mp">
+        <div class="mp-head">
+          <div class="mp-ttl">🎵 音樂播放器</div>
+          <button class="mp-x" id="mp-close" type="button">✕</button>
+        </div>
+        <div class="mp-now">
+          <div class="mp-disc" id="mp-disc">🎈</div>
+          <div class="mp-nt" id="mp-nt">— 尚未播放 —</div>
+          <div class="mp-ar" id="mp-ar">氣球小V</div>
+        </div>
+        <div class="mp-prog-row">
+          <div class="mp-time" id="mp-cur">0:00</div>
+          <div class="mp-prog" id="mp-prog"><div class="mp-prog-fill" id="mp-fill"></div></div>
+          <div class="mp-time" id="mp-dur">0:00</div>
+        </div>
+        <div class="mp-ctrl">
+          <button class="mpb sm" id="mp-loop" type="button">🔁</button>
+          <button class="mpb sm" id="mp-prev2" type="button">⏮</button>
+          <button class="mpb lg" id="mp-play2" type="button">▶</button>
+          <button class="mpb sm" id="mp-next2" type="button">⏭</button>
+          <button class="mpb sm" id="mp-shuf" type="button">🔀</button>
+        </div>
+        <div class="mp-vol-row">
+          <span>🔈</span>
+          <input type="range" class="mp-vol" id="mp-vol" min="0" max="100" value="10">
+          <span>🔊</span>
+          <div class="mp-badge" id="mp-badge">全部循環</div>
+        </div>
+        <div class="mp-list-hd">播放清單｜來源：節奏遊戲 songs.json</div>
+        <div class="mp-list" id="mp-list"></div>
+      </div>
+    </div>
+
+
+
+    <div id="admin-pwd-modal" class="admin-pwd-modal" aria-hidden="true">
+      <div class="admin-pwd-card" role="dialog" aria-modal="true" aria-label="後台密碼">
+        <h2>🔐 後台管理</h2>
+        <p>請輸入問答遊戲後台密碼。</p>
+        <input id="admin-pwd-input" type="password" maxlength="20" placeholder="輸入密碼">
+        <div id="admin-pwd-error" class="admin-pwd-error hidden">密碼錯誤，請再試一次。</div>
+        <div class="actions">
+          <button id="btn-admin-pwd-ok" class="btn primary small" type="button">確認</button>
+          <button id="btn-admin-pwd-cancel" class="btn ghost small" type="button">取消</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+    <button id="fs-btn" title="全螢幕" type="button">⛶</button>
+  </div>
+
+  <script src="./main.js?v=quiz-v0.2.44-universe-0.2.0"></script>
+</body>
+</html>

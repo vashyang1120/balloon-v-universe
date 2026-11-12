@@ -302,7 +302,8 @@
     launchUrl: function (player, gameId) {
       var url = P.gameUrls[gameId];
       if (!url || !player) return "";
-      return url + "?bvPlayerId=" + encodeURIComponent(player.playerId);
+      // Sandbox 大廳進入的遊戲也維持 Sandbox（只讀分頁內模擬玩家，不連 API）
+      return url + "?bvPlayerId=" + encodeURIComponent(player.playerId) + (SANDBOX ? "&sandbox=1" : "");
     },
     /* 給未來 iframe 整合用：只送到指定 origin，不用 "*" */
     postToFrame: function (frameWindow, targetOrigin, player, gameId) {

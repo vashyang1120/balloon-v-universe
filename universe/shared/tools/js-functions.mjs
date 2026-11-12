@@ -79,6 +79,12 @@ export function bodyMarkup(html) {
   return m ? m[1] : "";
 }
 
+/* 程式放在外部檔案的遊戲（知識挑戰）：<body> 到第一個 <script src= 之前 */
+export function externalBodyMarkup(html) {
+  const m = html.match(/<body[^>]*>([\s\S]*?)<script src=/);
+  return m ? m[1] : "";
+}
+
 /* 去掉所有具名函式後剩下的頂層程式（常數、方塊表、音效表、事件綁定…），逐行（去掉行尾空白與空行） */
 export function residueLines(source) {
   const parts = extractFunctions(source).sort((a, b) => a.index - b.index);
@@ -86,4 +92,15 @@ export function residueLines(source) {
   for (const f of parts) { if (f.index < last) continue; out += source.slice(last, f.index); last = f.index + f.text.length; }
   out += source.slice(last);
   return out.split("\n").map((l) => l.trimEnd()).filter((l) => l.trim() !== "");
+}
+
+/* 把換殼對單一函式做的「小修改」還原，用來證明：除了列出的那幾行，函式其餘部分與原版逐字相同。
+   lineReps：[[換殼後的整行, 原版整行], …]；守門行（函式開頭單獨一行、以 // [Universe 換殼] 結尾）一律移除。 */
+export function revertShellEdits(text, lineReps = []) {
+  let t = text;
+  for (const [now, orig] of lineReps) {
+    if (!t.includes(now)) throw new Error("找不到換殼修改行：" + now.slice(0, 60));
+    t = t.replace(now, orig);
+  }
+  return t.replace(/\{\n  [^\n]*  \/\/ \[Universe 換殼\](?=\n)/, "{");
 }

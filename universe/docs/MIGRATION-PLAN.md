@@ -47,7 +47,7 @@
 
 ---
 
-## B. 節奏遊戲（v0.2 預定）
+## B. 節奏遊戲（v0.2.0 已完成 → universe/rhythm/；實際修改清單見 V0.2.0-INTEGRATION.md）
 
 檔案：`vparty-rhythm-game/index.html`（commit 9caa7dc）。`tools/beatmap-editor/`、`songs/`、`songs.json` **不修改、不複製**（原型以絕對網址讀取）。
 
@@ -66,11 +66,11 @@
 | `vparty_admin.html`、`admin-unlock.html`、`adminClearAll`、`adminDeleteScore`、`adminMigrateScores`、`checkAdminPw`… | 前端管理 | 不納入換殼版（未來共用管理後台） | 降低 | 管理入口不存在 |
 | `endGame`、音符判定、`finishHold`、`addScore`、`G`、beatmap 讀取、SRT、影片 | 遊戲核心 | **不修改**（完整性測試鎖定） | — | 玩法等價：同一 beatmap、同一輸入時間序列 → 相同 perfect／good／miss／score／grade |
 
-特別注意：節奏判定依賴時間；等價測試需用 Playwright 時鐘控制（`page.clock`）＋固定輸入時間表。
+特別注意：節奏判定依賴時間。v0.2.0 等價測試以「虛擬音訊時鐘」（取代 AudioContext.currentTime 與 requestAnimationFrame）＋依 Beatmap 產生的固定輸入時間表進行，原版與宇宙版逐步比對。
 
 ---
 
-## C. 知識挑戰（v0.2 預定）
+## C. 知識挑戰（v0.2.0 已完成 → universe/quiz/；題目修正已於 test-2 同步，見 DATA-CONTRACTS.md 7.1）
 
 檔案：`vparty-quiz-game/main.js`、`index.html`（commit 93df14f）。**正式題庫 `quiz_questions.json` 不修改**（原型以相對路徑或絕對網址唯讀載入）。
 
@@ -80,7 +80,7 @@
 | `loadPlayerLocal`、`savePlayerLocal`、`hasConfirmedQuizProfile`、`buildAvatarPicker`、`getIdentityChangeWarningText` | 本機 vquiz_*、建立身份 | SDK playerId；唯讀角色設定 | 中 | 身份顯示 |
 | `ensurePlayerProfile`、`writePlayerProfileCurrent`、`buildCurrentProfilePayload` | 寫 profile | 不寫 | 低 | 資料庫無變動 |
 | `ensureXiaovBaseCatalog`、`unlockXiaovBaseAfterGameComplete`、`loadAvatarCatalog`、`loadUnlockedAvatars` | 前端寫 avatarCatalog 與解鎖 | 準備中 | 降低（原本前端寫目錄） | 不寫入 |
-| `loadQuestionOverrides` | 讀 quizQuestionOverrides | v0.2：不讀（使用正式題庫原樣）；未來改共用後端唯讀 API | 低：題目修正暫時不生效 → 需使用者確認 | 題目與答案和正式題庫一致 |
+| `loadQuestionOverrides` | 讀 quizQuestionOverrides | v0.2.0：改讀唯讀公開檔 `approved-question-overrides.json`（test-2 已同步 4 筆，只含出題判定欄位）；套用規則不變 | 低 | 四題停用、正常遊戲抽不到；修正檔退化時測試失敗 |
 | `loadWalletBalance`、`claimDailyAnyGameReward`、`applyVCoinEarnTransaction`、`saveDailyChallengeCompletion`、`loadDailyChallengeStatus` | 前端 transaction 發 V幣 | 未開放 | **高** | 結算訊息 |
 | `loadQuizTitleData`、`equipQuizTitle`、`unlockQuizBadgeAndTitle`、`checkAndUnlockQuizBadges`、`syncLeaderboardTitleSnapshot` | 稱號徽章 | 準備中 | 低 | 準備中 |
 | `saveQuizResult`、`buildQuizRecord`、`saveGameLog`、`saveLocalLog` | 寫 gameLogs、本機紀錄 | Mock ScoreService（gradeBand、subject、score、correctCount、totalQuestions、maxCombo、accuracy、timeUsedTotal、usedQuestionIds、answers）；本機紀錄依 playerId | **高** | Mock 紀錄欄位 |
@@ -110,4 +110,5 @@
 3. **全域函式覆寫**：換殼依賴原版函式皆為全域。未來若正式版改成模組化，建置腳本會因「命中 0 次」而停止（這是保護，不會默默改錯）。
 4. **Mock 只在分頁內**：測試者換分頁或關閉分頁，Mock 成績就消失（這是刻意的，避免被誤認為正式成績）。
 5. **原版本身的問題**（不在本次修正範圍）：前端 V幣 transaction、寫死管理 PIN／預設密碼、排行榜 XSS、問答讀取全部 gameLogs（見 LEGACY-FIREBASE-PATHS.md）。
-6. **今日挑戰 +10 的去留**尚未決定（見 DATA-CONTRACTS.md 2.2）。
+6. **今日挑戰 +10 的去留**尚未決定（見 DATA-CONTRACTS.md 2.2）；v0.2.0 保留玩法與完成判定、不發放。
+7. **題目修正改為靜態公開檔**：後台新增／撤回修正後，需要重新匯出並匯入（見 DATA-CONTRACTS.md 7.1），直到新後端提供唯讀 API。

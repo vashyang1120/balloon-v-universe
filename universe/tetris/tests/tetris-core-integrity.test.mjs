@@ -11,7 +11,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { inlineScripts, extractFunctions, sha256, styleBlock, bodyMarkup, residueLines } from "../tools/js-functions.mjs";
+import { inlineScripts, extractFunctions, sha256, styleBlock, bodyMarkup, residueLines } from "../../shared/tools/js-functions.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DIR = path.resolve(HERE, "..");

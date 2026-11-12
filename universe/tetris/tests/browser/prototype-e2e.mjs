@@ -102,7 +102,8 @@ const text = (page, sel) => page.locator(sel).first().innerText().catch(() => ""
     name: document.getElementById("top-name").textContent, key: document.getElementById("top-player-key").textContent,
     wallet: document.getElementById("top-vcoin-balance").textContent, title: document.getElementById("top-player-title").textContent,
     avSrc: document.getElementById("top-avatar").getAttribute("src"), avW: document.getElementById("top-avatar").naturalWidth,
-    pid: PLAYER.playerId, pkey: PLAYER.playerKey, banner: document.getElementById("bv-test-banner") && document.getElementById("bv-test-banner").textContent
+    pid: PLAYER.playerId, pkey: PLAYER.playerKey, banner: document.getElementById("bv-status-mark") && document.getElementById("bv-status-mark").textContent,
+    marks: document.querySelectorAll(".bv-status-mark").length, oldBanner: !!document.getElementById("bv-test-banner")
   }));
   check("身份", "顯示正確玩家 ID（伺服器 displayId）", st.name === "測試甲", st.name);
   check("身份", "playerId 正確（來自網址 bvPlayerId，經 API 確認）", st.pid === A.playerId, st.pid);
@@ -111,7 +112,7 @@ const text = (page, sel) => page.locator(sel).first().innerText().catch(() => ""
   check("身份", "身份名稱使用共用頭像名稱（兔兔帽T）", /兔兔帽T/.test(st.key), st.key);
   check("未開放", "V幣顯示「未開放」（不是 0）", /未開放/.test(st.wallet), st.wallet);
   check("未開放", "稱號顯示「準備中」", /準備中/.test(st.title), st.title);
-  check("標示", "畫面顯示測試版標示（成績不寫入正式排行榜）", /測試版/.test(st.banner) && /Mock/.test(st.banner), st.banner);
+  check("標示", "v0.2.0：首頁只有一個簡潔測試標示（不再有常駐大型橫幅）", /測試版/.test(st.banner) && st.marks === 1 && !st.oldBanner, st.banner);
   await page.screenshot({ path: `${OUT}/01-title-desktop.png` });
 
   // 角色設定（唯讀）
@@ -183,15 +184,16 @@ const text = (page, sel) => page.locator(sel).first().innerText().catch(() => ""
   await sleep(800);
   const res = await page.evaluate(() => ({ note: document.getElementById("bv-result-note").textContent, vcoin: document.getElementById("res-vcoin-msg").textContent, score: document.getElementById("res-score").textContent, best: document.getElementById("best-disp").textContent }));
   check("結算", "遊戲結束後顯示結算畫面", !!res.score, res.score);
-  check("結算", "結算說明：成績只記錄在本分頁 Mock，不寫入正式排行榜", /Mock/.test(res.note) && /不會寫入正式排行榜/.test(res.note), res.note);
+  check("結算", "結算說明：「本場成績尚未記入正式排行榜」", /本場成績尚未記入正式排行榜/.test(res.note), res.note);
   check("結算", "V幣：測試版不發放", /不發放/.test(res.vcoin), res.vcoin);
+  check("今日挑戰", "v0.2.0：今日挑戰保留原版完成判定，結算顯示完成狀態（+10 V幣待開放，不發放）", /今日挑戰「[^」]+」(已完成（\+10 V幣待開放）|尚未完成)/.test(res.vcoin), res.vcoin);
   const mock = await page.evaluate((pid) => window.UniverseTetris.session.services.scores.listMine(pid, "tetris"), A.playerId);
   check("結算", "Mock 成績 1 筆、playerId 正確、標示未經伺服器確認", mock.length === 1 && mock[0].playerId === A.playerId && mock[0].serverConfirmed === false && mock[0].recordStatus === "mock", JSON.stringify(mock.map((m) => [m.playerId, m.scoreData.score, m.recordStatus])));
   check("結算", "ScoreSubmission 含共用外層欄位與方塊專屬欄位", mock[0] && ["submissionId", "gameVersion", "startedAt", "finishedAt"].every((k) => mock[0][k]) && ["score", "level", "lines", "difficulty", "peakCombo"].every((k) => k in mock[0].scoreData), JSON.stringify(mock[0] && mock[0].scoreData));
   await page.screenshot({ path: `${OUT}/04-result-mock.png` });
   await page.click("#btn-res-lb"); await sleep(500);
   const lb = await page.evaluate(() => ({ note: document.getElementById("bv-lb-note").textContent, rows: [...document.querySelectorAll("#lb-list .lb-row")].map((r) => r.innerText.replace(/\n/g, " ")) }));
-  check("排行榜", "排行榜明確標示「測試排行榜 / Mock」，只有本分頁成績", /測試排行榜/.test(lb.note) && lb.rows.length === 1 && /Mock/.test(lb.rows[0]) && /測試甲/.test(lb.rows[0]), JSON.stringify(lb));
+  check("排行榜", "排行榜明確標示「測試排行榜，不是正式排行榜」，只有本分頁成績", /不是正式排行榜/.test(lb.note) && lb.rows.length === 1 && /測試/.test(lb.rows[0]) && /測試甲/.test(lb.rows[0]), JSON.stringify(lb));
   await page.screenshot({ path: `${OUT}/05-leaderboard-mock.png` });
 
   // 重新整理（不帶參數）：同一分頁仍是同一位玩家
@@ -299,8 +301,8 @@ for (const [label, q, expect] of [
   await page.evaluate(() => sessionStorage.setItem("bvUniverseSandbox_v2_api", JSON.stringify({ identities: {}, players: { p_sandboxsandboxsandbo: { playerId: "p_sandboxsandboxsandbo", displayId: "沙盒小V", baseAvatarKey: "avatar_penguin_hoodie", createdAt: Date.now() } } })));
   await page.goto(proto("?sandbox=1&bvPlayerId=p_sandboxsandboxsandbo"));
   await page.waitForFunction(() => window.UniverseTetris && window.UniverseTetris.isReady(), null, { timeout: 15000 });
-  const sb = await page.evaluate(() => ({ name: document.getElementById("top-name").textContent, banner: document.getElementById("bv-test-banner").textContent, mode: window.UniverseTetris.session.mode }));
-  check("Sandbox", "Sandbox 讀取大廳沙盒玩家、標示 Sandbox／Test Mode", sb.name === "沙盒小V" && /Sandbox/.test(sb.banner) && sb.mode === "sandbox", JSON.stringify(sb));
+  const sb = await page.evaluate(() => ({ name: document.getElementById("top-name").textContent, banner: document.getElementById("bv-status-mark").textContent, mode: window.UniverseTetris.session.mode }));
+  check("Sandbox", "Sandbox 讀取大廳沙盒玩家、標示 Sandbox", sb.name === "沙盒小V" && /Sandbox/.test(sb.banner) && sb.mode === "sandbox", JSON.stringify(sb));
   check("Sandbox", "Sandbox 沒有任何 API 連線", apiCalls.length === before, apiCalls.slice(before).join(","));
   await page.screenshot({ path: `${OUT}/09-sandbox.png` });
   await ctx.close();
