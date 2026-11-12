@@ -1,9 +1,34 @@
 {
-  "schema": "bv-quiz-question-overrides-v1",
-  "status": "not_exported",
-  "note": "已核准的題目修正（停用／品質標記）目前只存在舊 Firebase 的 quizQuestionOverrides。宇宙版不得讀取舊 Firebase，因此需要管理者以唯讀方式匯出後，用 universe/quiz/tools/import_question_overrides.py 轉入本檔。匯入前畫面會標示「題目修正資料尚未同步」。",
-  "allowedFields": ["disabled", "active", "quality", "reviewNote", "reason", "updatedAt", "updatedBy"],
-  "exportedAt": null,
-  "source": null,
-  "overrides": {}
+ "schema": "bv-quiz-question-overrides-v1",
+ "status": "exported",
+ "note": "已核准的題目修正（只含出題判定欄位）。套用規則與原版 applyQuestionOverrides／isQuestionEnabled 相同；後台管理資訊（管理備註、管理帳號、操作時間）不公開。",
+ "allowedFields": [
+  "disabled",
+  "active",
+  "quality"
+ ],
+ "source": {
+  "type": "firebase-console-export",
+  "node": "quizQuestionOverrides",
+  "count": 4,
+  "sha256": "73fd6b7b6b4ed48c37277ebcc8ca072de3fe731a6c84fa5a16407501a463bdcd"
+ },
+ "overrides": {
+  "brain_low_021": {
+   "disabled": true,
+   "quality": "disabled"
+  },
+  "brain_low_030": {
+   "disabled": true,
+   "quality": "disabled"
+  },
+  "brain_middle_012": {
+   "disabled": true,
+   "quality": "disabled"
+  },
+  "brain_middle_027": {
+   "disabled": true,
+   "quality": "disabled"
+  }
+ }
 }

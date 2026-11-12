@@ -18,6 +18,9 @@ const B = await H.apiCreate("問答乙", "boy2");
 const dbAfterSeed = JSON.stringify(H.db.root);
 const BANK = JSON.parse(fs.readFileSync(`${QUIZ}/quiz_questions.json`, "utf8"));
 const BANK_SHA = crypto.createHash("sha256").update(fs.readFileSync(`${QUIZ}/quiz_questions.json`)).digest("hex");
+/* 已核准題目修正（公開檔，v0.2.0-test-2 由舊 Firebase 唯讀匯出後匯入） */
+const APPROVED = JSON.parse(fs.readFileSync(new URL("../../quiz/approved-question-overrides.json", import.meta.url), "utf8"));
+const DISABLED_IDS = ["brain_low_021", "brain_low_030", "brain_middle_012", "brain_middle_027"];
 const uni = (q) => `${ORIGIN}/universe/quiz/index.html${q || ""}`;
 const ready = (page) => page.waitForFunction(() => window.UniverseQuiz && window.UniverseQuiz.isReady() && typeof QUESTIONS !== "undefined" && QUESTIONS.length > 0, null, { timeout: 20000 });
 
@@ -57,7 +60,7 @@ async function playRoundByClicks(page, pattern, tap = false) {
   check("問答｜身份", "顯示玩家 ID 與身份頭像（遊戲宇宙素材，圖片載入成功）", st.name === "問答甲" && /assets\/avatars\/base\/avatar_penguin_hoodie\.png$/.test(st.av) && st.avW > 0, st.av);
   check("問答｜身份", "成績歸屬鍵＝遊戲宇宙 playerId（不是舊 ID＋圖案 playerKey）", st.pkey === A.playerId && !/__/.test(st.pkey), st.pkey);
   check("問答｜標示", "首頁只有一個簡潔測試標示", st.marks === 1);
-  check("問答｜題目修正", "題目修正資料尚未匯出 → 首頁明確標示「尚未同步」（不默默忽略）", !st.ovHidden && /尚未同步/.test(st.ov), st.ov);
+  check("問答｜題目修正", "題目修正已同步 → 首頁不再顯示「尚未同步」提醒", st.ovHidden && !/尚未同步/.test(st.ov), st.ov);
   check("問答｜題庫", `正式題庫完整載入（${BANK.length} 題，由原版網址唯讀載入）`, st.bank === BANK.length, st.bank);
   check("問答｜大廳", "「遊戲選單」改為「回遊戲宇宙」", st.menu === "🏠 回遊戲宇宙", st.menu);
   check("問答｜未開放", "V幣顯示「未開放」、稱號「準備中」", /未開放/.test(st.wallet) && /準備中/.test(st.title), st.wallet + "／" + st.title);
@@ -148,23 +151,72 @@ async function playRoundByClicks(page, pattern, tap = false) {
   await ctx.close();
 }
 
-/* ========== 2. 題目修正：匯出後的修正資料會被套用（原版 applyQuestionOverrides／isQuestionEnabled） ========== */
+/* ========== 2a. 題目修正（實際公開檔）：四題在宇宙版被停用，正常遊戲不會抽到，其他題目不受影響 ========== */
+{
+  const { ctx, page } = await newPage();
+  await page.goto(uni("?bvPlayerId=" + A.playerId));
+  await ready(page); await sleep(400);
+  const r = await page.evaluate(({ ids, seed }) => {
+    eval(seed);
+    const state = window.UniverseQuiz.overrideState();
+    const flags = ids.map((id) => { const q = QUESTIONS.find((x) => x.id === id); return q ? [id, q.disabled, q.quality, isQuestionEnabled(q)] : [id, "missing"]; });
+    const enabled = QUESTIONS.filter(isQuestionEnabled).length;
+    const pools = {}, drawn = {};
+    for (const g of ["low", "middle"]) {
+      selectedGrade = g; selectedSubject = "brain";
+      pools[g] = getQuestionPool().map((q) => q.id);
+      drawn[g] = 0;
+      for (let i = 0; i < 40; i++) {   // 真正的開局流程 startQuiz（每局不同種子）
+        __bvSeed(1000 + i); startQuiz();
+        drawn[g] += quizState.questions.filter((q) => ids.indexOf(q.id) >= 0).length;
+        stopQuestionTimer(); stopQuizTimer(); quizState.active = false;
+      }
+    }
+    showScreen("screen-title");
+    return { state, flags, enabled, total: QUESTIONS.length, poolLow: pools.low.length, poolMid: pools.middle.length,
+      inPool: ids.filter((id) => pools.low.concat(pools.middle).indexOf(id) >= 0), drawn };
+  }, { ids: DISABLED_IDS, seed: H.SEED_FN });
+  const bankLow = BANK.filter((q) => q.gradeBand === "low" && q.subject === "brain").length;
+  const bankMid = BANK.filter((q) => q.gradeBand === "middle" && q.subject === "brain").length;
+  check("問答｜題目修正", "宇宙版正確讀取公開修正檔：已匯出、4 筆", r.state.status === "exported" && r.state.count === 4, JSON.stringify(r.state));
+  check("問答｜題目修正", "四個題目 ID 都在正式題庫，套用後為 disabled／quality: disabled，判定為停用", r.flags.every((f) => f[1] === true && f[2] === "disabled" && f[3] === false), JSON.stringify(r.flags));
+  check("問答｜題目修正", "其他題目不受影響：可出題數＝題庫總數－4", r.enabled === r.total - 4 && r.total === BANK.length, `${r.enabled}/${r.total}`);
+  check("問答｜題目修正", "腦筋急轉彎題池：低年級、中年級各少 2 題，且不含停用題", r.poolLow === bankLow - 2 && r.poolMid === bankMid - 2 && r.inPool.length === 0, `low ${r.poolLow}/${bankLow} middle ${r.poolMid}/${bankMid}`);
+  check("問答｜題目修正", "正常開局（低／中年級腦筋急轉彎各 40 局、每局不同隨機種子）一次也沒有抽到停用題", r.drawn.low === 0 && r.drawn.middle === 0, JSON.stringify(r.drawn));
+  check("問答｜題目修正", "整個流程沒有 JavaScript 錯誤", page.errors.length === 0, page.errors.join(" | "));
+  await ctx.close();
+}
+
+/* ========== 2b. 題目修正機制：其他停用方式也照原版規則；多餘欄位與後台資訊不會進入遊戲 ========== */
 {
   const { ctx, page } = await newPage();
   const target = BANK.filter((q) => q.gradeBand === "middle" && q.subject === "science").slice(0, 3).map((q) => q.id);
   await page.route("**/universe/quiz/approved-question-overrides.json*", (route) => route.fulfill({ status: 200, contentType: "application/json",
     body: JSON.stringify({ schema: "bv-quiz-question-overrides-v1", status: "exported", exportedAt: "2026-11-12T00:00:00Z",
-      overrides: { [target[0]]: { disabled: true, reason: "測試停用" }, [target[1]]: { active: false }, [target[2]]: { quality: "disabled", injected: "<script>" } } }) }));
+      overrides: { [target[0]]: { disabled: true, reviewNote: "後台備註", updatedBy: "admin" }, [target[1]]: { active: false }, [target[2]]: { quality: "disabled", injected: "<script>" } } }) }));
   await page.goto(uni("?bvPlayerId=" + A.playerId));
   await ready(page); await sleep(400);
   const ov = await page.evaluate((ids) => {
     selectedGrade = "middle"; selectedSubject = "science";
     const pool = getQuestionPool().map((q) => q.id);
     return { state: window.UniverseQuiz.overrideState(), excluded: ids.every((id) => pool.indexOf(id) < 0), poolSize: pool.length,
-      note: document.getElementById("bv-override-note").hidden, injected: "injected" in (QUESTION_OVERRIDES[ids[2]] || {}) };
+      note: document.getElementById("bv-override-note").hidden, injected: "injected" in (QUESTION_OVERRIDES[ids[2]] || {}),
+      admin: ["reviewNote", "updatedBy"].some((k) => k in (QUESTION_OVERRIDES[ids[0]] || {})) };
   }, target);
   check("問答｜題目修正", "匯出的已核准修正（disabled／active:false／quality:disabled）全部套用：題目不會出現", ov.state.status === "exported" && ov.state.count === 3 && ov.excluded, JSON.stringify(ov));
-  check("問答｜題目修正", "修正資料只保留原版允許的欄位（多餘欄位被丟棄）；已同步時不顯示提醒", !ov.injected && ov.note === true);
+  check("問答｜題目修正", "只保留出題判定欄位：多餘欄位與後台管理資訊（reviewNote／updatedBy）被丟棄；已同步時不顯示提醒", !ov.injected && !ov.admin && ov.note === true, JSON.stringify(ov));
+  await ctx.close();
+}
+
+/* ========== 2c. 修正檔讀不到或退回 not_exported → 畫面明確提醒（不默默忽略） ========== */
+{
+  const { ctx, page } = await newPage();
+  await page.route("**/universe/quiz/approved-question-overrides.json*", (route) => route.fulfill({ status: 200, contentType: "application/json",
+    body: JSON.stringify({ schema: "bv-quiz-question-overrides-v1", status: "not_exported", overrides: {} }) }));
+  await page.goto(uni("?bvPlayerId=" + A.playerId));
+  await ready(page); await sleep(400);
+  const n = await page.evaluate(() => ({ hidden: document.getElementById("bv-override-note").hidden, t: document.getElementById("bv-override-note").textContent }));
+  check("問答｜題目修正", "（防退化）修正檔變回 not_exported 時，首頁顯示「尚未同步」提醒", !n.hidden && /尚未同步/.test(n.t), n.t);
   await ctx.close();
 }
 
@@ -194,6 +246,9 @@ async function scripted(url, isOriginal, grade, subject) {
   await page.waitForFunction(() => typeof QUESTIONS !== "undefined" && QUESTIONS.length > 0, null, { timeout: 20000 });
   if (!isOriginal) await ready(page);
   await sleep(300);
+  // 原版的題目修正來自舊 Firebase（測試環境已攔截）；這裡把同一份已核准修正交給原版自己的 applyQuestionOverrides，
+  // 等同正式原版載入修正後的狀態，兩邊才是同一個題目池
+  if (isOriginal) await page.evaluate((ov) => { QUESTION_OVERRIDES = ov; applyQuestionOverrides(); }, APPROVED.overrides);
   const out = await page.evaluate(async ({ grade, subject, seed }) => {
     const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     selectedGrade = grade; selectedSubject = subject;
@@ -222,7 +277,7 @@ async function scripted(url, isOriginal, grade, subject) {
   return out;
 }
 const eqRows = [];
-for (const [grade, subject] of [["low", "math"], ["middle", "mandarin"], ["high", "science"], ["middle", "brain"]]) {
+for (const [grade, subject] of [["low", "math"], ["middle", "mandarin"], ["high", "science"], ["middle", "brain"], ["low", "brain"]]) {
   const o = await scripted(`${ORIGIN}/orig/quiz/index.html`, true, grade, subject);
   const p = await scripted(uni("?bvPlayerId=" + A.playerId), false, grade, subject);
   const label = `${grade}／${subject}`;
@@ -232,6 +287,7 @@ for (const [grade, subject] of [["low", "math"], ["middle", "mandarin"], ["high"
   check("問答｜玩法等價", `${label}：結算 分數、答對數、正確率、最高連對、結算標題完全相同`,
     o.score === p.score && o.correct === p.correct && o.maxCombo === p.maxCombo && o.acc === p.acc && o.title === p.title && o.correctText === p.correctText,
     `原版 ${o.score}/${o.correctText}/${o.acc}/C${o.maxCombo}/${o.title}　宇宙版 ${p.score}/${p.correctText}/${p.acc}/C${p.maxCombo}/${p.title}`);
+  if (subject === "brain") check("問答｜玩法等價", `${label}：兩邊都沒有抽到已停用的題目`, ![...o.ids, ...p.ids].some((id) => DISABLED_IDS.includes(id)));
   eqRows.push({ grade, subject, questionIds: o.ids, original: { score: o.score, correct: o.correctText, acc: o.acc, maxCombo: o.maxCombo, title: o.title }, universe: { score: p.score, correct: p.correctText, acc: p.acc, maxCombo: p.maxCombo, title: p.title } });
   if (eqRows.length === 1) check("問答｜玩法等價", "每題作答時間相同（15 秒）", o.limit === 15 && p.limit === 15);
 }

@@ -5,9 +5,10 @@
 set -euo pipefail
 T="$1"; R="$2"; Q="$3"; OUT="${4:-/tmp/bv-universe-e2e}"
 export NODE_PATH="${NODE_PATH:-$(npm root -g)}"
-echo "== 1. 單元測試：Universe SDK、三款核心完整性、大廳頭像一致性 =="
+export BV_QUIZ_BANK="$Q/quiz_questions.json"   # 題目修正檢查需要正式題庫
+echo "== 1. 單元測試：Universe SDK、三款核心完整性、問答題目修正、大廳頭像一致性 =="
 node --test universe/shared/tests/universe-sdk.test.mjs universe/tetris/tests/tetris-core-integrity.test.mjs \
-  universe/rhythm/tests/rhythm-core-integrity.test.mjs universe/quiz/tests/quiz-core-integrity.test.mjs tests/lobby-avatar-consistency.test.mjs
+  universe/rhythm/tests/rhythm-core-integrity.test.mjs universe/quiz/tests/quiz-core-integrity.test.mjs universe/quiz/tests/quiz-question-overrides.test.mjs tests/lobby-avatar-consistency.test.mjs
 echo "== 2. 後端 Worker 測試 =="
 (cd backend/worker && node --test "tests/*.test.js")
 echo "== 3. 宇宙版產生腳本可重現（重新產生後與 Repository 內檔案相同） =="

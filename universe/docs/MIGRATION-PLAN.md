@@ -70,7 +70,7 @@
 
 ---
 
-## C. 知識挑戰（v0.2.0 已完成 → universe/quiz/；題目修正為阻塞項目，見 DATA-CONTRACTS.md 7.1）
+## C. 知識挑戰（v0.2.0 已完成 → universe/quiz/；題目修正已於 test-2 同步，見 DATA-CONTRACTS.md 7.1）
 
 檔案：`vparty-quiz-game/main.js`、`index.html`（commit 93df14f）。**正式題庫 `quiz_questions.json` 不修改**（原型以相對路徑或絕對網址唯讀載入）。
 
@@ -80,7 +80,7 @@
 | `loadPlayerLocal`、`savePlayerLocal`、`hasConfirmedQuizProfile`、`buildAvatarPicker`、`getIdentityChangeWarningText` | 本機 vquiz_*、建立身份 | SDK playerId；唯讀角色設定 | 中 | 身份顯示 |
 | `ensurePlayerProfile`、`writePlayerProfileCurrent`、`buildCurrentProfilePayload` | 寫 profile | 不寫 | 低 | 資料庫無變動 |
 | `ensureXiaovBaseCatalog`、`unlockXiaovBaseAfterGameComplete`、`loadAvatarCatalog`、`loadUnlockedAvatars` | 前端寫 avatarCatalog 與解鎖 | 準備中 | 降低（原本前端寫目錄） | 不寫入 |
-| `loadQuestionOverrides` | 讀 quizQuestionOverrides | v0.2.0：改讀唯讀檔 `approved-question-overrides.json`（目前尚未匯出 → 畫面標示、列為阻塞）；套用規則不變 | 中：匯入前已停用的題目可能出現 | 匯出資料可正確套用（E2E 驗證）；題目與答案和正式題庫一致 |
+| `loadQuestionOverrides` | 讀 quizQuestionOverrides | v0.2.0：改讀唯讀公開檔 `approved-question-overrides.json`（test-2 已同步 4 筆，只含出題判定欄位）；套用規則不變 | 低 | 四題停用、正常遊戲抽不到；修正檔退化時測試失敗 |
 | `loadWalletBalance`、`claimDailyAnyGameReward`、`applyVCoinEarnTransaction`、`saveDailyChallengeCompletion`、`loadDailyChallengeStatus` | 前端 transaction 發 V幣 | 未開放 | **高** | 結算訊息 |
 | `loadQuizTitleData`、`equipQuizTitle`、`unlockQuizBadgeAndTitle`、`checkAndUnlockQuizBadges`、`syncLeaderboardTitleSnapshot` | 稱號徽章 | 準備中 | 低 | 準備中 |
 | `saveQuizResult`、`buildQuizRecord`、`saveGameLog`、`saveLocalLog` | 寫 gameLogs、本機紀錄 | Mock ScoreService（gradeBand、subject、score、correctCount、totalQuestions、maxCombo、accuracy、timeUsedTotal、usedQuestionIds、answers）；本機紀錄依 playerId | **高** | Mock 紀錄欄位 |
@@ -111,4 +111,4 @@
 4. **Mock 只在分頁內**：測試者換分頁或關閉分頁，Mock 成績就消失（這是刻意的，避免被誤認為正式成績）。
 5. **原版本身的問題**（不在本次修正範圍）：前端 V幣 transaction、寫死管理 PIN／預設密碼、排行榜 XSS、問答讀取全部 gameLogs（見 LEGACY-FIREBASE-PATHS.md）。
 6. **今日挑戰 +10 的去留**尚未決定（見 DATA-CONTRACTS.md 2.2）；v0.2.0 保留玩法與完成判定、不發放。
-7. **題目修正尚未同步**（見 DATA-CONTRACTS.md 7.1）。
+7. **題目修正改為靜態公開檔**：後台新增／撤回修正後，需要重新匯出並匯入（見 DATA-CONTRACTS.md 7.1），直到新後端提供唯讀 API。

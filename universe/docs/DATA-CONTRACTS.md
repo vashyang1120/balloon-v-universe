@@ -176,18 +176,23 @@ GET /v1/leaderboards/quiz/main?limit=30
 | AvatarUnlockService | listUnlocked／unlock／equipDisplay | 展示頭像只影響外觀；不可改變身份（baseAvatarKey） |
 | GameLogService | append／listMine | 見第 6 節 |
 
-## 7.1 題目修正（QuestionOverrideService）— **阻塞中**
+## 7.1 題目修正（QuestionOverrideService）— v0.2.0-test-2 已同步（4 筆）
 
 - 原版：管理後台把「已核准的題目修正」寫在舊 Firebase `quizQuestionOverrides/{questionId}`，欄位只有
   `disabled`、`active`、`quality`、`reviewNote`、`reason`、`updatedAt`、`updatedBy`（只能停用／標記題目，**不改題目文字**）。
   遊戲以 `applyQuestionOverrides` 合併、`isQuestionEnabled` 過濾（`disabled === true`、`active === false`、`quality === "disabled"` 的題目不出題）。
 - 宇宙版不得讀舊 Firebase → 改讀**唯讀靜態檔** `universe/quiz/approved-question-overrides.json`：
-  `{ schema: "bv-quiz-question-overrides-v1", status: "not_exported" | "exported", exportedAt, source, overrides: { 題目ID: {上述欄位} } }`。
-  套用規則與原版完全相同（函式未修改）；檔案中多餘的欄位會被丟棄；一般玩家無法修改。
-- 目前 `status: "not_exported"`：**已核准的修正尚未匯入**，畫面標示「題目修正資料尚未同步」，**不宣稱問答內容與正式版完全等價**。
-- 解除方式（任選一）：
+  `{ schema: "bv-quiz-question-overrides-v1", status: "exported", allowedFields, source: { type, node, count, sha256 }, overrides: { 題目ID: { disabled?, active?, quality? } } }`。
+  套用規則與原版完全相同（函式未修改）；一般玩家無法修改。
+- **公開資料最小化**：原版 `isQuestionEnabled` 只看 `disabled`、`active`、`quality`，公開檔只保留這三個欄位；
+  `reviewNote`（管理備註）、`reason`、`updatedAt`、`updatedBy`（管理帳號）只屬後台，匯入工具與遊戲都會丟棄，不公開。
+  （這些欄位在原版只用於後台題目管理畫面，不影響出題。）匯出原檔不提交到 GitHub。
+- 2026-11-12 已同步：`brain_low_021`、`brain_low_030`、`brain_middle_012`、`brain_middle_027`，皆 `disabled: true`、`quality: "disabled"`。
+  `universe/quiz/tests/quiz-question-overrides.test.mjs` 會在修正檔遺失、退回 not_exported、少題、混入後台資訊時失敗。
+- 日後新增或撤回修正：
   1. 管理者在 Firebase Console 對 `quizQuestionOverrides` 節點按「匯出 JSON」（唯讀、不需金鑰），交給 Claude 以
-     `universe/quiz/tools/import_question_overrides.py` 轉入（會檢查題目 ID 是否存在、只保留允許欄位）。
+     `universe/quiz/tools/import_question_overrides.py` 轉入（檢查題目 ID 與欄位型別、只保留出題判定欄位；有問題就停止）。
+     同時更新測試中的已核准清單。
   2. 未來新後端提供唯讀 `GET /v1/quiz/question-overrides`（資料放新 Firebase，只有管理員可寫）。
 - 題目修正功能**沒有取消**：未來共用管理後台要能新增／撤回修正，並保留 `updatedBy`／`updatedAt` 稽核紀錄。
 

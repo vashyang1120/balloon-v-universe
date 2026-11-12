@@ -19,7 +19,8 @@
   var GAME_VERSION = "quiz-v0.2.44+universe-v0.2.0-test-1";
   var AV_BASE = "../../assets/avatars/base/";
   var OVERRIDES_URL = "approved-question-overrides.json";
-  var OVERRIDE_FIELDS = ["disabled", "active", "quality", "reviewNote", "reason", "updatedAt", "updatedBy"];
+  /* 公開檔只需要原版 isQuestionEnabled 用到的三個欄位；其他欄位（含後台管理資訊）一律丟棄 */
+  var OVERRIDE_FIELDS = ["disabled", "active", "quality"];
   var U = window.BVUniverse;
   var L = U.LABELS;
 

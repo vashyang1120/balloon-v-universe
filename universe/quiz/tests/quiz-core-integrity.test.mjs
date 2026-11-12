@@ -151,6 +151,6 @@ test("不載入 Firebase SDK、沒有舊資料庫設定；管理後台與題目�
   assert.match(fns.loadQuestionOverrides.text, /UniverseQuiz\.loadApprovedOverrides/);
   const ov = JSON.parse(fs.readFileSync(path.join(DIR, "approved-question-overrides.json"), "utf8"));
   assert.equal(ov.schema, "bv-quiz-question-overrides-v1");
-  assert.ok(["not_exported", "exported"].includes(ov.status));
-  assert.deepEqual(ov.allowedFields, ["disabled", "active", "quality", "reviewNote", "reason", "updatedAt", "updatedBy"]);
+  assert.equal(ov.status, "exported", "題目修正檔必須是已匯出狀態（詳細檢查見 quiz-question-overrides.test.mjs）");
+  assert.deepEqual(ov.allowedFields, ["disabled", "active", "quality"]);
 });
