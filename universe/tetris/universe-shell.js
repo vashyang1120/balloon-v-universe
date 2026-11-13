@@ -141,11 +141,15 @@
   function officialOn() { return S.official.isEnabled(); }
   function applyOfficialMode() {
     if (!officialOn()) return;
-    document.body.classList.add("bv-official");
+    var trial = S.official.isTrial();   // 受控試營運：一律標示「試營運」
+    document.body.classList.add(trial ? "bv-trial" : "bv-official");
     var mark = $("bv-status-mark");
-    if (mark) { mark.textContent = "🎈 遊戲宇宙｜正式成績"; mark.title = "成績由伺服器確認後記入正式排行榜；V幣由伺服器發放"; }
-    var n1 = $("bv-result-note"); if (n1) n1.textContent = "結算後成績會送到遊戲宇宙伺服器確認";
-    var n2 = $("bv-lb-note"); if (n2) n2.textContent = "遊戲宇宙正式排行榜（每位玩家只列個人最佳）";
+    if (mark) {
+      mark.textContent = trial ? U.LABELS.statusMarkTrial : "🎈 遊戲宇宙｜正式成績";
+      mark.title = trial ? "受控試營運：成績、V幣、收藏都是測試資料，正式開放前會清除" : "成績由伺服器確認後記入正式排行榜；V幣由伺服器發放";
+    }
+    var n1 = $("bv-result-note"); if (n1) n1.textContent = trial ? U.LABELS.resultNoteTrial : "結算後成績會送到遊戲宇宙伺服器確認";
+    var n2 = $("bv-lb-note"); if (n2) n2.textContent = trial ? U.LABELS.boardNoteTrial : "遊戲宇宙正式排行榜（每位玩家只列個人最佳）";
   }
   function refreshWallet() {
     if (!officialOn() || !player) return Promise.resolve(null);
@@ -238,7 +242,7 @@
       var st = S.getStatus();
       toastSafe(st.status === "error" && st.error ? st.error.userMessage : "正在讀取玩家資料，請稍候…");
     },
-    walletText: function () { return officialOn() && wallet ? Number(wallet.balance || 0).toLocaleString() + " V幣" : (officialOn() ? "讀取中" : "未開放"); },
+    walletText: function () { return officialOn() && wallet ? Number(wallet.balance || 0).toLocaleString() + (S.official.isTrial() ? " 試營運 V幣" : " V幣") : (officialOn() ? "讀取中" : "未開放"); },
     titleText: function () { return S.isSandbox ? "準備中" : (player && player.title ? player.title.name : "未裝備"); },
     /* 結算 V幣說明：不發放；今日挑戰照原版判定是否完成，+10 待開放 */
     resultVcoinText: function (ch) {
@@ -254,7 +258,7 @@
         if (listEl) listEl.innerHTML = "";
         return refreshWallet().then(function (w) {
           if (!w) { if (summaryEl) summaryEl.textContent = "V幣：暫時無法讀取，請稍後再試"; return; }
-          if (summaryEl) summaryEl.textContent = "V幣：" + Number(w.balance || 0).toLocaleString() + "（消費功能尚未開放）";
+          if (summaryEl) summaryEl.textContent = (S.official.isTrial() ? "🧪 試營運 V幣：" : "V幣：") + Number(w.balance || 0).toLocaleString() + "（消費功能尚未開放）";
           if (listEl) listEl.innerHTML = w.recent.length ? w.recent.map(function (t) {
             return '<div class="vcoin-log-row"><span>' + esc(t.dateKey) + " " + esc(t.type === "daily_play" ? "每日遊玩" : "今日挑戰") + "（" + esc({ tetris: "方塊", rhythm: "節奏", quiz: "問答", adventure: "派對島" }[t.gameId] || t.gameId) + '）</span><b>+' + Number(t.amount) + "</b></div>";
           }).join("") : '<div class="vcoin-empty-msg">還沒有 V幣紀錄，玩一場就能領每日 +30！</div>';

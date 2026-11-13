@@ -279,7 +279,7 @@ for (const P of [T1, T2]) {
   await p.waitForSelector("#s-result:not(.off)", { timeout: 8000 });
   await sleep(1500);
   const note = await text(p, "#bv-result-note");
-  if (P === T1) H3.check("試營運", "名單內玩家：正式成績寫入 trial/（正式排行榜、正式錢包不受影響）", on && /已記入正式排行榜/.test(note) && !!H3.db.get(`trial/wallets/${T1.playerId}`) && H3.db.get("wallets") === null && H3.db.get("leaderboards") === null, note);
+  if (P === T1) H3.check("試營運", "名單內玩家：成績寫入 trial/，畫面標示「試營運」（正式排行榜、正式錢包不受影響）", on && /🧪 試營運｜✅ 已記入試營運排行榜/.test(note) && !!H3.db.get(`trial/wallets/${T1.playerId}`) && H3.db.get("wallets") === null && H3.db.get("leaderboards") === null, note);
   else H3.check("試營運", "名單外玩家：遊戲照常，成績維持本分頁測試成績（不寫入任何正式資料）", !on && !/已記入正式排行榜/.test(note) && !H3.db.get(`trial/wallets/${T2.playerId}`), note);
   await ctx.close();
 }

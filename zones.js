@@ -22,7 +22,7 @@
    ========================================================== */
 
 window.MAP_CONFIG = {
-  version: "balloon-v-universe-v0.3.1-official-data-collection-test-1",
+  version: "balloon-v-universe-v0.3.1-trial-setup-test-1",
 
   /* 正式底圖路徑（不可替換成其他圖片） */
   mapSrc: "assets/universe_map_bg.png",

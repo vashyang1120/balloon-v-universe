@@ -1149,3 +1149,15 @@ html.page-hidden .actor, html.page-hidden .actor * { animation-play-state: pause
 .coll-av:disabled { cursor: default; }
 .coll-msg { min-height: 20px; margin: 8px 0 0 !important; font-weight: 800; color: var(--purple-dark); font-size: 14px !important; }
 .lb-row__title { display: block; font-style: normal; font-size: 12px; font-weight: 800; color: var(--pink-dark); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* v0.3.1-trial-setup：通行證代碼一鍵複製、試營運標示 */
+.pass-code { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 6px; max-width: 100%; }
+.pass-code code { overflow-wrap: anywhere; word-break: break-all; font-size: 13px; }
+.pass-copy { flex: none; min-height: 36px; padding: 0 12px; border: 0; border-radius: 999px; background: var(--purple-soft); color: var(--purple-dark); font: inherit; font-size: 14px; font-weight: 900; cursor: pointer; }
+.pass-copy:hover, .pass-copy:focus-visible { background: #e2d4fb; }
+.pass-copy:active { transform: translateY(1px); }
+.pass-copy-msg { display: block; min-height: 0; font-size: 13px; font-weight: 800; }
+.pass-copy-msg.is-ok { color: #1e8a4c; }
+.pass-copy-msg.is-fail { color: #b3261e; }
+.lb-note--trial { background: #efe7fb !important; color: var(--purple-dark) !important; }
+@media (max-width: 420px) { .pass-code code { font-size: 12px; } }

@@ -56,8 +56,11 @@
     //   REWARDS_ENABLED ：每日 +30／今日挑戰 +10 入帳（需要 SCORES_ENABLED 同時為 on）
     // v0.3.1：也可以設成 "trial"（受控試營運）：只有 TRIAL_PLAYER_IDS 名單內的玩家可以寫入，
     //   資料全部寫在 trial/ 底下（不碰正式排行榜與錢包），驗收後在管理後台清除再改成 "on"。
-    "SCORES_ENABLED": "off",
-    "REWARDS_ENABLED": "off",
-    "TRIAL_PLAYER_IDS": ""
+    // v0.3.1-trial-setup：受控試營運（使用者確認合併後由 Cloudflare 自動部署生效）
+    //   只有下方測試玩家可以寫入；資料全部在 trial/；其他玩家照常遊玩但不寫入任何正式資料
+    //   回復：三個值改回 "off"／"off"／""；試營運資料在管理後台「清除試營運資料」
+    "SCORES_ENABLED": "trial",
+    "REWARDS_ENABLED": "trial",
+    "TRIAL_PLAYER_IDS": "p_qfvmhs7ewmcn6ez6bdub"
   }
 }

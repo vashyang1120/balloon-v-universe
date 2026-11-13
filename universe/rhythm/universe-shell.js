@@ -281,7 +281,7 @@
       // v0.3.1：稱號／頭像收藏 → 遊戲宇宙共用收藏視窗（只讀；更換在大廳通行證）
       if ((feature === "titles" || feature === "avatarUnlocks") && !S.isSandbox && player) { U.ui.showCollection(S); return true; }
       if (feature === "wallet" && officialOn()) {
-        U.ui.toast(wallet ? "🪙 V幣餘額：" + Number(wallet.balance || 0).toLocaleString() + "（V幣紀錄請到遊戲宇宙大廳「我的通行證」查看；消費尚未開放）" : "🪙 V幣讀取中…");
+        U.ui.toast(wallet ? (S.official.isTrial() ? "🧪 試營運 V幣：" : "🪙 V幣餘額：") + Number(wallet.balance || 0).toLocaleString() + "（V幣紀錄請到遊戲宇宙大廳「我的通行證」查看；消費尚未開放）" : "🪙 V幣讀取中…");
         refreshWallet();
         return true;
       }
@@ -293,7 +293,7 @@
       var st = S.getStatus();
       U.ui.toast(st.status === "error" && st.error ? st.error.userMessage : "正在讀取玩家資料，請稍候…");
     },
-    walletText: function () { return officialOn() && wallet ? Number(wallet.balance || 0).toLocaleString() : (officialOn() ? "讀取中" : L.vcoinClosed); },
+    walletText: function () { return officialOn() && wallet ? Number(wallet.balance || 0).toLocaleString() + (S.official.isTrial() ? "（試營運）" : "") : (officialOn() ? "讀取中" : L.vcoinClosed); },
     titleText: function () { return S.isSandbox ? "準備中" : (player && player.title ? player.title.name : "未裝備"); },
     resultVcoinText: function () {
       if (officialOn()) return lastOfficial ? S.describeOfficialResult(lastOfficial) : "🪙 V幣：成績送出中，等待伺服器確認…";
