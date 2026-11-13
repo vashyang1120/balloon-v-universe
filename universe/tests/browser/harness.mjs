@@ -20,10 +20,14 @@ const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; cha
   ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp", ".svg": "image/svg+xml", ".json": "application/json",
   ".mp3": "audio/mpeg", ".mp4": "video/mp4", ".srt": "text/plain; charset=utf-8", ".woff2": "font/woff2" };
 
-/** clones = { tetris, rhythm, quiz }（唯讀 clone 路徑） */
-export async function createHarness({ clones, out }) {
+/** clones = { tetris, rhythm, quiz, rush? }（唯讀 clone 路徑；rush＝balloon-v-rush，派對島大作戰）
+    flags：Worker 環境變數覆寫（例如 { SCORES_ENABLED: "on" }）
+    v0.3.0：本 Repository 也同時以 https://vashyang1120.github.io/balloon-v-universe/ 提供（與正式網站同網域，
+    讓大廳 → 派對島 → 回大廳 走真正的跨 Repository 網址；兩個網站共用同一個 github.io 網域） */
+export async function createHarness({ clones, out, flags = {}, jwks = null }) {
   fs.mkdirSync(out, { recursive: true });
   const REPO_DIR = { "vparty-tetris": clones.tetris, "vparty-rhythm-game": clones.rhythm, "vparty-quiz-game": clones.quiz };
+  if (clones.rush) REPO_DIR["balloon-v-rush"] = clones.rush;
   const ORIG = { tetris: clones.tetris, rhythm: clones.rhythm, quiz: clones.quiz };
 
   function sendFile(r, f) {
@@ -52,8 +56,11 @@ export async function createHarness({ clones, out }) {
   const { createFakeRtdb } = await import(path.join(W, "tests/fake-rtdb.js"));
   const { fakeServiceAccount, baseEnv } = await import(path.join(W, "tests/helpers.js"));
   const db = createFakeRtdb();
-  const app = createApp({ fetch: db.fetch, logSink: { log() {}, warn() {}, error() {} } });
-  const env = baseEnv({ FIREBASE_SERVICE_ACCOUNT_JSON: (await fakeServiceAccount()).json, ALLOWED_ORIGINS: ORIGIN, SERVICE_ENV: "development" });
+  const clock = { offset: 0 };   // 伺服器時間＝真實時間＋offset（測試跨午夜、遊玩時間）
+  const app = createApp({ fetch: db.fetch, now: () => Date.now() + clock.offset, jwks: jwks || undefined, logSink: { log() {}, warn() {}, error() {} } });
+  const SITE_ORIGIN = "https://vashyang1120.github.io";
+  const env = baseEnv({ FIREBASE_SERVICE_ACCOUNT_JSON: (await fakeServiceAccount()).json, ALLOWED_ORIGINS: ORIGIN + "," + SITE_ORIGIN, SERVICE_ENV: "development", ...flags });
+  const apiFault = { fn: null };   // (method, path) => "abort" | "loseResponse" | undefined
   let ipSeq = 10;
   async function apiCreate(displayId, base) {
     const r = await app.fetch(new Request(API + "/v1/players", { method: "POST", headers: { "content-type": "application/json", origin: ORIGIN, "cf-connecting-ip": "203.0.113." + (ipSeq++) },
@@ -79,15 +86,33 @@ export async function createHarness({ clones, out }) {
         const rq = route.request();
         apiCalls.push(rq.method() + " " + u.slice(API.length));
         if (opts.apiDown) return route.abort("connectionrefused");
-        const res = await app.fetch(new Request(u, { method: rq.method(), headers: { ...(await rq.allHeaders()), origin: ORIGIN, "cf-connecting-ip": "203.0.113.200" },
+        const fault = apiFault.fn ? apiFault.fn(rq.method(), u.slice(API.length)) : undefined;
+        if (fault === "abort") return route.abort("connectionreset");
+        const pageOrigin = (() => { try { return new URL(rq.frame().url()).origin; } catch { return ORIGIN; } })();
+        const res = await app.fetch(new Request(u, { method: rq.method(), headers: { ...(await rq.allHeaders()), origin: pageOrigin.startsWith("http") ? pageOrigin : ORIGIN, "cf-connecting-ip": "203.0.113.200" },
           body: ["GET", "HEAD"].includes(rq.method()) ? undefined : rq.postData() }), env);
+        if (fault === "loseResponse") return route.abort("connectionreset");   // 伺服器已處理，但回應在路上遺失
         const h = {}; res.headers.forEach((v, k) => { h[k] = v; });
         return route.fulfill({ status: res.status, headers: h, body: Buffer.from(await res.arrayBuffer()) });
       }
-      const m = u.match(/^https:\/\/vashyang1120\.github\.io\/(vparty-tetris|vparty-rhythm-game|vparty-quiz-game)\/(.*?)(\?.*)?$/);
-      if (m) {
-        const f = path.join(REPO_DIR[m[1]], decodeURIComponent(m[2]) || "index.html");
-        if (fs.existsSync(f) && fs.statSync(f).isFile()) return route.fulfill({ status: 200, path: f, headers: { "access-control-allow-origin": "*" } });
+      const hub = u.match(/^https:\/\/vashyang1120\.github\.io\/balloon-v-universe\/(.*?)([?#].*)?$/);
+      if (hub) {
+        let rel = decodeURIComponent(hub[1]); if (rel === "" || rel.endsWith("/")) rel += "index.html";
+        const f = path.join(ROOT, rel);
+        if (f.startsWith(ROOT) && fs.existsSync(f) && fs.statSync(f).isFile()) return route.fulfill({ status: 200, path: f, headers: { "content-type": MIME[path.extname(f)] || "application/octet-stream", "cache-control": "no-store" } });
+        return route.fulfill({ status: 404, body: "" });
+      }
+      const m = u.match(/^https:\/\/vashyang1120\.github\.io\/(vparty-tetris|vparty-rhythm-game|vparty-quiz-game|balloon-v-rush)\/(.*?)([?#].*)?$/);
+      if (m && REPO_DIR[m[1]]) {
+        let rel = decodeURIComponent(m[2]); if (rel === "" || rel.endsWith("/")) rel += "index.html";
+        const f = path.join(REPO_DIR[m[1]], rel);
+        if (fs.existsSync(f) && fs.statSync(f).isFile()) return route.fulfill({ status: 200, path: f, headers: { "access-control-allow-origin": "*", "content-type": MIME[path.extname(f)] || "application/octet-stream" } });
+        return route.fulfill({ status: 404, body: "" });
+      }
+      const raw = u.match(/^https:\/\/raw\.githubusercontent\.com\/vashyang1120\/(balloon-v-rush)\/main\/(.*?)([?#].*)?$/);
+      if (raw && REPO_DIR[raw[1]]) {   // 派對島原本就從 GitHub raw 讀圖：由分支 clone 提供（不計入違規）
+        const f = path.join(REPO_DIR[raw[1]], decodeURIComponent(raw[2]));
+        if (fs.existsSync(f) && fs.statSync(f).isFile()) return route.fulfill({ status: 200, path: f, headers: { "access-control-allow-origin": "*", "content-type": MIME[path.extname(f)] || "application/octet-stream" } });
         return route.fulfill({ status: 404, body: "" });
       }
       if (/fonts\.(googleapis|gstatic)\.com/.test(u)) return route.abort();   // 字型：原版就有，測試環境不連外
@@ -116,7 +141,7 @@ export async function createHarness({ clones, out }) {
     return fail === 0;
   }
 
-  return { ORIGIN, API, db, app, env, apiCreate, results, check, note, external, apiCalls, originalExternal, browser, newPage, SEED_FN, served, finish, out };
+  return { ORIGIN, SITE: SITE_ORIGIN + "/balloon-v-universe/", clock, apiFault, API, db, app, env, apiCreate, results, check, note, external, apiCalls, originalExternal, browser, newPage, SEED_FN, served, finish, out };
 }
 
 export const text = (page, sel) => page.locator(sel).first().innerText().catch(() => "");

@@ -29,11 +29,11 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function (root) {
   "use strict";
 
-  var SDK_VERSION = "0.2.0";
+  var SDK_VERSION = "0.3.0";
   var DEFAULT_API_BASE = "https://balloon-v-universe-api.vashyang1120.workers.dev";
   var PLAYER_ID_RE = /^p_[a-z2-7]{20}$/;
   var AVATAR_KEY_RE = /^[a-z0-9_]{1,40}$/;
-  var GAME_IDS = ["tetris", "rhythm", "quiz"];
+  var GAME_IDS = ["tetris", "rhythm", "quiz", "adventure"];
   var LOBBY_SANDBOX_DB_KEY = "bvUniverseSandbox_v2_api";   // 大廳 ?sandbox=1 的模擬玩家資料（同一分頁）
 
   /* ==========================================================
@@ -50,7 +50,9 @@
     server:          "遊戲宇宙伺服器暫時無法使用，請稍後再試。",
     validation:      "資料格式不正確。",
     notImplemented:  "這個功能還在準備中，尚未開放。",
-    forbidden:       "沒有權限進行這個動作。"
+    forbidden:       "沒有權限進行這個動作。",
+    disabled:        "正式成績功能尚未開啟，本場成績不會記入正式排行榜。",
+    conflict:        "這筆成績已經送出過了。"
   };
 
   function UniverseError(kind, opts) {
@@ -130,14 +132,17 @@
     var timeoutMs = opts.timeoutMs || 12000;
     var fetchImpl = opts.fetch || (root && root.fetch && root.fetch.bind(root));
 
-    function request(method, path) {
+    function request(method, path, body, extraHeaders) {
       if (!fetchImpl) return Promise.reject(UniverseError("network"));
+      var headers = { accept: "application/json" };
+      if (body !== undefined) headers["content-type"] = "application/json";
+      if (extraHeaders) Object.keys(extraHeaders).forEach(function (k) { headers[k] = extraHeaders[k]; });
       var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
       var timedOut = false;
       var timer = setTimeout(function () { timedOut = true; if (ctrl) ctrl.abort(); }, timeoutMs);
       return Promise.resolve()
         .then(function () {
-          return fetchImpl(base + path, { method: method, headers: { accept: "application/json" }, signal: ctrl ? ctrl.signal : undefined });
+          return fetchImpl(base + path, { method: method, headers: headers, body: body === undefined ? undefined : JSON.stringify(body), signal: ctrl ? ctrl.signal : undefined });
         })
         .then(function (res) {
           clearTimeout(timer);
@@ -154,6 +159,8 @@
             if (res.status === 404) throw UniverseError("notFound", { status: 404, code: code || "NOT_FOUND" });
             if (res.status === 400) throw UniverseError("validation", { status: 400, code: code, userMessage: serverMsg });
             if (res.status === 403) throw UniverseError("forbidden", { status: 403, code: code });
+            if (res.status === 409) throw UniverseError("conflict", { status: 409, code: code, userMessage: serverMsg });
+            if (res.status === 503 && code === "SERVICE_DISABLED") throw UniverseError("disabled", { status: 503, code: code });
             throw UniverseError("server", { status: res.status, code: code || "SERVER_ERROR" });
           });
         }, function (err) {
@@ -349,6 +356,17 @@
         score: isInt, correctCount: isInt, totalQuestions: function (v) { return isInt(v, 1); }, maxCombo: isInt,
         accuracy: function (v) { return isNum(v, 0, 1); }, timeUsedTotal: isInt },
       bestMetric: "score"
+    },
+    /* 派對島大作戰：只有「完整通關」的大陸總分（總分由派對島自己算，後端只檢查一致性並排行） */
+    adventure: {
+      required: { continentId: function (v) { return isInt(v, 1); }, total: isInt,
+        rank: function (v) { return typeof v === "string" && v.length <= 4; },
+        scoreVersion: function (v) { return typeof v === "string" && /^[A-Za-z0-9._-]{1,40}$/.test(v); },
+        complete: function (v) { return v === true; }, bossDefeated: function (v) { return v === true; },
+        parts: function (v) { return !!v && typeof v === "object"; }, chainBonus: isInt,
+        stages: function (v) { return Array.isArray(v) && v.length > 0; },
+        stageClearSec: function (v) { return !!v && typeof v === "object"; } },
+      bestMetric: "total"
     }
   };
 
@@ -446,10 +464,133 @@
     };
   }
 
+
+  /* ==========================================================
+     5b. 正式成績／排行榜／V幣（v0.3.0）
+     - 只有 production 模式、而且後端 /v1/launch/status 回報 scores: "enabled" 時才會寫入
+     - sandbox 永遠不呼叫任何寫入 API
+     - 遊戲開始 → POST /v1/sessions 取得場次；結算 → POST /v1/scores（同一場固定 submissionId，可安全重送）
+     - 送出失敗（逾時／斷線／伺服器錯誤）會自動重試；仍失敗就放進本機待送清單，下次進遊戲再送（場次 6 小時內有效）
+     - 回傳的是伺服器判定結果：accepted／pending_review／rejected；V幣只由伺服器發放
+     ========================================================== */
+  var OUTBOX_MAX = 10;
+  function createOfficialClient(o) {
+    var api = o.api, mode = o.mode, gameId = o.gameId, gameVersion = o.gameVersion || "unknown", local = o.local;
+    var getPlayer = o.getPlayer, sleep = o.sleep || function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+    var status = null, statusPromise = null;
+    var clientHeader = undefined;   // 遊戲版本不是 semver 格式，不帶 X-BV-Client（版本放在請求內容 gameVersion）
+    var OUTBOX_KEY = "bvUniverse_v3_outbox_" + gameId;
+
+    function outboxRead() { try { var v = JSON.parse(local.get(OUTBOX_KEY) || "[]"); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+    function outboxWrite(list) { if (list.length) local.set(OUTBOX_KEY, JSON.stringify(list.slice(-OUTBOX_MAX))); else local.remove(OUTBOX_KEY); }
+    function outboxRemove(submissionId) { outboxWrite(outboxRead().filter(function (b) { return b.submissionId !== submissionId; })); }
+
+    function init() {
+      if (mode !== "production") { status = { scores: "sandbox", rewards: "sandbox", spending: "disabled" }; return Promise.resolve(status); }
+      if (statusPromise) return statusPromise;
+      statusPromise = api._request("GET", "/v1/launch/status").then(function (d) { status = d || { scores: "disabled" }; return status; },
+        function (err) { status = { scores: "unavailable", rewards: "unavailable", spending: "disabled", error: err }; statusPromise = null; return status; });
+      return statusPromise;
+    }
+    function isEnabled() { return mode === "production" && !!status && status.scores === "enabled"; }
+
+    /* 送出（含重試）。網路／逾時／伺服器錯誤才重試；400／403／409 之類代表資料問題，不重試 */
+    function send(body, attempts) {
+      attempts = attempts || 3;
+      var i = 0;
+      function once() {
+        i++;
+        return api._request("POST", "/v1/scores", body, clientHeader).then(function (d) { outboxRemove(body.submissionId); return d; }, function (err) {
+          if (err && err.retryable && err.kind !== "rateLimited" && i < attempts) return sleep(400 * i).then(once);
+          if (err && err.retryable) {
+            var list = outboxRead().filter(function (b) { return b.submissionId !== body.submissionId; });
+            list.push(body); outboxWrite(list);
+            err.queued = true;
+          } else if (err && err.kind !== "disabled") outboxRemove(body.submissionId);
+          throw err;
+        });
+      }
+      return once();
+    }
+
+    return {
+      init: init,
+      status: function () { return status; },
+      isEnabled: isEnabled,
+      /* 遊戲開始：取得伺服器場次。未啟用／沙盒／失敗都回傳 { official:false, reason }，遊戲照常進行 */
+      beginRun: function () {
+        var p = getPlayer();
+        if (mode !== "production") return Promise.resolve({ official: false, reason: "sandbox" });
+        if (!p) return Promise.resolve({ official: false, reason: "missingPlayer" });
+        return init().then(function () {
+          if (!isEnabled()) return { official: false, reason: status && status.scores === "unavailable" ? "unavailable" : "disabled" };
+          return api._request("POST", "/v1/sessions", { playerId: p.playerId, gameId: gameId, gameVersion: gameVersion }, clientHeader).then(function (d) {
+            return { official: true, sessionId: d.sessionId, submissionId: uuid(), playerId: p.playerId, startedAt: d.startedAt, rewardDate: d.rewardDate };
+          }, function (err) {
+            if (err && err.kind === "disabled") { status = Object.assign({}, status, { scores: "disabled" }); return { official: false, reason: "disabled" }; }
+            return { official: false, reason: "sessionFailed", error: err };
+          });
+        });
+      },
+      /* 結算：送出這一場（run 來自 beginRun）。回傳伺服器結果 */
+      submitRun: function (run, scoreData, extra) {
+        if (!run || !run.official) return Promise.reject(UniverseError("disabled"));
+        var p = getPlayer();
+        if (!p || p.playerId !== run.playerId) return Promise.reject(UniverseError("missingPlayer", { userMessage: "玩家已切換，這一場不會送出" }));
+        var body = { schemaVersion: 1, submissionId: run.submissionId, sessionId: run.sessionId, playerId: run.playerId, gameId: gameId,
+          gameVersion: gameVersion, mode: "production", startedAt: run.startedAt, finishedAt: (extra && extra.finishedAt) || new Date().toISOString(), scoreData: scoreData };
+        return send(body);
+      },
+      /* 上次沒送成功的成績：再送一次（同一個 submissionId，不會重複計分或重複加幣） */
+      flushOutbox: function () {
+        if (!isEnabled()) return Promise.resolve([]);
+        var p = getPlayer();
+        var mine = outboxRead().filter(function (b) { return p && b.playerId === p.playerId; });
+        return mine.reduce(function (chain, b) {
+          return chain.then(function (acc) { return send(b, 1).then(function (d) { acc.push(d); return acc; }, function () { return acc; }); });
+        }, Promise.resolve([]));
+      },
+      pendingCount: function () { var p = getPlayer(); return outboxRead().filter(function (b) { return p && b.playerId === p.playerId; }).length; },
+      catalog: function () { return api._request("GET", "/v1/leaderboards"); },
+      getBoard: function (boardId, opts) {
+        var p = getPlayer();
+        var q = "?limit=" + ((opts && opts.limit) || 50) + (p ? "&playerId=" + encodeURIComponent(p.playerId) : "");
+        return api._request("GET", "/v1/leaderboards/" + encodeURIComponent((opts && opts.gameId) || gameId) + "/" + encodeURIComponent(boardId) + q);
+      },
+      getWallet: function () {
+        var p = getPlayer();
+        if (!p) return Promise.reject(UniverseError("missingPlayer"));
+        return api._request("GET", "/v1/wallet/" + encodeURIComponent(p.playerId));
+      },
+      getQuizProgress: function () {
+        var p = getPlayer();
+        if (!p) return Promise.reject(UniverseError("missingPlayer"));
+        return api._request("GET", "/v1/players/" + encodeURIComponent(p.playerId) + "/quiz-progress");
+      }
+    };
+  }
+
+  /* 結果說明（四款遊戲共用；依伺服器判定） */
+  var REWARD_TYPE_LABEL = { daily_play: "每日遊玩", daily_challenge: "今日挑戰" };
+  function describeOfficialResult(r) {
+    if (!r) return "";
+    if (r.status === "accepted") {
+      var coins = (r.rewards || []).map(function (x) { return (REWARD_TYPE_LABEL[x.type] || "獎勵") + " +" + x.amount; }).join("、");
+      return "✅ 已記入正式排行榜" + (coins ? "｜🪙 " + coins + " V幣" : (r.rewardState === "disabled" ? "" : "｜今天的 V幣獎勵已領過"));
+    }
+    if (r.status === "pending_review") return "🕵️ 成績審核中：通過後才會列入排行榜與發放 V幣";
+    return "⚠️ 本場成績未通過檢查，沒有列入排行榜";
+  }
+
   /* 畫面標示：簡短、一致；Mock 一律說明「尚未記入正式排行榜」 */
   var LABELS = {
     statusMark: "🧪 遊戲宇宙測試版",
     statusMarkSandbox: "🧪 遊戲宇宙測試版｜Sandbox",
+    statusMarkOfficial: "🎈 遊戲宇宙｜正式成績",
+    resultNoteOfficial: "結算後成績會送到遊戲宇宙伺服器確認",
+    boardNoteOfficial: "遊戲宇宙正式排行榜（每位玩家只列個人最佳）",
+    sending: "📮 正在把成績送到遊戲宇宙伺服器…",
+    queued: "📶 網路不穩，成績已暫存，下次進入遊戲會自動補送",
     resultNote: "本場成績尚未記入正式排行榜",
     boardNote: "測試排行榜：只含這個分頁的測試成績，不是正式排行榜",
     mockTag: "測試",
@@ -531,6 +672,9 @@
     };
 
     var state = { player: null, status: "idle", error: null, epoch: 0, handoff: null };
+    var currentRun = null;
+    var official = createOfficialClient({ api: api, mode: mode, gameId: opts.gameId, gameVersion: opts.gameVersion, local: local,
+      getPlayer: function () { return state.player; }, sleep: opts.sleep });
     var listeners = { change: [], reset: [] };
     function emit(type, arg) { listeners[type].forEach(function (fn) { try { fn(arg); } catch (e) {} }); }
 
@@ -576,6 +720,7 @@
       var c = classifyPlayerIdInput(rawId);
       // 先清掉上一位玩家的狀態（遊戲端的 reset 監聽也會被呼叫）
       if (state.player) emit("reset", { previousPlayerId: state.player.playerId });
+      currentRun = null;   // 切換玩家：上一位的這一場不送出
       state.player = null;
       state.handoff = { source: source };
       if (!c.ok) {
@@ -613,6 +758,46 @@
       isSandbox: mode === "sandbox",
       modeLabel: mode === "sandbox" ? "Sandbox／Test Mode（模擬資料，不連線正式資料庫）" : "Production 玩家資料（唯讀）",
       services: services,
+      /* 正式成績／排行榜／V幣（v0.3.0）：見 createOfficialClient */
+      official: official,
+      describeOfficialResult: describeOfficialResult,
+      /* 一場遊戲的正式流程（給遊戲換殼層用）：開局 startRun() → 結算 finishRun(scoreData)
+         回傳 { official:true, result } 或 { official:false, reason }（未啟用／沙盒／取得場次失敗：遊戲照常，成績不記入正式排行榜） */
+      /* 遊戲開啟時呼叫：讀正式功能狀態；已開啟 → 換掉「測試版」標示、補送上次沒送出的成績、讀 V幣餘額 */
+      bootOfficial: function (o) {
+        o = o || {};
+        return official.init().then(function () {
+          if (!official.isEnabled()) return false;
+          var d = root && root.document;
+          if (d) {
+            d.body && d.body.classList.add("bv-official");
+            var m = d.getElementById("bv-status-mark");
+            if (m) { m.textContent = LABELS.statusMarkOfficial; m.title = "成績由伺服器確認後記入正式排行榜；V幣由伺服器發放"; }
+            var a = d.getElementById("bv-result-note"); if (a) a.textContent = LABELS.resultNoteOfficial;
+            var b = d.getElementById("bv-lb-note"); if (b) b.textContent = LABELS.boardNoteOfficial;
+          }
+          return official.flushOutbox().then(function (sent) {
+            if (sent && sent.length) ui.toast("📮 已補送上次沒送出的 " + sent.length + " 筆成績");
+            if (o.onWallet) official.getWallet().then(o.onWallet, function () {});
+            return true;
+          });
+        });
+      },
+      startRun: function () {
+        var p = official.beginRun();
+        currentRun = p;
+        return p;
+      },
+      finishRun: function (scoreData) {
+        var p = currentRun;
+        currentRun = null;
+        if (!p) return Promise.resolve({ official: false, reason: "noRun" });
+        return p.then(function (run) {
+          if (!run || !run.official) return { official: false, reason: run ? run.reason : "noRun", error: run && run.error };
+          return official.submitRun(run, scoreData).then(function (r) { return { official: true, result: r, run: run }; },
+            function (err) { return { official: true, error: err, queued: !!(err && err.queued), run: run }; });
+        });
+      },
       start: function () { var h = readHandoff(); return load(h.raw, h.source); },
       switchPlayer: function (playerId) { return load(playerId, "switch"); },
       getPlayer: function () { return state.player; },
@@ -653,7 +838,7 @@
       capabilities: function () {
         return {
           players: players.mode, wallet: services.wallet.mode, scores: services.scores.mode,
-          leaderboard: services.leaderboard.mode, gameLogs: "notImplemented", titles: "notImplemented", avatarUnlocks: "notImplemented"
+          leaderboard: services.leaderboard.mode, official: official.isEnabled() ? "production" : (official.status() ? official.status().scores : "unknown"), gameLogs: "notImplemented", titles: "notImplemented", avatarUnlocks: "notImplemented"
         };
       },
       /* 建立這一場的成績提交物件（submissionId 在開局時就固定，防止重複提交） */
@@ -688,6 +873,17 @@
     createGameSession: createGameSession,
     buildScoreSubmission: buildScoreSubmission,
     validateScoreSubmission: validateScoreSubmission,
+    describeOfficialResult: describeOfficialResult,
+    /* 給自己管理玩家身份的遊戲（例如派對島大作戰）：直接建立正式成績客戶端
+       o = { gameId, gameVersion, getPlayer: () => ({ playerId }) | null, mode?: "production"|"sandbox", apiBaseUrl?, fetch? } */
+    createOfficialClient: function (o) {
+      o = o || {};
+      if (GAME_IDS.indexOf(o.gameId) < 0) throw new Error("BVUniverse: 未知的 gameId " + o.gameId);
+      if (typeof o.getPlayer !== "function") throw new Error("BVUniverse: createOfficialClient 需要 getPlayer");
+      return createOfficialClient({ api: createApiClient({ baseUrl: o.apiBaseUrl, timeoutMs: o.timeoutMs, fetch: o.fetch }),
+        mode: o.mode === "sandbox" ? "sandbox" : "production", gameId: o.gameId, gameVersion: o.gameVersion,
+        local: safeStorage(o.localStorage !== undefined ? o.localStorage : (root && root.localStorage)), getPlayer: o.getPlayer, sleep: o.sleep });
+    },
     SCORE_SCHEMAS: SCORE_SCHEMAS
   };
 });

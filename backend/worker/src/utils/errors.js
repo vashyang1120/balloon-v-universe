@@ -25,6 +25,7 @@ export const ERROR_CODES = Object.freeze({
   NOT_IMPLEMENTED:        { status: 501, message: "這個功能尚未開放" },
   UPSTREAM_UNAVAILABLE:   { status: 502, message: "資料服務暫時無法使用" },
   SERVICE_NOT_CONFIGURED: { status: 503, message: "服務尚未完成設定" },
+  SERVICE_DISABLED:       { status: 503, message: "正式成績服務尚未啟用" },
   UPSTREAM_TIMEOUT:       { status: 504, message: "資料服務回應逾時" },
 });
 

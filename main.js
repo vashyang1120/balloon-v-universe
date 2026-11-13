@@ -845,13 +845,11 @@
     if (current()) openPass();
   });
 
-  /* ---------- 選擇玩家木牌：引導注意下方頭像列（不另開選擇頁） ---------- */
+  /* ---------- 左下木牌「排行榜」（v0.3.0；原「選擇玩家」）：打開排行榜總覽 ----------
+     切換玩家仍然是點下方頭像列（不受影響）。動作名稱沿用 signSelect（教學規則不變） */
   els.signSelect.addEventListener("click", function () {
     if (!guard("signSelect")) return;
-    els.avatarRow.classList.remove("is-hint");
-    void els.avatarRow.offsetWidth;
-    els.avatarRow.classList.add("is-hint");
-    toast("點下方的玩家頭像就可以切換玩家，按「＋」新增玩家");
+    if (window.LobbyLaunch) window.LobbyLaunch.open();
     emit("signSelectTapped");
   });
 
@@ -891,8 +889,9 @@
         row("專屬身份圖案", avatarHtml(d.baseAvatarKey, "blue", null, "av--sm") + "<span>" + escapeHtml(ID.avatarLabel(d.baseAvatarKey)) + '<em class="muted">（固定，不能更換）</em></span>') +
         row("展示頭像", avatarHtml(d.displayAvatarKey, "pink", d.unlockedAvatars, "av--sm") + "<span>" + escapeHtml(ID.avatarLabel(d.displayAvatarKey)) + "</span>") +
         row("稱號", escapeHtml(titleText(d)) + (d.features && d.features.titles ? "" : '<em class="muted">（稱號系統準備中）</em>')) +
-        row("V幣", escapeHtml(walletText(d)) + (d.features && d.features.wallet ? "" : '<em class="muted">（V幣功能尚未開放）</em>')) +
-        row("通行證代碼", '<code class="muted">' + escapeHtml(d.playerId) + "</code>");
+        row("V幣", escapeHtml(walletText(d)) + (d.features && d.features.wallet ? '<em class="muted">（正式 V幣；消費功能尚未開放）</em>' : '<em class="muted">' + (d.walletState === "loading" ? "（讀取中…）" : d.walletState === "error" ? "（暫時無法讀取，請稍後再打開）" : "（V幣功能尚未開放）") + "</em>")) +
+        row("通行證代碼", '<code class="muted">' + escapeHtml(d.playerId) + "</code>") +
+        walletHistoryHtml(d);
     } else if (tab === "collection" && !(d.features && d.features.avatarUnlocks)) {
       // v0.3.4：展示頭像解鎖與稱號收藏尚未接入共用玩家系統
       html = '<h4 class="sec">已解鎖頭像</h4><p class="empty">展示頭像解鎖功能準備中，尚未接入遊戲宇宙。</p>' +
@@ -924,6 +923,18 @@
     }
     els.passTabBody.innerHTML = html;
   }
+  /* v0.3.0：正式 V幣紀錄（伺服器帳本最近 20 筆；只讀） */
+  var REWARD_NAME = { daily_play: "每日遊玩", daily_challenge: "今日挑戰" };
+  function walletHistoryHtml(d) {
+    if (!d.features || !d.features.wallet || !d.wallet) return "";
+    var list = d.wallet.recent || [];
+    var names = CFG.player.gameNames;
+    return '<h4 class="sec">🪙 V幣紀錄</h4>' + (list.length
+      ? '<ul class="record-list wallet-list">' + list.map(function (t) {
+          return "<li><b>" + escapeHtml(t.dateKey) + " " + escapeHtml(REWARD_NAME[t.type] || "獎勵") + "</b><span>" + escapeHtml(names[t.gameId] || t.gameId) + "　+" + Number(t.amount) + "</span></li>";
+        }).join("") + "</ul>"
+      : '<p class="empty">還沒有 V幣紀錄。每天第一場遊戲 +30，方塊／節奏／問答的今日挑戰各 +10。</p>');
+  }
   function row(label, value) { return '<div class="kv"><span class="kv__k">' + label + '</span><span class="kv__v">' + value + "</span></div>"; }
 
   document.querySelectorAll("#passModal .tab").forEach(function (t) {
@@ -932,6 +943,14 @@
   els.passClose.addEventListener("click", function () { if (!guard("passClose")) return; closePass(); });
   els.passModal.addEventListener("click", function (e) { if (e.target === els.passModal && guard("passClose")) closePass(); });
   els.signPass.addEventListener("click", function () { if (!guard("signPass")) return; openPass(); emit("signPassTapped"); });
+  /* 正式 V幣讀到後：通行證若開著，重新顯示（lobby-launch.js 負責讀取） */
+  on("walletLoaded", function () {
+    var d = current();
+    if (!d || els.passModal.hidden) return;
+    els.passPanel.innerHTML = passPanelHtml(d, "full");
+    fitPass(els.passPanel);
+    setPassTab(state.passTab);
+  });
 
   /* ==========================================================
      遊戲介紹面板按鈕
@@ -944,7 +963,8 @@
     var z = zoneById[state.selected];
     var d = current();
     if (!z) return;
-    /* v0.2.0：知識學院／音樂舞台／方塊工坊 → 直接進入宇宙版，並帶著目前玩家 playerId（不需要再輸入或選頭像） */
+    /* 知識學院／音樂舞台／方塊工坊 → 本站宇宙版；派對島大作戰（v0.3.0）→ balloon-v-rush 第一大陸宇宙版。
+       都帶著目前玩家 playerId（?bvPlayerId=），不需要再輸入 ID 或選頭像 */
     var url = d && (CFG.player.universeGameIds || []).indexOf(z.gameId) >= 0 ? Store.handoff.launchUrl(d, z.gameId) : "";
     if (url) {
       Store.setCurrentPlayerId(d.playerId);   // 回大廳時仍是同一位玩家

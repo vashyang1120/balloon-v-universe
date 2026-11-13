@@ -4,8 +4,9 @@
 
    原版（vparty-quiz-game quiz-v0.2.44）的玩家系統函式改成呼叫這裡：
      身份      → BVUniverse SDK 讀取 playerId 的公開資料（唯讀，網址 ?bvPlayerId=）
-     成績      → Mock ScoreSubmission（只存在目前分頁，依 playerId 分開）
-     年級榜／總榜／V學園成績單 → 用原版計算函式算出，存在 Mock（不寫正式排行榜）
+     成績      → v0.3.0：後端正式成績開啟時 → 開局取得場次、結算送出；科目最佳／年級榜／總榜由伺服器用原版規則計算
+                 （V學園進度讀伺服器的 quiz-progress）。未開啟或沙盒 → Mock（只存在目前分頁，依 playerId 分開）
+     年級榜／總榜／V學園成績單 → Mock 模式：用原版計算函式算出，存在 Mock（不寫正式排行榜）
      題目修正  → 讀取 approved-question-overrides.json（唯讀、管理者匯出）；套用規則與原版相同
      V幣       → 未開放（不發放、不寫入）；今日挑戰保留完成判定，+10 待開放
      舊 Firebase → 完全不載入、不讀、不寫
@@ -16,7 +17,7 @@
 (function () {
   "use strict";
 
-  var GAME_VERSION = "quiz-v0.2.44+universe-v0.2.0-test-1";
+  var GAME_VERSION = "quiz-v0.2.44+universe-v0.3.0-test-1";
   var AV_BASE = "../../assets/avatars/base/";
   var OVERRIDES_URL = "approved-question-overrides.json";
   /* 公開檔只需要原版 isQuestionEnabled 用到的三個欄位；其他欄位（含後台管理資訊）一律丟棄 */
@@ -202,7 +203,36 @@
     } catch (e) { console.warn("[Universe] refresh", e); }
   }
 
-  S.onReset(function () { player = null; });
+  S.onReset(function () { player = null; official.root = null; official.last = null; official.wallet = null; });
+
+  /* ---------- v0.3.0 正式模式 ---------- */
+  function officialOn() { return S.official.isEnabled(); }
+  var official = { root: null, last: null, wallet: null };
+  function loadServerProgress() {
+    return S.official.getQuizProgress().then(function (d) { official.root = (d && d.progress) || {}; return official.root; });
+  }
+  function onWallet(w) {
+    official.wallet = w;
+    try { if (typeof window.updatePlayerUI === "function") window.updatePlayerUI(); } catch (e) {}
+  }
+  function gradeRecordsFromRoot(root) {
+    var out = {};
+    ["low", "middle", "high"].forEach(function (g) {
+      if (root && root[g] && Object.keys(root[g]).length && typeof window.buildGradeRecordFromProgress === "function") out[g] = window.buildGradeRecordFromProgress(g, root[g]);
+    });
+    return out;
+  }
+  function wrapStartQuiz() {
+    var orig = window.startQuiz;
+    if (typeof orig !== "function" || orig.__bvWrapped) return;
+    var wrapped = function () {
+      official.last = null;
+      if (player) S.startRun();   // 正式成績開啟時向伺服器取得場次（沒開啟／沙盒不會寫入任何資料）
+      return orig.apply(this, arguments);
+    };
+    wrapped.__bvWrapped = true;
+    window.startQuiz = wrapped;
+  }
 
   function records() { return S.services.records; }
   function pid() { if (!player) throw U.UniverseError("missingPlayer"); return player.playerId; }
@@ -211,15 +241,27 @@
   /* Mock：問答專屬紀錄（集合 progress／board-low…／board-main／academy，依 playerId 分開） */
   var mock = {
     getProgressRoot: function () {
+      if (officialOn()) {
+        // 正式模式：伺服器的科目最佳（原版 quizProgress 結構）。結算時用「送出前」的快照，讓原版流程算出的提示與伺服器一致
+        if (official.root) return Promise.resolve(JSON.parse(JSON.stringify(official.root)));
+        return guard(function () { pid(); return loadServerProgress().then(function (r) { return JSON.parse(JSON.stringify(r)); }); });
+      }
       return guard(function () { return records().get("progress", pid()).then(function (r) { return (r && r.root) || {}; }); });
     },
     setProgressRoot: function (root) {
+      if (officialOn()) {
+        // 不寫入任何資料（伺服器已用同一套原版規則更新）；只有伺服器接受的成績才更新畫面上的進度
+        if (official.last && official.last.status === "accepted") official.root = JSON.parse(JSON.stringify(root));
+        return Promise.resolve(null);
+      }
       return guard(function () { return records().put("progress", pid(), { root: root }); });
     },
     putBoard: function (boardId, record) {
+      if (officialOn()) return Promise.resolve(null);   // 年級榜／總榜由伺服器計算
       return guard(function () { return records().put("board-" + boardId, pid(), record); });
     },
     getMyGradeRecords: function () {
+      if (officialOn()) return mock.getProgressRoot().then(gradeRecordsFromRoot);
       return guard(function () {
         var me = pid();
         return Promise.all(["low", "middle", "high"].map(function (g) {
@@ -232,6 +274,18 @@
       });
     },
     listBoard: function (boardId) {
+      if (officialOn()) {
+        return S.official.getBoard(boardId, { limit: 30 }).then(function (b) {
+          return b.rows.map(function (r) {
+            var row = { playerKey: r.playerId, playerId: r.playerId, name: r.displayId, displayAvatarKey: r.displayAvatarKey,
+              completedSubjects: r.completedSubjects, perfectSubjects: r.perfectSubjects, totalCorrect: r.totalCorrect, totalQuestions: r.totalQuestions,
+              totalTimeUsed: r.totalTimeUsed, totalMaxCombo: r.totalMaxCombo, totalAttempts: r.totalAttempts, updatedAt: r.updatedAt };
+            if (boardId === "main") { row.totalScore = r.score; row.gradeSummaryText = r.summary; row.gradeSummary = r.gradeSummary; }
+            else { row.gradeTotalScore = r.score; row.subjectSummaryText = r.summary; row.subjectNames = r.subjectNames || []; }
+            return row;
+          });
+        });
+      }
       return guard(function () {
         return records().list("board-" + boardId).then(function (rows) {
           return rows.map(function (r) { return Object.assign({}, r, { playerKey: r.playerId }); });
@@ -240,9 +294,11 @@
     },
     getAcademy: function () {
       if (!player) return Promise.resolve(null);
+      if (officialOn()) return Promise.resolve(null);   // 由伺服器進度重新計算（原版 calculateQuizAcademyProgress）
       return records().get("academy", player.playerId).then(function (r) { return r && r.academy || null; }, function () { return null; });
     },
     putAcademy: function (academy) {
+      if (officialOn()) return Promise.resolve(null);
       return guard(function () { return records().put("academy", pid(), { academy: academy }); });
     }
   };
@@ -256,6 +312,13 @@
     boot: function (init) {
       decorate();
       return Promise.all([start(), loadLabels()]).then(function () {
+        wrapStartQuiz();
+        return player ? S.bootOfficial({ onWallet: onWallet }).then(function (on) {
+          if (!on) return null;
+          window.UniverseQuiz.labels = Object.assign({}, L, { dailyRewardPending: "+10 V幣由伺服器確認後發放" });
+          return loadServerProgress().catch(function () {});
+        }) : null;
+      }).then(function () {
         booted = true;
         init();
         renderOverrideNote();
@@ -296,14 +359,35 @@
       if (mode === "base") say(FEATURE_TEXT.identity); else say(FEATURE_TEXT.avatarUnlocks);
       return true;
     },
-    notReady: function (feature) { say(FEATURE_TEXT[feature] || "這個功能準備中"); return true; },
+    notReady: function (feature) {
+      if (feature === "wallet" && officialOn()) {
+        say(official.wallet ? "🪙 V幣餘額：" + Number(official.wallet.balance || 0).toLocaleString() + "（V幣紀錄請到遊戲宇宙大廳「我的通行證」查看；消費尚未開放）" : "🪙 V幣讀取中…");
+        return true;
+      }
+      say(FEATURE_TEXT[feature] || "這個功能準備中"); return true;
+    },
     explainNotReady: explainNotReady,
-    walletText: function () { return L.vcoinClosed; },
+    walletText: function () { return officialOn() && official.wallet ? Number(official.wallet.balance || 0).toLocaleString() : (officialOn() ? "讀取中" : L.vcoinClosed); },
     titleText: function () { return L.titlePending; },
 
     /* 結算：ScoreSubmission（Mock）。回傳像原版 gameLogs push 的結果（含 key） */
     submitRecord: function (record) {
       if (!player) return Promise.reject(U.UniverseError("missingPlayer"));
+      if (officialOn()) {
+        var data = { gradeBand: record.gradeBand, subject: record.subject, score: record.score, correctCount: record.correctCount,
+          totalQuestions: record.totalQuestions, maxCombo: record.maxCombo, accuracy: record.accuracy, timeUsedTotal: record.timeUsedTotal };
+        // 先取得送出前的伺服器進度（原版流程用它計算「最佳是否刷新」），再送出
+        return loadServerProgress().catch(function () { return null; }).then(function () { return S.finishRun(data); }).then(function (out) {
+          if (out.official && out.result) {
+            official.last = out.result;
+            S.official.getWallet().then(onWallet, function () {});
+            if (out.result.status === "accepted") return { key: out.result.submissionId };
+            throw U.UniverseError("validation", { userMessage: S.describeOfficialResult(out.result) });
+          }
+          if (out.queued) throw U.UniverseError("network", { userMessage: L.queued });
+          throw U.UniverseError("server", { userMessage: "本場成績沒有記入正式排行榜（" + ((out.error && out.error.userMessage) || "沒有取得正式場次") + "）" });
+        }).catch(function (e) { official.failMsg = e && e.userMessage; throw e; });
+      }
       var now = new Date();
       var startedAt = (window.quizState && window.quizState.startedAt) ? new Date(window.quizState.startedAt) : now;
       var sub;
@@ -317,10 +401,22 @@
       } catch (e) { return Promise.reject(e); }
       return S.services.scores.submit(sub).then(function (saved) { return { key: saved.submissionId }; });
     },
-    savedText: function () { return L.resultNote + "（已存為本分頁測試成績）"; },
-    saveFailedText: function () { return "⚠️ " + L.resultNote + "（本場未記錄）"; },
+    savedText: function () { return officialOn() && official.last ? S.describeOfficialResult(official.last) : L.resultNote + "（已存為本分頁測試成績）"; },
+    saveFailedText: function () { return officialOn() ? (official.failMsg || "⚠️ 本場成績沒有記入正式排行榜") : "⚠️ " + L.resultNote + "（本場未記錄）"; },
 
     showVcoinNotice: function (v) {
+      if (officialOn()) {
+        var bx = $("result-vcoin-banner");
+        if (!bx) return true;
+        var r = official.last;
+        var coins = r && r.status === "accepted" ? (r.rewards || []) : [];
+        bx.classList.remove("hidden", "claimed", "failed", "already");
+        bx.classList.add(coins.length ? "claimed" : (r ? "already" : "failed"));
+        var tt = $("vcoin-title"), mm = $("vcoin-message");
+        if (tt) tt.textContent = coins.length ? "🪙 +" + coins.reduce(function (a, x) { return a + x.amount; }, 0) + " V幣" : "🪙 V幣";
+        if (mm) mm.textContent = r ? S.describeOfficialResult(r) + (typeof r.balance === "number" && r.status === "accepted" ? "｜目前 " + r.balance + " V幣" : "") : (official.failMsg || "本場沒有發放 V幣");
+        return true;
+      }
       if (!v || v.reason !== "not_implemented") return false;
       var box = $("result-vcoin-banner");
       if (!box) return true;
@@ -336,7 +432,8 @@
     isDailyChallengeDone: function (c) { return S.dailyChallenge.isDoneToday("quiz_daily"); },
     markDailyChallengeDone: function (c) { return S.dailyChallenge.markDone("quiz_daily"); },
     dailyChallengeText: function (done) {
-      return done ? "今日挑戰已完成（" + L.dailyRewardPending + "）" : "完成指定年級與科目即達成（" + L.dailyRewardPending + "）";
+      var pend = officialOn() ? "+10 V幣" : L.dailyRewardPending;
+      return done ? "今日挑戰已完成（" + pend + "）" : "完成指定年級與科目即達成（" + pend + "）";
     }
   };
 })();

@@ -3,7 +3,7 @@
  *
  * schema 寫法：
  *   { field: { type: "string", required: true, min: 1, max: 32, pattern: /.../, enum: [...] } }
- *   type 支援：string、integer、number、boolean、object
+ *   type 支援：string、integer、number、boolean、object、array（短文字陣列）
  * 回傳 { value, errors }；errors 為 [{ field, issue }]
  */
 import { ApiError } from "./errors.js";
@@ -47,6 +47,11 @@ function checkOne(v, r) {
       return range(v, r);
     case "boolean":
       return typeof v === "boolean" ? null : "必須是 true 或 false";
+    case "array":
+      if (!Array.isArray(v)) return "必須是陣列";
+      if (r.maxItems != null && v.length > r.maxItems) return `最多 ${r.maxItems} 項`;
+      if (v.some((x) => typeof x !== "string" || x.length > 64)) return "項目必須是短文字";
+      return null;
     case "object":
       if (typeof v !== "object" || Array.isArray(v)) return "必須是物件";
       if (r.maxKeys != null && Object.keys(v).length > r.maxKeys) return `最多 ${r.maxKeys} 個欄位`;

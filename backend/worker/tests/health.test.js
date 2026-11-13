@@ -13,7 +13,7 @@ test("/health 回傳 service、version、status、timestamp", async () => {
   const body = await res.json();
   assert.equal(body.service, "balloon-v-universe-api");
   assert.equal(body.version, API_VERSION);
-  assert.equal(API_VERSION, "0.3.4");
+  assert.equal(API_VERSION, "0.4.0");
   assert.equal(body.status, "ok");
   assert.ok(!Number.isNaN(Date.parse(body.timestamp)), "timestamp 必須是 ISO-8601");
   assert.ok(Math.abs(Date.parse(body.timestamp) - Date.now()) < 5000, "timestamp 由伺服器即時產生");
@@ -92,7 +92,8 @@ test("GET /v1/meta 列出遊戲登記表與預留分類", async () => {
 test("預留的玩家功能 → 501 NOT_IMPLEMENTED，不讀寫資料", async () => {
   const calls = [];
   const a = app({ fetch: async (u) => { calls.push(u); throw new Error("no"); } });
-  for (const p of ["/v1/players", "/v1/wallet/me", "/v1/game-results", "/v1/shop/buy", "/v1/leaderboards/tetris"]) {
+  // v0.3.0：/v1/wallet/:playerId 已開放唯讀（"me" 不是 playerId → 400，見 launch 測試）；消費、PIN 仍預留
+  for (const p of ["/v1/players", "/v1/wallet/p_aaaaaaaaaaaaaaaaaaaa/pin", "/v1/game-results", "/v1/shop/buy", "/v1/leaderboards/tetris"]) {
     const res = await a.fetch(req(p, { method: p.includes("game-results") ? "POST" : "GET" }), baseEnv());
     assert.equal(res.status, 501, p);
     assert.equal((await res.json()).error.code, "NOT_IMPLEMENTED");

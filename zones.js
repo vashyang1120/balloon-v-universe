@@ -1,6 +1,6 @@
 /* ==========================================================
    氣球小V遊戲宇宙 — 集中設定檔
-   balloon-v-universe-v0.3.3-rpg-ux-polish-test-1
+   balloon-v-universe-v0.3.0-launch-integration-test-1（大廳設定沿用 v0.3.3 RPG 版面，只改遊戲入口與排行榜）
 
    ★ 所有可調整的數值與文字都集中在這個檔案：
      選區座標、聚焦暗化、光暈、動畫速度、中央角色、RPG 對話、
@@ -22,7 +22,7 @@
    ========================================================== */
 
 window.MAP_CONFIG = {
-  version: "balloon-v-universe-v0.3.3-rpg-ux-polish-test-1",
+  version: "balloon-v-universe-v0.3.0-launch-integration-test-1",
 
   /* 正式底圖路徑（不可替換成其他圖片） */
   mapSrc: "assets/universe_map_bg.png",
@@ -152,17 +152,17 @@ window.MAP_CONFIG = {
     ],
     gameIds: ["quiz", "rhythm", "tetris", "adventure"],
     gameNames: { quiz: "知識挑戰", rhythm: "節奏遊戲", tetris: "方塊派對", adventure: "派對島大作戰" },
-    /* 遊戲網址（v0.2.0）：知識學院／音樂舞台／方塊工坊 → 本站 universe/ 宇宙版（相對於大廳），
-       按「開始遊戲」會帶著目前玩家的 playerId 進入（?bvPlayerId=）。
-       派對島大作戰本版不換殼：維持原本行為（只顯示身份交接測試資料，不跳轉）。 */
+    /* 遊戲網址：知識學院／音樂舞台／方塊工坊 → 本站 universe/ 宇宙版（相對於大廳）；
+       派對島大作戰（v0.3.0）→ balloon-v-rush 的第一大陸遊戲宇宙版（同一個 github.io 網域）。
+       按「開始遊玩」會帶著目前玩家的 playerId 進入（?bvPlayerId=；沙盒再加 &sandbox=1）。 */
     gameUrls: {
       quiz: "universe/quiz/",
       rhythm: "universe/rhythm/",
       tetris: "universe/tetris/",
-      adventure: "https://vashyang1120.github.io/balloon-v-rush/rpg-test/"
+      adventure: "https://vashyang1120.github.io/balloon-v-rush/rpg-continent1-universe/"
     },
-    /* 會直接跳轉的宇宙版遊戲（不含派對島大作戰） */
-    universeGameIds: ["quiz", "rhythm", "tetris"],
+    /* 會直接跳轉的宇宙版遊戲（v0.3.0：四款都直接進入真正的遊戲） */
+    universeGameIds: ["quiz", "rhythm", "tetris", "adventure"],
     /* 是否把目前玩家寫入共用鍵 vPartyPlayerProfile。
        目前只有節奏遊戲會讀這個鍵，寫入後會直接改變節奏遊戲下次開啟時的玩家。
        未經使用者確認前保持 false。 */

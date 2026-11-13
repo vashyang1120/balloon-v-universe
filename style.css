@@ -1079,3 +1079,46 @@ html.page-hidden .actor, html.page-hidden .actor * { animation-play-state: pause
 .spot--tight .spot__glow { box-shadow: inset 0 0 0 2px rgba(255,216,77,.75), inset 0 0 12px 2px rgba(255,216,77,.45); }
 .spot--tight .spot__glow::after { box-shadow: inset 0 0 0 3px rgba(255,243,176,.95), inset 0 0 16px 4px rgba(255,226,110,.6); }
 @keyframes spotGlowPulse { 50% { opacity: 1; } }
+
+/* ==========================================================
+   排行榜總覽（v0.3.0；左下木牌「排行榜」）— 沿用通行證視窗的卡片、頁籤樣式
+   ========================================================== */
+.lb-modal { width: min(600px, 100%); padding: 22px 16px 16px; text-align: left; }
+.lb-modal__title { text-align: center; margin-top: 4px !important; }
+.lb-back { left: 10px; right: auto; }
+.lb-note { margin: 0 0 10px !important; padding: 8px 12px; border-radius: 12px; background: #fff4d6; color: #8a5a00; font-size: 14px !important; font-weight: 800; }
+.lb-games { display: grid; gap: 10px; }
+.lb-game { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 16px; background: var(--purple-soft); }
+.lb-game__art { width: 84px; flex: none; }
+.lb-game__text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.lb-game__text b { font-size: 18px; color: var(--purple-dark); }
+.lb-game__text span { font-size: 13px; color: var(--ink-soft); font-weight: 700; }
+.lb-game__btn { flex: none; min-height: 44px; padding: 0 14px; font-size: 15px; }
+.lb-tabs { flex-wrap: wrap; margin: 6px 0 10px; }
+.lb-tabs .tab { min-width: 72px; font-size: 15px; }
+.lb-tabs .tab:disabled { opacity: .55; cursor: not-allowed; }
+.lb-badge { display: block; font-style: normal; font-size: 11px; font-weight: 800; }
+.lb-pick { display: flex; align-items: center; gap: 10px; font-weight: 900; color: var(--pink-dark); }
+.lb-pick select { flex: 1; min-width: 0; min-height: 44px; padding: 0 10px; border: 3px solid var(--purple-soft); border-radius: 12px; font-size: 16px; font-weight: 800; color: var(--ink); background: #fff; }
+.lb-list { min-height: 160px; }
+.lb-state { margin: 24px 0 !important; text-align: center; color: var(--ink-soft); font-weight: 800; }
+.lb-state--error p { margin-bottom: 10px !important; }
+.lb-retry { min-height: 44px; padding: 0 18px; }
+.lb-rows { list-style: none; margin: 0; padding: 0; }
+.lb-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; margin-bottom: 6px; border-radius: 14px; background: #fff; box-shadow: inset 0 0 0 2px #eee4fb; }
+.lb-row.is-me { background: #fff6d6; box-shadow: inset 0 0 0 3px var(--gold); }
+.lb-row__rank { flex: none; width: 34px; text-align: center; font-size: 18px; font-weight: 900; color: var(--purple-dark); }
+.lb-row__av { flex: none; width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #fff7e6; }
+.lb-row__info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.lb-row__info b { font-size: 16px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-row__info small { font-size: 12px; color: var(--ink-soft); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-row__score { flex: none; font-size: 18px; font-weight: 900; color: var(--pink-dark); }
+.lb-mine { margin: 8px 0 0 !important; text-align: center; font-weight: 900; color: var(--purple-dark); font-size: 15px !important; }
+.lb-mine--none { color: var(--ink-soft); font-weight: 800; }
+.lb-foot { margin: 6px 0 0 !important; text-align: center; color: #9a8cb8; font-size: 12px !important; font-weight: 700; }
+.wallet-list li b { font-size: 14px; }
+@media (max-width: 420px) {
+  .lb-game__art { width: 64px; }
+  .lb-game__btn { padding: 0 10px; font-size: 14px; }
+  .lb-tabs .tab { min-width: 0; flex: 1 1 22%; font-size: 14px; }
+}
