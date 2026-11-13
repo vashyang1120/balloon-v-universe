@@ -84,7 +84,8 @@
 
   function ensureCatalog() {
     if (state.catalog) return Promise.resolve(state.catalog);
-    return Promise.all([get("/v1/leaderboards"), get("/v1/launch/status").catch(function () { return null; })]).then(function (r) {
+    var me = L.current();
+    return Promise.all([get("/v1/leaderboards"), get("/v1/launch/status" + (me ? "?playerId=" + encodeURIComponent(me.playerId) : "")).catch(function () { return null; })]).then(function (r) {
       state.catalog = r[0]; state.status = r[1];
       return state.catalog;
     });
@@ -144,8 +145,10 @@
   }
 
   function renderBoardShell(gameId, controls, boards, boardId) {
-    var off = state.status && state.status.scores !== "enabled";
+    var mode = state.status && state.status.mode;
+    var off = mode === "off" || (!mode && state.status && state.status.scores !== "enabled");
     els.body.innerHTML = controls +
+      (mode === "trial" ? '<p class="lb-note lb-note--trial">🧪 試營運排行榜：這裡是測試資料，不是正式排名；正式開放前會清除。</p>' : "") +
       (off ? '<p class="lb-note">正式成績功能還沒有開啟，目前排行榜不會有成績。</p>' : "") +
       '<div class="lb-list" id="lbList"></div>';
     loadBoard(gameId, boardId);
@@ -276,7 +279,8 @@
   function collectionHtml(d) {
     var c = d.collection;
     var off = !c.canEquip;
-    var note = off ? '<p class="coll-note">正式收藏功能尚未開啟：目前只能查看，暫時不能更換。</p>' : "";
+    var note = (c.mode === "trial" ? '<p class="coll-note">🧪 試營運收藏：這裡是測試資料，正式開放前會清除。' + (off ? "你不在試營運名單內，目前只能查看。" : "") + "</p>" : "") +
+      (off && c.mode !== "trial" ? '<p class="coll-note">正式收藏功能尚未開啟：目前只能查看，暫時不能更換。</p>' : "");
     var eqT = c.equipped.titleKey;
     // 稱號：已解鎖（可裝備）＋各遊戲尚未解鎖／準備中
     var unlocked = c.titles.length

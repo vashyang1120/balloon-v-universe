@@ -367,13 +367,13 @@
       // v0.3.1：稱號／頭像收藏 → 遊戲宇宙共用收藏視窗（只讀；更換在大廳通行證）
       if ((feature === "titles" || feature === "avatarUnlocks") && !S.isSandbox && player) { U.ui.showCollection(S); return true; }
       if (feature === "wallet" && officialOn()) {
-        say(official.wallet ? "🪙 V幣餘額：" + Number(official.wallet.balance || 0).toLocaleString() + "（V幣紀錄請到遊戲宇宙大廳「我的通行證」查看；消費尚未開放）" : "🪙 V幣讀取中…");
+        say(official.wallet ? (S.official.isTrial() ? "🧪 試營運 V幣：" : "🪙 V幣餘額：") + Number(official.wallet.balance || 0).toLocaleString() + "（V幣紀錄請到遊戲宇宙大廳「我的通行證」查看；消費尚未開放）" : "🪙 V幣讀取中…");
         return true;
       }
       say(FEATURE_TEXT[feature] || "這個功能準備中"); return true;
     },
     explainNotReady: explainNotReady,
-    walletText: function () { return officialOn() && official.wallet ? Number(official.wallet.balance || 0).toLocaleString() : (officialOn() ? "讀取中" : L.vcoinClosed); },
+    walletText: function () { return officialOn() && official.wallet ? Number(official.wallet.balance || 0).toLocaleString() + (S.official.isTrial() ? "（試營運）" : "") : (officialOn() ? "讀取中" : L.vcoinClosed); },
     titleText: function () { return S.isSandbox ? "準備中" : (player && player.title ? player.title.name : "未裝備"); },
 
     /* 結算：ScoreSubmission（Mock）。回傳像原版 gameLogs push 的結果（含 key） */
@@ -420,7 +420,7 @@
         bx.classList.add(coins.length ? "claimed" : (r ? "already" : "failed"));
         var tt = $("vcoin-title"), mm = $("vcoin-message");
         if (tt) tt.textContent = coins.length ? "🪙 +" + coins.reduce(function (a, x) { return a + x.amount; }, 0) + " V幣" : "🪙 V幣";
-        if (mm) mm.textContent = r ? S.describeOfficialResult(r) + (typeof r.balance === "number" && r.status === "accepted" ? "｜目前 " + r.balance + " V幣" : "") : (official.failMsg || "本場沒有發放 V幣");
+        if (mm) mm.textContent = r ? S.describeOfficialResult(r) + (typeof r.balance === "number" && r.status === "accepted" ? "｜目前 " + r.balance + (S.official.isTrial() ? " 試營運 V幣" : " V幣") : "") : (official.failMsg || "本場沒有發放 V幣");
         return true;
       }
       if (!v || v.reason !== "not_implemented") return false;

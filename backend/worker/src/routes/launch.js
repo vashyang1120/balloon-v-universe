@@ -186,7 +186,8 @@ export function launchRoutes() {
         const body = await readJson(ctx.request, MAX_BODY);
         requireScores(ctx, body && body.playerId);
         const r = await svc(ctx).submit(body, flags(ctx));
-        return ok(ctx, r, r.replayed ? 200 : 201);
+        // mode：trial＝受控試營運（資料在 trial/，畫面必須標示「試營運」，不可當成正式資料）
+        return ok(ctx, { ...r, mode: ctx.cfg.scoresMode }, r.replayed ? 200 : 201);
       },
     },
     {

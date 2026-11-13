@@ -524,6 +524,8 @@
       init: init,
       status: function () { return status; },
       isEnabled: isEnabled,
+      /* v0.3.1-trial-setup：後端是受控試營運（資料在 trial/，畫面要標示「試營運」） */
+      isTrial: function () { return !!status && status.mode === "trial"; },
       /* 遊戲開始：取得伺服器場次。未啟用／沙盒／失敗都回傳 { official:false, reason }，遊戲照常進行 */
       beginRun: function () {
         var p = getPlayer();
@@ -596,8 +598,14 @@
 
   /* 結果說明（四款遊戲共用；依伺服器判定） */
   var REWARD_TYPE_LABEL = { daily_play: "每日遊玩", daily_challenge: "今日挑戰" };
-  function describeOfficialResult(r) {
+  function describeOfficialResult(r, trial) {
     if (!r) return "";
+    // 受控試營運：一律標示「試營運」，不把測試資料說成正式資料
+    trial = trial || r.mode === "trial";
+    if (trial) {
+      var base = describeOfficialResult(Object.assign({}, r, { mode: "on" }), false);
+      return "🧪 試營運｜" + base.replace("已記入正式排行榜", "已記入試營運排行榜").replace(/ V幣/g, " 試營運 V幣");
+    }
     if (r.status === "accepted") {
       var coins = (r.rewards || []).map(function (x) { return (REWARD_TYPE_LABEL[x.type] || "獎勵") + " +" + x.amount; }).join("、");
       return "✅ 已記入正式排行榜" + (coins ? "｜🪙 " + coins + " V幣" : (r.rewardState === "disabled" ? "" : "｜今天的 V幣獎勵已領過")) +
@@ -612,6 +620,9 @@
     statusMark: "🧪 遊戲宇宙測試版",
     statusMarkSandbox: "🧪 遊戲宇宙測試版｜Sandbox",
     statusMarkOfficial: "🎈 遊戲宇宙｜正式成績",
+    statusMarkTrial: "🧪 遊戲宇宙｜試營運",
+    resultNoteTrial: "試營運：成績會送到伺服器確認，但只是測試資料（正式開放前會清除）",
+    boardNoteTrial: "🧪 試營運排行榜（測試資料，正式開放前會清除）",
     resultNoteOfficial: "結算後成績會送到遊戲宇宙伺服器確認",
     boardNoteOfficial: "遊戲宇宙正式排行榜（每位玩家只列個人最佳）",
     sending: "📮 正在把成績送到遊戲宇宙伺服器…",
@@ -823,7 +834,7 @@
       services: services,
       /* 正式成績／排行榜／V幣（v0.3.0）：見 createOfficialClient */
       official: official,
-      describeOfficialResult: describeOfficialResult,
+      describeOfficialResult: function (r) { return describeOfficialResult(r, official.isTrial()); },
       /* 一場遊戲的正式流程（給遊戲換殼層用）：開局 startRun() → 結算 finishRun(scoreData)
          回傳 { official:true, result } 或 { official:false, reason }（未啟用／沙盒／取得場次失敗：遊戲照常，成績不記入正式排行榜） */
       /* 遊戲開啟時呼叫：讀正式功能狀態；已開啟 → 換掉「測試版」標示、補送上次沒送出的成績、讀 V幣餘額 */
@@ -833,11 +844,15 @@
           if (!official.isEnabled()) return false;
           var d = root && root.document;
           if (d) {
-            d.body && d.body.classList.add("bv-official");
+            var trial = official.isTrial();
+            d.body && d.body.classList.add(trial ? "bv-trial" : "bv-official");
             var m = d.getElementById("bv-status-mark");
-            if (m) { m.textContent = LABELS.statusMarkOfficial; m.title = "成績由伺服器確認後記入正式排行榜；V幣由伺服器發放"; }
-            var a = d.getElementById("bv-result-note"); if (a) a.textContent = LABELS.resultNoteOfficial;
-            var b = d.getElementById("bv-lb-note"); if (b) b.textContent = LABELS.boardNoteOfficial;
+            if (m) {
+              m.textContent = trial ? LABELS.statusMarkTrial : LABELS.statusMarkOfficial;
+              m.title = trial ? "受控試營運：成績、V幣、收藏都是測試資料，正式開放前會清除" : "成績由伺服器確認後記入正式排行榜；V幣由伺服器發放";
+            }
+            var a = d.getElementById("bv-result-note"); if (a) a.textContent = trial ? LABELS.resultNoteTrial : LABELS.resultNoteOfficial;
+            var b = d.getElementById("bv-lb-note"); if (b) b.textContent = trial ? LABELS.boardNoteTrial : LABELS.boardNoteOfficial;
           }
           return official.flushOutbox().then(function (sent) {
             if (sent && sent.length) ui.toast("📮 已補送上次沒送出的 " + sent.length + " 筆成績");

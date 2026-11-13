@@ -889,8 +889,11 @@
         row("專屬身份圖案", avatarHtml(d.baseAvatarKey, "blue", null, "av--sm") + "<span>" + escapeHtml(ID.avatarLabel(d.baseAvatarKey)) + '<em class="muted">（固定，不能更換）</em></span>') +
         row("展示頭像", avatarHtml(d.displayAvatarKey, "pink", d.unlockedAvatars, "av--sm") + "<span>" + escapeHtml(ID.avatarLabel(d.displayAvatarKey)) + "</span>") +
         row("稱號", escapeHtml(titleText(d)) + (d.features && d.features.titles ? "" : '<em class="muted">（稱號系統準備中）</em>')) +
-        row("V幣", escapeHtml(walletText(d)) + (d.features && d.features.wallet ? '<em class="muted">（正式 V幣；消費功能尚未開放）</em>' : '<em class="muted">' + (d.walletState === "loading" ? "（讀取中…）" : d.walletState === "error" ? "（暫時無法讀取，請稍後再打開）" : "（V幣功能尚未開放）") + "</em>")) +
-        row("通行證代碼", '<code class="muted">' + escapeHtml(d.playerId) + "</code>") +
+        row("V幣", escapeHtml(walletText(d)) + (d.features && d.features.wallet ? (d.wallet && d.wallet.mode === "trial" ? '<em class="muted">（🧪 試營運 V幣：測試資料，正式開放前會清除）</em>' : '<em class="muted">（正式 V幣；消費功能尚未開放）</em>') : '<em class="muted">' + (d.walletState === "loading" ? "（讀取中…）" : d.walletState === "error" ? "（暫時無法讀取，請稍後再打開）" : "（V幣功能尚未開放）") + "</em>")) +
+        // v0.3.1-trial-setup：一鍵複製（按鈕不帶代碼，點擊時才讀「目前顯示的玩家」）
+        row("通行證代碼", '<span class="pass-code"><code class="muted" id="passCodeText">' + escapeHtml(d.playerId) + "</code>" +
+          '<button type="button" class="pass-copy" data-copy-pid aria-label="複製通行證代碼">📋 複製</button></span>' +
+          '<span class="pass-copy-msg" id="passCopyMsg" role="status" aria-live="polite"></span>') +
         walletHistoryHtml(d);
     } else if (tab === "collection" && d.collection && window.LobbyLaunch) {
       // v0.3.1：遊戲宇宙共用收藏（稱號＋展示頭像；可在這裡裝備，四款遊戲同步）
@@ -932,7 +935,7 @@
     if (!d.features || !d.features.wallet || !d.wallet) return "";
     var list = d.wallet.recent || [];
     var names = CFG.player.gameNames;
-    return '<h4 class="sec">🪙 V幣紀錄</h4>' + (list.length
+    return '<h4 class="sec">🪙 V幣紀錄' + (d.wallet.mode === "trial" ? "（🧪 試營運）" : "") + "</h4>" + (list.length
       ? '<ul class="record-list wallet-list">' + list.map(function (t) {
           return "<li><b>" + escapeHtml(t.dateKey) + " " + escapeHtml(REWARD_NAME[t.type] || "獎勵") + "</b><span>" + escapeHtml(names[t.gameId] || t.gameId) + "　+" + Number(t.amount) + "</span></li>";
         }).join("") + "</ul>"
@@ -947,6 +950,53 @@
   els.passModal.addEventListener("click", function (e) { if (e.target === els.passModal && guard("passClose")) closePass(); });
   els.signPass.addEventListener("click", function () { if (!guard("signPass")) return; openPass(); emit("signPassTapped"); });
   /* 正式 V幣讀到後：通行證若開著，重新顯示（lobby-launch.js 負責讀取） */
+  /* ---------- 通行證代碼一鍵複製（v0.3.1-trial-setup） ----------
+     點擊時才讀目前顯示的玩家 playerId（不寫死在按鈕上）；不跳轉、不重新整理、不切換玩家。
+     剪貼簿不能用時：改用選取文字的方式，並清楚提示手動複製，不假裝成功。 */
+  function copyFeedback(text, ok) {
+    var m = document.getElementById("passCopyMsg");
+    if (!m) return;
+    m.textContent = text;
+    m.classList.toggle("is-ok", !!ok);
+    m.classList.toggle("is-fail", !ok);
+    clearTimeout(copyFeedback.t);
+    if (ok) copyFeedback.t = setTimeout(function () { m.textContent = ""; m.classList.remove("is-ok"); }, 2500);
+  }
+  function selectCode() {
+    var el = document.getElementById("passCodeText");
+    if (!el || !window.getSelection) return false;
+    var r = document.createRange(); r.selectNodeContents(el);
+    var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    return true;
+  }
+  function legacyCopy(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.top = "-1000px"; ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select(); ta.setSelectionRange(0, text.length);
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    ta.remove();
+    return ok;
+  }
+  function copyPlayerId() {
+    var d = current();
+    if (!d || !d.playerId) return;
+    var pid = d.playerId;
+    var fail = function () {
+      selectCode();
+      copyFeedback("無法自動複製：代碼已選取，請長按或按 Ctrl+C（Mac：⌘+C）複製", false);
+    };
+    if (navigator.clipboard && window.isSecureContext && typeof navigator.clipboard.writeText === "function") {
+      navigator.clipboard.writeText(pid).then(function () { copyFeedback("已複製！", true); }, function () { if (legacyCopy(pid)) copyFeedback("已複製！", true); else fail(); });
+    } else if (legacyCopy(pid)) copyFeedback("已複製！", true);
+    else fail();
+  }
+  els.passTabBody.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-copy-pid]");
+    if (b) { e.preventDefault(); copyPlayerId(); }
+  });
+
   on("walletLoaded", refreshOpenPass);
   on("collectionLoaded", refreshOpenPass);
   function refreshOpenPass() {
