@@ -63,7 +63,7 @@ async function playRoundByClicks(page, pattern, tap = false) {
   check("問答｜題目修正", "題目修正已同步 → 首頁不再顯示「尚未同步」提醒", st.ovHidden && !/尚未同步/.test(st.ov), st.ov);
   check("問答｜題庫", `正式題庫完整載入（${BANK.length} 題，由原版網址唯讀載入）`, st.bank === BANK.length, st.bank);
   check("問答｜大廳", "「遊戲選單」改為「回遊戲宇宙」", st.menu === "🏠 回遊戲宇宙", st.menu);
-  check("問答｜未開放", "V幣顯示「未開放」、稱號「準備中」", /未開放/.test(st.wallet) && /準備中/.test(st.title), st.wallet + "／" + st.title);
+  check("問答｜未開放", "V幣顯示「未開放」；v0.3.1 稱號顯示共用收藏的裝備狀態（未裝備）", /未開放/.test(st.wallet) && /未裝備/.test(st.title), st.wallet + "／" + st.title);
   check("問答｜今日挑戰", "今日挑戰卡保留，標示「+10 V幣待開放」", /待開放/.test(st.dc), st.dc);
   await page.screenshot({ path: `${OUT}/quiz-01-title.png` });
 
@@ -75,10 +75,14 @@ async function playRoundByClicks(page, pattern, tap = false) {
     lobby: !!document.getElementById("bv-profile-lobby")
   }));
   check("問答｜玩家設定", "唯讀：ID 不能改、隱藏選頭像與確認身份、提供回大廳切換", pf.ro && pf.val === "問答甲" && pf.hidden && pf.lobby, JSON.stringify(pf));
-  await page.click("#btn-profile-avatar-collection"); await sleep(200);
-  check("問答｜未開放", "頭像收藏：顯示準備中提示", /準備中/.test(await text(page, "#toast")), await text(page, "#toast"));
-  await page.click("#btn-title-collection"); await sleep(200);
-  check("問答｜未開放", "稱號收藏：顯示準備中提示", /稱號收藏準備中/.test(await text(page, "#toast")), await text(page, "#toast"));
+  await page.click("#btn-profile-avatar-collection");
+  await page.waitForFunction(() => { const b = document.getElementById("bv-collection"); return b && !b.hidden && /要更換稱號或展示頭像/.test(b.textContent); }, null, { timeout: 8000, polling: 100 }).catch(() => {});
+  check("問答｜收藏", "v0.3.1：開啟遊戲宇宙共用收藏視窗（只讀；更換在大廳通行證）", await page.evaluate(() => { const b = document.getElementById("bv-collection"); return !!b && !b.hidden && /我的收藏/.test(b.textContent) && /大廳「我的通行證 → 收藏」/.test(b.textContent); }));
+  await page.click("#bv-collection [data-bv-close]");
+  await page.click("#btn-title-collection");
+  await page.waitForFunction(() => { const b = document.getElementById("bv-collection"); return b && !b.hidden && /要更換稱號或展示頭像/.test(b.textContent); }, null, { timeout: 8000, polling: 100 }).catch(() => {});
+  check("問答｜收藏", "v0.3.1：開啟遊戲宇宙共用收藏視窗（只讀；更換在大廳通行證）", await page.evaluate(() => { const b = document.getElementById("bv-collection"); return !!b && !b.hidden && /我的收藏/.test(b.textContent) && /大廳「我的通行證 → 收藏」/.test(b.textContent); }));
+  await page.click("#bv-collection [data-bv-close]");
   await page.screenshot({ path: `${OUT}/quiz-02-profile-readonly.png` });
   await page.click("#btn-profile-back");
   for (let i = 0; i < 6; i++) await page.click("#quiz-logo-title");

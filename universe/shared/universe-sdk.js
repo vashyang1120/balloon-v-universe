@@ -29,7 +29,7 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function (root) {
   "use strict";
 
-  var SDK_VERSION = "0.3.0";
+  var SDK_VERSION = "0.3.1";
   var DEFAULT_API_BASE = "https://balloon-v-universe-api.vashyang1120.workers.dev";
   var PLAYER_ID_RE = /^p_[a-z2-7]{20}$/;
   var AVATAR_KEY_RE = /^[a-z0-9_]{1,40}$/;
@@ -474,6 +474,12 @@
      - 回傳的是伺服器判定結果：accepted／pending_review／rejected；V幣只由伺服器發放
      ========================================================== */
   var OUTBOX_MAX = 10;
+  /* v0.3.1 展示頭像素材（與後端 collection-catalog.js 相同；圖片沿用節奏遊戲 assets/avatars 正式素材） */
+  var LEGACY_AVATAR_BASE = "https://vashyang1120.github.io/vparty-rhythm-game/assets/avatars/";
+  var DISPLAY_AVATAR_FILES = { xiaov_base: "xiaov_base.png", balloon_brother_01: "balloon_brother_01.png", balloon_brother_02: "balloon_brother_02.png",
+    balloon_brother_03: "balloon_brother_03.png", dance_sister_01: "dance_sister_01.png", balloon_sister_01: "balloon_sister_01.png",
+    balloon_sister_02: "balloon_sister_02.png", bubble_brother_01: "bubble_brother_01.png", xiaov_special: "xiaov_special.png",
+    student_hanhan: "student_hanhan_01.png", student_xuanxuan: "student_xuanxuan_01.png" };
   function createOfficialClient(o) {
     var api = o.api, mode = o.mode, gameId = o.gameId, gameVersion = o.gameVersion || "unknown", local = o.local;
     var getPlayer = o.getPlayer, sleep = o.sleep || function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
@@ -488,7 +494,8 @@
     function init() {
       if (mode !== "production") { status = { scores: "sandbox", rewards: "sandbox", spending: "disabled" }; return Promise.resolve(status); }
       if (statusPromise) return statusPromise;
-      statusPromise = api._request("GET", "/v1/launch/status").then(function (d) { status = d || { scores: "disabled" }; return status; },
+      var sp = getPlayer();
+      statusPromise = api._request("GET", "/v1/launch/status" + (sp && sp.playerId ? "?playerId=" + encodeURIComponent(sp.playerId) : "")).then(function (d) { status = d || { scores: "disabled" }; return status; },
         function (err) { status = { scores: "unavailable", rewards: "unavailable", spending: "disabled", error: err }; statusPromise = null; return status; });
       return statusPromise;
     }
@@ -562,6 +569,23 @@
         if (!p) return Promise.reject(UniverseError("missingPlayer"));
         return api._request("GET", "/v1/wallet/" + encodeURIComponent(p.playerId));
       },
+      /* v0.3.1：共用收藏（稱號＋展示頭像）。讀取不需要啟用正式寫入 */
+      getCollection: function () {
+        var p = getPlayer();
+        if (!p) return Promise.reject(UniverseError("missingPlayer"));
+        return api._request("GET", "/v1/players/" + encodeURIComponent(p.playerId) + "/collection");
+      },
+      /* 裝備：{ titleKey?: string|null, displayAvatarKey?: string|null }（null＝不裝備／還原身份頭像）。
+         伺服器會檢查 ID＋身份頭像，而且只能選自己已解鎖的；不會改 playerId、baseAvatarKey */
+      equip: function (patch) {
+        var p = getPlayer();
+        if (!p) return Promise.reject(UniverseError("missingPlayer"));
+        if (mode !== "production") return Promise.reject(UniverseError("disabled"));
+        var body = { displayId: p.displayId, baseAvatarKey: p.baseAvatarKey };
+        if (patch && patch.titleKey !== undefined) body.titleKey = patch.titleKey;
+        if (patch && patch.displayAvatarKey !== undefined) body.displayAvatarKey = patch.displayAvatarKey;
+        return api._request("POST", "/v1/players/" + encodeURIComponent(p.playerId) + "/equip", body);
+      },
       getQuizProgress: function () {
         var p = getPlayer();
         if (!p) return Promise.reject(UniverseError("missingPlayer"));
@@ -576,7 +600,8 @@
     if (!r) return "";
     if (r.status === "accepted") {
       var coins = (r.rewards || []).map(function (x) { return (REWARD_TYPE_LABEL[x.type] || "獎勵") + " +" + x.amount; }).join("、");
-      return "✅ 已記入正式排行榜" + (coins ? "｜🪙 " + coins + " V幣" : (r.rewardState === "disabled" ? "" : "｜今天的 V幣獎勵已領過"));
+      return "✅ 已記入正式排行榜" + (coins ? "｜🪙 " + coins + " V幣" : (r.rewardState === "disabled" ? "" : "｜今天的 V幣獎勵已領過")) +
+        (r.unlockNames && r.unlockNames.length ? "｜🎖 新收藏：" + r.unlockNames.join("、") : "");
     }
     if (r.status === "pending_review") return "🕵️ 成績審核中：通過後才會列入排行榜與發放 V幣";
     return "⚠️ 本場成績未通過檢查，沒有列入排行榜";
@@ -600,6 +625,8 @@
     dailyRewardPending: "+10 V幣待開放"
   };
 
+  var COLLECTION_CSS = ".bv-collection { position: fixed; inset: 0; z-index: 2147483000; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(30, 16, 60, .55); } .bv-collection[hidden] { display: none; } .bv-collection__card { position: relative; width: min(440px, 100%); max-height: 86vh; overflow: auto; padding: 18px 16px; border-radius: 18px; background: #fffaf2; color: #3b2a5a; font-family: inherit; box-shadow: 0 10px 30px rgba(0,0,0,.25); } .bv-collection__card h3 { margin: 0 0 8px; font-size: 1.2rem; text-align: center; } .bv-collection__card h4 { margin: 12px 0 6px; font-size: .95rem; color: #7b4fd6; } .bv-collection__x { position: absolute; top: 8px; right: 8px; width: 40px; height: 40px; border: 0; border-radius: 50%; background: #efe7fb; font-size: 1rem; cursor: pointer; } .bv-collection__now { margin: 0; text-align: center; } .bv-collection__list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; } .bv-collection__list li { padding: 4px 10px; border-radius: 999px; background: #f3ecff; font-size: .9rem; } .bv-collection__list em { margin-left: 6px; font-style: normal; font-size: .75rem; color: #c2185b; } .bv-collection__avs { display: flex; flex-wrap: wrap; gap: 8px; } .bv-collection__av { display: flex; flex-direction: column; align-items: center; width: 64px; font-size: .7rem; text-align: center; } .bv-collection__av img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; background: #fff3d6; border: 3px solid #e3d6f7; } .bv-collection__av.is-on img { border-color: #f4b400; } .bv-collection__hint, .bv-collection__empty, .bv-collection__msg { font-size: .85rem; color: #6e6485; }";
+
   /* 極小的畫面工具（只在瀏覽器使用；Node 測試時不做任何事） */
   var toastTimer = null;
   var ui = {
@@ -613,6 +640,40 @@
       clearTimeout(toastTimer);
       toastTimer = setTimeout(function () { el.hidden = true; }, ms || 3200);
       return true;
+    },
+    /* v0.3.1：共用收藏視窗（四款遊戲同一個畫面；只讀）。更換稱號／展示頭像統一在大廳「我的通行證 → 收藏」 */
+    showCollection: function (session) {
+      var d = root && root.document;
+      if (!d || !d.body || !session) return Promise.resolve(false);
+      var esc = function (x) { return String(x == null ? "" : x).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
+      if (!d.getElementById("bv-collection-style")) {
+        var st = d.createElement("style"); st.id = "bv-collection-style"; st.textContent = COLLECTION_CSS; d.head.appendChild(st);
+      }
+      var box = d.getElementById("bv-collection");
+      if (!box) {
+        box = d.createElement("div"); box.id = "bv-collection"; box.className = "bv-collection"; box.setAttribute("role", "dialog"); box.setAttribute("aria-modal", "true");
+        box.addEventListener("click", function (e) { if (e.target === box || (e.target.closest && e.target.closest("[data-bv-close]"))) box.hidden = true; });
+        d.body.appendChild(box);
+      }
+      box.hidden = false;
+      box.innerHTML = '<div class="bv-collection__card"><button type="button" class="bv-collection__x" data-bv-close aria-label="關閉">✕</button><h3>🎖 我的收藏</h3><p class="bv-collection__msg">讀取中…</p></div>';
+      var card = box.firstChild;
+      if (session.isSandbox) { card.querySelector(".bv-collection__msg").textContent = "測試沙盒沒有正式收藏。"; return Promise.resolve(true); }
+      return session.official.getCollection().then(function (c) {
+        var av = function (k) { return '<img src="' + esc(session.avatars.imageUrl(k)) + '" alt="" onerror="this.style.visibility=\'hidden\'">'; };
+        var titles = c.titles.length ? '<ul class="bv-collection__list">' + c.titles.map(function (t) {
+          return "<li><b>" + esc(t.name) + "</b>" + (c.equipped.titleKey === t.titleKey ? '<em>裝備中</em>' : "") + "</li>"; }).join("") + "</ul>" : '<p class="bv-collection__empty">還沒有解鎖稱號</p>';
+        var avatars = '<div class="bv-collection__avs">' + [{ avatarKey: c.equipped.baseAvatarKey, name: "身份頭像" }].concat(c.avatars).map(function (a) {
+          return '<span class="bv-collection__av' + (c.equipped.displayAvatarKey === a.avatarKey ? " is-on" : "") + '">' + av(a.avatarKey) + "<small>" + esc(a.name) + "</small></span>"; }).join("") + "</div>";
+        card.innerHTML = '<button type="button" class="bv-collection__x" data-bv-close aria-label="關閉">✕</button><h3>🎖 我的收藏</h3>' +
+          '<p class="bv-collection__now">目前稱號：<b>' + esc(c.equipped.titleName || "未裝備") + "</b></p>" +
+          "<h4>稱號（" + c.titles.length + "）</h4>" + titles + "<h4>展示頭像</h4>" + avatars +
+          '<p class="bv-collection__hint">要更換稱號或展示頭像，請回到遊戲宇宙大廳「我的通行證 → 收藏」。四款遊戲會一起更新。</p>';
+        return true;
+      }, function (err) {
+        card.querySelector(".bv-collection__msg").textContent = "⚠️ " + ((err && err.userMessage) || "收藏暫時無法讀取");
+        return false;
+      });
     },
     statusMark: function (session) {
       var d = root && root.document;
@@ -705,6 +766,8 @@
         displayId: p.displayId,
         baseAvatarKey: p.baseAvatarKey,
         displayAvatarKey: p.displayAvatarKey || p.baseAvatarKey,
+        /* v0.3.1：目前裝備的稱號（伺服器回傳；沒有＝null） */
+        title: p.title && typeof p.title === "object" && p.title.name ? Object.freeze({ titleKey: String(p.title.titleKey || ""), name: String(p.title.name) }) : null,
         createdAt: p.createdAt || null,
         mode: mode,
         handoffSource: source,
@@ -826,7 +889,13 @@
       },
       /* 身份圖案：統一使用遊戲宇宙 assets/avatars/base/，清單以後端 active 為準 */
       avatars: {
-        imageUrl: function (key) { return AVATAR_KEY_RE.test(String(key || "")) ? avatarBaseUrl + key + ".png" : ""; },
+        /* 身份頭像 → 遊戲宇宙 assets/avatars/base/；可解鎖展示頭像（小V、氣球哥哥…、學生專屬）→ 節奏遊戲既有正式素材 */
+        imageUrl: function (key) {
+          key = String(key || "");
+          if (!AVATAR_KEY_RE.test(key)) return "";
+          if (DISPLAY_AVATAR_FILES[key]) return LEGACY_AVATAR_BASE + DISPLAY_AVATAR_FILES[key];
+          return avatarBaseUrl + key + ".png";
+        },
         label: function (key) { return avatarLabels[key] || ""; },
         loadList: function () {
           return players.listBaseAvatars().then(function (d) {
@@ -874,6 +943,8 @@
     buildScoreSubmission: buildScoreSubmission,
     validateScoreSubmission: validateScoreSubmission,
     describeOfficialResult: describeOfficialResult,
+    /* v0.3.1：是否為可解鎖的展示頭像（小V、氣球哥哥…、學生專屬）— 用來顯示其他玩家目前的展示頭像 */
+    isDisplayAvatarKey: function (key) { return Object.prototype.hasOwnProperty.call(DISPLAY_AVATAR_FILES, String(key || "")); },
     /* 給自己管理玩家身份的遊戲（例如派對島大作戰）：直接建立正式成績客戶端
        o = { gameId, gameVersion, getPlayer: () => ({ playerId }) | null, mode?: "production"|"sandbox", apiBaseUrl?, fetch? } */
     createOfficialClient: function (o) {

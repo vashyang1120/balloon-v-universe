@@ -113,11 +113,20 @@ export function createLeaderboardService({ db, now }) {
     },
 
     async getBoard(gameId, boardId, { limit = 50, playerId } = {}) {
-      const raw = (await db.get(boardPath(gameId, boardId))) || {};
+      // v0.3.1：排行榜顯示玩家「目前」的展示頭像與稱號（publicProfiles；一次讀取，不逐筆查詢）
+      const [rawBoard, profiles] = await Promise.all([db.get(boardPath(gameId, boardId)), db.get("publicProfiles").catch(() => null)]);
+      const raw = rawBoard || {};
+      const prof = profiles || {};
       let rows = Object.values(raw).filter((r) => r && typeof r === "object" && typeof r.playerId === "string");
       if (gameId === "quiz") rows.sort(boardId === "main" ? compareMainRows : compareGradeRows);
       else rows.sort((a, b) => (b.score - a.score) || (a.achievedAt - b.achievedAt));
-      const ranked = rows.map((r, i) => ({ rank: i + 1, ...publicRow(gameId, boardId, r) }));
+      const ranked = rows.map((r, i) => {
+        const row = { rank: i + 1, ...publicRow(gameId, boardId, r) };
+        const pp = prof[r.playerId];
+        if (pp && pp.displayAvatarKey) row.displayAvatarKey = pp.displayAvatarKey;
+        row.titleName = pp && pp.titleName ? pp.titleName : null;
+        return row;
+      });
       const me = playerId ? ranked.find((r) => r.playerId === playerId) || null : null;
       return { gameId, boardId, total: ranked.length, rows: ranked.slice(0, limit), me };
     },

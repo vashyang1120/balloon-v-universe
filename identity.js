@@ -42,8 +42,10 @@
   }
 
   /* 身份圖案一律由遊戲宇宙提供；只有展示用可解鎖頭像仍讀節奏遊戲的舊位置 */
-  function avatarSrc(key) {
+  function avatarSrc(key, unlocked) {
     if (!key) return "";
+    // v0.3.1：伺服器收藏回傳的圖片（例如學生專屬頭像，檔名與 key 不同）
+    if (unlocked && unlocked[key] && unlocked[key].image) return unlocked[key].image;
     if (builtinByKey[key]) return P.avatarBaseUrl + key + ".png";
     if (unlockableByKey[key]) return P.legacyDisplayAvatarBaseUrl + key + ".png";
     return "";
@@ -58,8 +60,8 @@
     return key || "";
   }
 
-  /* 展示頭像：v0.3.4 只允許身份圖案本身（解鎖收藏尚未接入） */
-  function isDisplayAvatarAllowed(key) { return isBuiltinAvatar(key); }
+  /* 展示頭像：身份圖案，或遊戲宇宙共用收藏的可解鎖頭像（v0.3.1；伺服器已檢查只能是自己已解鎖的） */
+  function isDisplayAvatarAllowed(key) { return isBuiltinAvatar(key) || !!unlockableByKey[key] || /^student_[a-z0-9_]{1,40}$/.test(String(key || "")); }
 
   /* 大廳輸入檢查（與後端規則一致：去頭尾空白後 1～20 個字、不可為「玩家」）。
      最後以伺服器的檢查為準，伺服器的中文錯誤訊息會直接顯示給玩家。 */

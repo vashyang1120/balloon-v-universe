@@ -15,7 +15,7 @@
 (function () {
   "use strict";
 
-  var GAME_VERSION = "rhythm-v2.6.4+universe-v0.3.0-test-1";
+  var GAME_VERSION = "rhythm-v2.6.4+universe-v0.3.1-test-1";
   var AV_BASE = "../../assets/avatars/base/";
   var BLANK = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
   var U = window.BVUniverse;
@@ -199,7 +199,7 @@
     return board.rows.map(function (r) {
       var mine = player && r.playerId === player.playerId;
       var x = r.extra || {};
-      return { playerKey: r.playerId, name: (r.displayId || "玩家") + (mine ? " ⭐" : ""), displayAvatarKey: r.displayAvatarKey || "",
+      return { playerKey: r.playerId, name: (r.displayId || "玩家") + (mine ? " ⭐" : ""), displayAvatarKey: r.displayAvatarKey || "", equippedTitleName: r.titleName || "",
         bestScore: r.score, score: r.score, diff: x.difficulty, grade: x.grade, acc: x.accuracy, song: songTitle,
         date: r.achievedAt ? new Date(r.achievedAt).toLocaleDateString("zh-TW") : "" };
     });
@@ -252,9 +252,9 @@
         P.playerId = player.playerId;
         P.id = player.displayId;
         P.baseAvatarKey = player.baseAvatarKey;
-        P.displayAvatarKey = player.baseAvatarKey;     // 展示頭像解鎖尚未接入：先等於身份頭像
-        P.avatarKey = player.baseAvatarKey;
-        P.avatarSrc = S.avatars.imageUrl(player.baseAvatarKey);
+        P.displayAvatarKey = player.displayAvatarKey || player.baseAvatarKey;   // v0.3.1：遊戲宇宙共用收藏目前裝備的展示頭像（baseAvatarKey 不變）
+        P.avatarKey = P.displayAvatarKey;
+        P.avatarSrc = S.avatars.imageUrl(P.displayAvatarKey) || S.avatars.imageUrl(player.baseAvatarKey);
       } else {
         P.playerId = "";
         P.id = "讀取中…";
@@ -266,16 +266,20 @@
     },
 
     /* 身份圖案：遊戲宇宙統一素材 assets/avatars/base/ */
+    /* v0.3.1：展示頭像只能是身份頭像，或伺服器回傳的目前裝備展示頭像 */
+    isDisplayAvatarAllowed: function (key) { return !!key && !!player && (key === player.baseAvatarKey || key === player.displayAvatarKey); },
     avatarFor: function (key) {
       if (!key) return player ? null : { key: "", src: BLANK };
       var mine = player && (key === player.baseAvatarKey || key === player.displayAvatarKey);
-      if (!mine && !labels[key]) return null;
+      if (!mine && !labels[key] && !U.isDisplayAvatarKey(key)) return null;
       var url = S.avatars.imageUrl(key);
       return url ? { key: key, src: url, name: labels[key] || key } : null;
     },
     avatarLabel: function (key) { return labels[key] || ""; },
 
     notReady: function (feature) {
+      // v0.3.1：稱號／頭像收藏 → 遊戲宇宙共用收藏視窗（只讀；更換在大廳通行證）
+      if ((feature === "titles" || feature === "avatarUnlocks") && !S.isSandbox && player) { U.ui.showCollection(S); return true; }
       if (feature === "wallet" && officialOn()) {
         U.ui.toast(wallet ? "🪙 V幣餘額：" + Number(wallet.balance || 0).toLocaleString() + "（V幣紀錄請到遊戲宇宙大廳「我的通行證」查看；消費尚未開放）" : "🪙 V幣讀取中…");
         refreshWallet();
@@ -290,7 +294,7 @@
       U.ui.toast(st.status === "error" && st.error ? st.error.userMessage : "正在讀取玩家資料，請稍候…");
     },
     walletText: function () { return officialOn() && wallet ? Number(wallet.balance || 0).toLocaleString() : (officialOn() ? "讀取中" : L.vcoinClosed); },
-    titleText: function () { return L.titlePending; },
+    titleText: function () { return S.isSandbox ? "準備中" : (player && player.title ? player.title.name : "未裝備"); },
     resultVcoinText: function () {
       if (officialOn()) return lastOfficial ? S.describeOfficialResult(lastOfficial) : "🪙 V幣：成績送出中，等待伺服器確認…";
       return L.vcoinResult;
