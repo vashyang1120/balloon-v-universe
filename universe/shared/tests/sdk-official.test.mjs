@@ -150,3 +150,39 @@ test("派對島：SDK 可提交第一大陸完整通關總分，並讀取大陸�
   assert.deepEqual(cat.games.adventure.boards.map((x) => x.status), ["open", "not_open", "not_open"]);
   assert.equal((await s.official.getBoard("continent-1")).rows[0].score, 7350);
 });
+
+/* ───────── v0.3.1 共用收藏 ───────── */
+test("v0.3.1 收藏：正式成績解鎖 → SDK 讀到收藏；裝備後重新進遊戲（另一台裝置）讀到同樣的展示頭像與稱號", async () => {
+  const w = world();
+  const pid = await w.createPlayer("SDK收藏");
+  const s = w.session("tetris", pid);
+  await s.start();
+  const run = await s.official.beginRun();
+  w.clock.t += 120000;
+  const r = await s.official.submitRun(run, TETRIS);
+  assert.match(s.describeOfficialResult(r), /🎖 新收藏：稱號「初次堆疊者」/);
+  const c = await s.official.getCollection();
+  assert.equal(c.titles.length, 4); assert.equal(c.canEquip, true);
+  const after = await s.official.equip({ titleKey: "tetris_score_2000", displayAvatarKey: "balloon_brother_01" });
+  assert.equal(after.equipped.displayAvatarKey, "balloon_brother_01");
+  // 另一台裝置（新的本機儲存）、另一款遊戲
+  const s2 = w.session("quiz", pid);
+  const p2 = await s2.start();
+  assert.deepEqual([p2.playerId, p2.baseAvatarKey, p2.displayAvatarKey, p2.title.name], [pid, "boy1", "balloon_brother_01", "氣球堆疊師"]);
+  assert.equal(s2.avatars.imageUrl("balloon_brother_01"), "https://vashyang1120.github.io/vparty-rhythm-game/assets/avatars/balloon_brother_01.png");
+  assert.equal(s2.avatars.imageUrl("boy1").endsWith("/assets/avatars/base/boy1.png"), true);
+  await assert.rejects(s2.official.equip({ titleKey: "tetris_level_5" }), (e) => e.kind === "forbidden");
+});
+
+test("v0.3.1 收藏：正式寫入關閉時可以讀、不能裝備；沙盒不能裝備", async () => {
+  const w = world({});
+  const pid = await w.createPlayer("SDK收藏關");
+  const s = w.session("rhythm", pid);
+  await s.start();
+  const c = await s.official.getCollection();
+  assert.deepEqual([c.titles.length, c.canEquip], [0, false]);
+  await assert.rejects(s.official.equip({ displayAvatarKey: null }), (e) => e.kind === "disabled");
+  const sb = w.session("rhythm", pid, { sandbox: true });
+  await sb.start();
+  await assert.rejects(sb.official.equip({ displayAvatarKey: null }), (e) => e.kind === "disabled");
+});

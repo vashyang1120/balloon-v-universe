@@ -17,7 +17,7 @@
 (function () {
   "use strict";
 
-  var GAME_VERSION = "quiz-v0.2.44+universe-v0.3.0-test-1";
+  var GAME_VERSION = "quiz-v0.2.44+universe-v0.3.1-test-1";
   var AV_BASE = "../../assets/avatars/base/";
   var OVERRIDES_URL = "approved-question-overrides.json";
   /* 公開檔只需要原版 isQuestionEnabled 用到的三個欄位；其他欄位（含後台管理資訊）一律丟棄 */
@@ -277,7 +277,7 @@
       if (officialOn()) {
         return S.official.getBoard(boardId, { limit: 30 }).then(function (b) {
           return b.rows.map(function (r) {
-            var row = { playerKey: r.playerId, playerId: r.playerId, name: r.displayId, displayAvatarKey: r.displayAvatarKey,
+            var row = { playerKey: r.playerId, playerId: r.playerId, name: r.displayId, displayAvatarKey: r.displayAvatarKey, equippedTitleName: r.titleName || "",
               completedSubjects: r.completedSubjects, perfectSubjects: r.perfectSubjects, totalCorrect: r.totalCorrect, totalQuestions: r.totalQuestions,
               totalTimeUsed: r.totalTimeUsed, totalMaxCombo: r.totalMaxCombo, totalAttempts: r.totalAttempts, updatedAt: r.updatedAt };
             if (boardId === "main") { row.totalScore = r.score; row.gradeSummaryText = r.summary; row.gradeSummary = r.gradeSummary; }
@@ -339,27 +339,33 @@
         P.playerId = player.playerId;
         P.playerKey = player.playerId;          // 成績歸屬＝遊戲宇宙 playerId（不是舊 playerKey）
         P.baseAvatarKey = player.baseAvatarKey;
-        P.displayAvatarKey = player.baseAvatarKey;
-        P.avatarKey = player.baseAvatarKey;
-        P.avatarSrc = S.avatars.imageUrl(player.baseAvatarKey);
+        P.displayAvatarKey = player.displayAvatarKey || player.baseAvatarKey;   // v0.3.1：遊戲宇宙共用收藏目前裝備的展示頭像（baseAvatarKey 不變）
+        P.avatarKey = P.displayAvatarKey;
+        P.avatarSrc = S.avatars.imageUrl(P.displayAvatarKey) || S.avatars.imageUrl(player.baseAvatarKey);
       } else {
         P.id = ""; P.name = "讀取中…"; P.playerId = ""; P.playerKey = "";
       }
       return P;
     },
+    /* v0.3.1：展示頭像只能是身份頭像，或伺服器回傳的目前裝備展示頭像 */
+    isDisplayAvatarAllowed: function (key) { return !!key && !!player && (key === player.baseAvatarKey || key === player.displayAvatarKey); },
     avatarFor: function (key) {
       if (!key) return null;
       var mine = player && (key === player.baseAvatarKey || key === player.displayAvatarKey);
-      if (!mine && !labels[key]) return null;
+      if (!mine && !labels[key] && !U.isDisplayAvatarKey(key)) return null;
       var url = S.avatars.imageUrl(key);
       return url ? { key: key, src: url, url: url, name: labels[key] || key } : null;
     },
     avatarLabel: function (key) { return labels[key] || ""; },
     avatarPickerBlocked: function (mode) {
-      if (mode === "base") say(FEATURE_TEXT.identity); else say(FEATURE_TEXT.avatarUnlocks);
+      if (mode === "base") say(FEATURE_TEXT.identity);
+      else if (!S.isSandbox && player) U.ui.showCollection(S);   // v0.3.1：展示頭像 → 共用收藏視窗（更換在大廳通行證）
+      else say(FEATURE_TEXT.avatarUnlocks);
       return true;
     },
     notReady: function (feature) {
+      // v0.3.1：稱號／頭像收藏 → 遊戲宇宙共用收藏視窗（只讀；更換在大廳通行證）
+      if ((feature === "titles" || feature === "avatarUnlocks") && !S.isSandbox && player) { U.ui.showCollection(S); return true; }
       if (feature === "wallet" && officialOn()) {
         say(official.wallet ? "🪙 V幣餘額：" + Number(official.wallet.balance || 0).toLocaleString() + "（V幣紀錄請到遊戲宇宙大廳「我的通行證」查看；消費尚未開放）" : "🪙 V幣讀取中…");
         return true;
@@ -368,7 +374,7 @@
     },
     explainNotReady: explainNotReady,
     walletText: function () { return officialOn() && official.wallet ? Number(official.wallet.balance || 0).toLocaleString() : (officialOn() ? "讀取中" : L.vcoinClosed); },
-    titleText: function () { return L.titlePending; },
+    titleText: function () { return S.isSandbox ? "準備中" : (player && player.title ? player.title.name : "未裝備"); },
 
     /* 結算：ScoreSubmission（Mock）。回傳像原版 gameLogs push 的結果（含 key） */
     submitRecord: function (record) {

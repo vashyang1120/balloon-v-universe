@@ -111,7 +111,7 @@ const text = (page, sel) => page.locator(sel).first().innerText().catch(() => ""
   check("身份", "身份頭像來自遊戲宇宙 assets/avatars/base/，圖片載入成功", st.avSrc === "../../assets/avatars/base/avatar_rabbit_hoodie.png" && st.avW > 0, st.avSrc + " w=" + st.avW);
   check("身份", "身份名稱使用共用頭像名稱（兔兔帽T）", /兔兔帽T/.test(st.key), st.key);
   check("未開放", "V幣顯示「未開放」（不是 0）", /未開放/.test(st.wallet), st.wallet);
-  check("未開放", "稱號顯示「準備中」", /準備中/.test(st.title), st.title);
+  check("收藏", "v0.3.1：稱號顯示遊戲宇宙共用收藏的裝備狀態（沒有＝「未裝備」）", /未裝備/.test(st.title), st.title);
   check("標示", "v0.2.0：首頁只有一個簡潔測試標示（不再有常駐大型橫幅）", /測試版/.test(st.banner) && st.marks === 1 && !st.oldBanner, st.banner);
   await page.screenshot({ path: `${OUT}/01-title-desktop.png` });
 
@@ -128,10 +128,14 @@ const text = (page, sel) => page.locator(sel).first().innerText().catch(() => ""
   await page.click("#btn-vcoin-history"); await sleep(300);
   check("未開放", "V幣錢包面板顯示「尚未開放」", /尚未開放/.test(await text(page, "#vcoin-history-list")), await text(page, "#vcoin-history-list"));
   await page.screenshot({ path: `${OUT}/02-profile-readonly.png` });
-  await page.click("#btn-unlock-collection"); await sleep(300);
-  check("未開放", "頭像收藏顯示「準備中」提示，不開啟解鎖", /準備中/.test(await text(page, "#toast")), await text(page, "#toast"));
-  await page.click("#btn-title-collection"); await sleep(300);
-  check("未開放", "稱號收藏顯示「準備中」提示", /稱號收藏準備中/.test(await text(page, "#toast")), await text(page, "#toast"));
+  await page.click("#btn-unlock-collection");
+  await page.waitForFunction(() => { const b = document.getElementById("bv-collection"); return b && !b.hidden && /要更換稱號或展示頭像/.test(b.textContent); }, null, { timeout: 8000, polling: 100 }).catch(() => {});
+  check("收藏", "v0.3.1：開啟遊戲宇宙共用收藏視窗（只讀；更換在大廳通行證）", await page.evaluate(() => { const b = document.getElementById("bv-collection"); return !!b && !b.hidden && /我的收藏/.test(b.textContent) && /大廳「我的通行證 → 收藏」/.test(b.textContent); }));
+  await page.click("#bv-collection [data-bv-close]");
+  await page.click("#btn-title-collection");
+  await page.waitForFunction(() => { const b = document.getElementById("bv-collection"); return b && !b.hidden && /要更換稱號或展示頭像/.test(b.textContent); }, null, { timeout: 8000, polling: 100 }).catch(() => {});
+  check("收藏", "v0.3.1：開啟遊戲宇宙共用收藏視窗（只讀；更換在大廳通行證）", await page.evaluate(() => { const b = document.getElementById("bv-collection"); return !!b && !b.hidden && /我的收藏/.test(b.textContent) && /大廳「我的通行證 → 收藏」/.test(b.textContent); }));
+  await page.click("#bv-collection [data-bv-close]");
   await page.click("#btn-profile-back");
 
   // 管理後台入口（點標題 5 下）已停用

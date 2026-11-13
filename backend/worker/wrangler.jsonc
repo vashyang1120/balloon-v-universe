@@ -54,7 +54,10 @@
     // v0.3.0 正式成績／排行榜／V幣：預設關閉。驗收通過後由使用者把 "off" 改成 "on" 再部署才會開始寫入。
     //   SCORES_ENABLED  ：開始場次、提交成績、正式排行榜寫入
     //   REWARDS_ENABLED ：每日 +30／今日挑戰 +10 入帳（需要 SCORES_ENABLED 同時為 on）
+    // v0.3.1：也可以設成 "trial"（受控試營運）：只有 TRIAL_PLAYER_IDS 名單內的玩家可以寫入，
+    //   資料全部寫在 trial/ 底下（不碰正式排行榜與錢包），驗收後在管理後台清除再改成 "on"。
     "SCORES_ENABLED": "off",
-    "REWARDS_ENABLED": "off"
+    "REWARDS_ENABLED": "off",
+    "TRIAL_PLAYER_IDS": ""
   }
 }

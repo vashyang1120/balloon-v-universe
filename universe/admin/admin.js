@@ -123,6 +123,82 @@ async function loadAudits() {
   } catch { /* 略過 */ }
 }
 
+/* ---------- v0.3.1 玩家收藏 ---------- */
+const KIND = { title: "稱號", avatar: "頭像" };
+const SRC = { score: "正式成績", backfill: "歷史補判定", admin: "管理員發放" };
+async function collection() {
+  const pid = $("cPlayer").value.trim();
+  if (!PID.test(pid)) { setStatus("collStatus", "bad", "playerId 格式不正確（p_ 加 20 碼）"); return; }
+  setStatus("collStatus", "", "查詢中…");
+  try {
+    const c = await api("GET", `/v1/admin/collections/${encodeURIComponent(pid)}`);
+    setStatus("collStatus", "ok", `${c.displayId}（${c.playerId}）：稱號 ${c.titles.length} 個、展示頭像 ${c.avatars.length} 個`);
+    show("collBody", true);
+    $("collEquipped").textContent = `目前裝備：稱號「${c.equipped.titleName || "未裝備"}」｜展示頭像 ${c.equipped.displayAvatarKey}（身份頭像 ${c.equipped.baseAvatarKey}，固定不變）`;
+    const tb = $("collTable").querySelector("tbody"); tb.textContent = "";
+    c.titles.forEach((t) => { const s0 = (c.sources.titles[t.titleKey] || {}).source || {}; const tr = document.createElement("tr"); ["title", t.name, t.titleKey, GAME[t.gameId] || t.gameId, fmt(t.unlockedAt), (SRC[s0.type] || s0.type || "") + (s0.submissionId ? " " + s0.submissionId : "")].forEach((v, i) => cell(tr, i === 0 ? KIND[v] : v)); tb.appendChild(tr); });
+    c.avatars.forEach((a) => { const s0 = (c.sources.avatars[a.avatarKey] || {}).source || {}; const tr = document.createElement("tr"); ["avatar", a.name, a.avatarKey, "", fmt(a.unlockedAt), (SRC[s0.type] || s0.type || "") + (s0.submissionId ? " " + s0.submissionId : "") + (s0.note ? "｜" + s0.note : "")].forEach((v, i) => cell(tr, i === 0 ? KIND[v] : v)); tb.appendChild(tr); });
+    const gb = $("grantTable").querySelector("tbody"); gb.textContent = "";
+    c.adminAvatars.forEach((a) => {
+      const tr = document.createElement("tr");
+      cell(tr, a.name); cell(tr, a.avatarKey); cell(tr, a.private ? "學生／私人" : ""); cell(tr, a.owned ? "已擁有" : "未擁有");
+      const td = cell(tr, ""); const b = document.createElement("button"); b.type = "button"; b.className = a.owned ? "bad" : "ok"; b.textContent = a.owned ? "收回" : "發放";
+      b.dataset.grant = a.avatarKey; b.dataset.action = a.owned ? "revoke" : "grant";
+      b.addEventListener("click", () => grantAvatar(pid, a.avatarKey, a.owned ? "revoke" : "grant")); td.appendChild(b);
+      gb.appendChild(tr);
+    });
+  } catch (e) { show("collBody", false); setStatus("collStatus", "bad", e.message); }
+}
+async function grantAvatar(pid, avatarKey, action) {
+  setStatus("collStatus", "", "處理中…");
+  try {
+    const r = await api("POST", `/v1/admin/collections/${encodeURIComponent(pid)}/avatars`, { avatarKey, action, note: $("gNote").value.trim() });
+    await collection();
+    setStatus("collStatus", "ok", r.changed ? (action === "grant" ? "已發放" : "已收回") + `：${avatarKey}` : "沒有變更（已經是這個狀態）");
+  } catch (e) { setStatus("collStatus", "bad", e.message); }
+}
+async function backfill() {
+  const pid = $("cPlayer").value.trim();
+  if (!PID.test(pid)) { setStatus("collStatus", "bad", "playerId 格式不正確（p_ 加 20 碼）"); return; }
+  setStatus("collStatus", "", "補判定中…");
+  try {
+    let offset = 0, scanned = 0, titles = [], avatars = [], total = 0;
+    for (let i = 0; i < 40; i++) {
+      const r = await api("POST", `/v1/admin/collections/${encodeURIComponent(pid)}/backfill`, { offset });
+      scanned += r.scanned; total = r.totalAccepted; titles = titles.concat(r.granted.titles); avatars = avatars.concat(r.granted.avatars);
+      if (r.next == null) break;
+      offset = r.next;
+    }
+    await collection();
+    setStatus("collStatus", "ok", `補判定完成：讀取已接受的正式成績 ${scanned}／${total} 筆，新增稱號 ${titles.length} 個、頭像 ${avatars.length} 個（已擁有的不會重複）`);
+  } catch (e) { setStatus("collStatus", "bad", e.message); }
+}
+
+/* ---------- v0.3.1 正式寫入狀態、真實資料庫自我檢查、試營運清除 ---------- */
+const MODE = { off: "關閉", trial: "受控試營運", on: "全面開放" };
+async function launchStatus() {
+  try {
+    const l = await api("GET", "/v1/admin/launch");
+    setStatus("launchStatus", l.scoresMode === "on" ? "ok" : "warn", `正式成績：${MODE[l.scoresMode]}｜V幣：${MODE[l.rewardsMode]}｜試營運玩家 ${l.trialPlayers} 位｜資料位置 ${l.namespace}`);
+    $("btnPurge").disabled = l.scoresMode === "on";
+  } catch (e) { setStatus("launchStatus", "bad", e.message); }
+}
+async function selftest() {
+  setStatus("launchStatus", "", "自我檢查中…");
+  try {
+    const r = await api("POST", "/v1/admin/selftest");
+    $("selftestOut").textContent = r.steps.map((x) => `${x.ok ? "✅" : "❌"} ${x.name}（${x.ms} ms）${x.detail ? "：" + x.detail : ""}${x.error ? "：" + x.error : ""}`).join("\n");
+    show("selftestOut", true);
+    setStatus("launchStatus", r.ok ? "ok" : "bad", r.ok ? "真實資料庫自我檢查全部通過" : "真實資料庫自我檢查有項目失敗，請把結果截圖回報");
+  } catch (e) { setStatus("launchStatus", "bad", "自我檢查失敗：" + e.message); }
+}
+async function purge() {
+  const typed = window.prompt("清除試營運資料（trial/）。正式資料與玩家身份不受影響。\n請輸入 PURGE TRIAL 確認：");
+  if (typed !== "PURGE TRIAL") { setStatus("launchStatus", "", "已取消"); return; }
+  try { await api("POST", "/v1/admin/trial/purge", { confirm: "PURGE TRIAL" }); setStatus("launchStatus", "ok", "已清除 trial/"); }
+  catch (e) { setStatus("launchStatus", "bad", e.message); }
+}
+
 /* ---------- CSV（帶管理員憑證下載；檔案只存在管理員自己的電腦） ---------- */
 async function download(path, fallbackName, statusId) {
   try {
@@ -145,7 +221,7 @@ async function onUser(user) {
     if (me.uid !== user.uid) throw new Error("伺服器回應不一致");
     setStatus("authStatus", "ok", "✅ 伺服器確認：你是遊戲宇宙管理員");
     show("adminArea", true);
-    search(); loadAudits();
+    search(); loadAudits(); launchStatus();
   } catch (e) { show("adminArea", false); setStatus("authStatus", "bad", "⛔ " + e.message); }
 }
 
@@ -157,6 +233,11 @@ async function start() {
   $("btnAudits").addEventListener("click", loadAudits);
   $("btnCsvScores").addEventListener("click", () => { let q = ""; try { q = query(); } catch (e) { setStatus("listStatus", "bad", e.message); return; } download("/v1/admin/exports/scores.csv?" + q, "scores.csv", "listStatus"); });
   $("btnCsvLedger").addEventListener("click", () => { const pid = $("wPlayer").value.trim(); if (pid && !PID.test(pid)) { setStatus("ledgerStatus", "bad", "playerId 格式不正確"); return; } download("/v1/admin/exports/ledger.csv" + (pid ? "?playerId=" + encodeURIComponent(pid) : ""), "ledger.csv", "ledgerStatus"); });
+  $("btnColl").addEventListener("click", collection);
+  $("btnBackfill").addEventListener("click", backfill);
+  $("btnCsvColl").addEventListener("click", () => download("/v1/admin/exports/collections.csv", "collections.csv", "collStatus"));
+  $("btnSelftest").addEventListener("click", selftest);
+  $("btnPurge").addEventListener("click", purge);
   $("btnLogin").addEventListener("click", async () => {
     try { const p = new sdk.GoogleAuthProvider(); p.setCustomParameters({ prompt: "select_account" }); await sdk.signInWithPopup(auth, p); }
     catch (e) { setStatus("authStatus", "bad", "Google 登入沒有完成" + (e && e.code ? `（${e.code}）` : "")); }

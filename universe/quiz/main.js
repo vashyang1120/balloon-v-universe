@@ -1028,7 +1028,7 @@ function getAvatarUnlockText(key, cat) {
 
 function isDisplayAvatarAllowed(key) {
   // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
-  return !!key && key === PLAYER.baseAvatarKey;  // 展示頭像解鎖尚未接入：只允許身份頭像
+  return UniverseQuiz.isDisplayAvatarAllowed(key);  // v0.3.1：身份頭像或遊戲宇宙共用收藏目前裝備的展示頭像
 }
 
 function getAvatarByKey(key) {
@@ -1066,8 +1066,7 @@ function getAvatarUrl(key) {
 
 function validateDisplayAvatarForCurrentIdentity() {
   // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
-  PLAYER.displayAvatarKey = PLAYER.baseAvatarKey;
-  PLAYER.avatarKey = PLAYER.baseAvatarKey;
+  UniverseQuiz.applyPlayerTo(PLAYER);  // v0.3.1：展示頭像＝遊戲宇宙共用收藏目前裝備的（伺服器已檢查）
   return true;
 }
 

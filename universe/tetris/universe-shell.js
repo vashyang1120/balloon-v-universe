@@ -14,7 +14,7 @@
 (function () {
   "use strict";
 
-  var GAME_VERSION = "tetris-v1.3.7+universe-v0.3.0-test-1";
+  var GAME_VERSION = "tetris-v1.3.7+universe-v0.3.1-test-1";
   var AV_BASE = "../../assets/avatars/base/";
   var BLANK = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
   var U = window.BVUniverse;
@@ -200,10 +200,10 @@
         P.id = player.displayId;
         P.name = player.displayId;
         P.baseAvatarKey = player.baseAvatarKey;
-        P.displayAvatarKey = player.baseAvatarKey;     // 展示頭像解鎖尚未接入：先等於身份頭像
-        P.avatarKey = player.baseAvatarKey;
-        P.avKey = player.baseAvatarKey;
-        P.avatarSrc = S.avatars.imageUrl(player.baseAvatarKey);
+        P.displayAvatarKey = player.displayAvatarKey || player.baseAvatarKey;   // v0.3.1：遊戲宇宙共用收藏目前裝備的展示頭像（baseAvatarKey 不變）
+        P.avatarKey = P.displayAvatarKey;
+        P.avKey = P.displayAvatarKey;
+        P.avatarSrc = S.avatars.imageUrl(P.displayAvatarKey) || S.avatars.imageUrl(player.baseAvatarKey);
         P.avUrl = P.avatarSrc;
       } else {
         P.playerId = "";
@@ -216,10 +216,12 @@
     },
 
     /* 身份圖案：遊戲宇宙統一素材 assets/avatars/base/（不複製到遊戲資料夾） */
+    /* v0.3.1：展示頭像只能是身份頭像，或伺服器回傳的目前裝備展示頭像 */
+    isDisplayAvatarAllowed: function (key) { return !!key && !!player && (key === player.baseAvatarKey || key === player.displayAvatarKey); },
     avatarFor: function (key) {
       if (!key) return player ? null : { key: "", url: BLANK, src: BLANK, name: "" };
       var mine = player && (key === player.baseAvatarKey || key === player.displayAvatarKey);
-      if (!mine && !labels[key]) return null;
+      if (!mine && !labels[key] && !U.isDisplayAvatarKey(key)) return null;
       var url = S.avatars.imageUrl(key);
       if (!url) return null;
       return { key: key, url: url, src: url, name: labels[key] || key };
@@ -227,7 +229,9 @@
     avatarLabel: function (key) { return labels[key] || ""; },
 
     /* 尚未開放的功能：顯示提示並回傳 true（呼叫端就此停止） */
-    notReady: function (feature) { toastSafe(FEATURE_TEXT[feature] || "這個功能準備中"); return true; },
+    notReady: function (feature) {
+      // v0.3.1：稱號／頭像收藏 → 遊戲宇宙共用收藏視窗（只讀；更換在大廳通行證）
+      if ((feature === "titles" || feature === "avatarUnlocks") && !S.isSandbox && player) { U.ui.showCollection(S); return true; } toastSafe(FEATURE_TEXT[feature] || "這個功能準備中"); return true; },
     identityLocked: function () { toastSafe(FEATURE_TEXT.identity); return true; },
     adminDisabled: function () { return true; },   // 測試版停用舊管理後台（不顯示、不寫入）
     explainNotReady: function () {
@@ -235,7 +239,7 @@
       toastSafe(st.status === "error" && st.error ? st.error.userMessage : "正在讀取玩家資料，請稍候…");
     },
     walletText: function () { return officialOn() && wallet ? Number(wallet.balance || 0).toLocaleString() + " V幣" : (officialOn() ? "讀取中" : "未開放"); },
-    titleText: function () { return "準備中"; },
+    titleText: function () { return S.isSandbox ? "準備中" : (player && player.title ? player.title.name : "未裝備"); },
     /* 結算 V幣說明：不發放；今日挑戰照原版判定是否完成，+10 待開放 */
     resultVcoinText: function (ch) {
       if (officialOn()) return lastOfficial ? S.describeOfficialResult(lastOfficial) : "🪙 V幣：成績送出中，等待伺服器確認…";
@@ -330,7 +334,7 @@
           listEl.innerHTML = '<div class="lb-msg">🎈 載入中...</div>';
           return S.official.getBoard("total", { limit: 50 }).then(function (board) {
             if (!board.rows.length) { listEl.innerHTML = '<div class="lb-msg">正式排行榜還沒有成績，成為第一名吧！🎈</div>'; return; }
-            listEl.innerHTML = officialRowsHtml(board, avatarUrlOf, function (r) { var x = r.extra || {}; return "LV" + (x.level || "-") + " · " + (x.lines || 0) + "行 · " + (dl[x.difficulty] || ""); }) +
+            listEl.innerHTML = officialRowsHtml(board, avatarUrlOf, function (r) { var x = r.extra || {}; return (r.titleName ? "🎖" + r.titleName + " · " : "") + "LV" + (x.level || "-") + " · " + (x.lines || 0) + "行 · " + (dl[x.difficulty] || ""); }) +
               (board.me && board.me.rank > board.rows.length ? '<div class="lb-msg">我的名次：第 ' + board.me.rank + " 名（" + Number(board.me.score).toLocaleString() + "）</div>" : "");
           }, function (err) {
             listEl.innerHTML = '<div class="lb-msg">⚠️ ' + esc(err && err.userMessage || "排行榜暫時無法顯示") + ' <button type="button" class="btn btn-outline btn-sm" id="bv-lb-retry">🔄 再試一次</button></div>';

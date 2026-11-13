@@ -892,6 +892,9 @@
         row("V幣", escapeHtml(walletText(d)) + (d.features && d.features.wallet ? '<em class="muted">（正式 V幣；消費功能尚未開放）</em>' : '<em class="muted">' + (d.walletState === "loading" ? "（讀取中…）" : d.walletState === "error" ? "（暫時無法讀取，請稍後再打開）" : "（V幣功能尚未開放）") + "</em>")) +
         row("通行證代碼", '<code class="muted">' + escapeHtml(d.playerId) + "</code>") +
         walletHistoryHtml(d);
+    } else if (tab === "collection" && d.collection && window.LobbyLaunch) {
+      // v0.3.1：遊戲宇宙共用收藏（稱號＋展示頭像；可在這裡裝備，四款遊戲同步）
+      html = window.LobbyLaunch.collectionHtml(d);
     } else if (tab === "collection" && !(d.features && d.features.avatarUnlocks)) {
       // v0.3.4：展示頭像解鎖與稱號收藏尚未接入共用玩家系統
       html = '<h4 class="sec">已解鎖頭像</h4><p class="empty">展示頭像解鎖功能準備中，尚未接入遊戲宇宙。</p>' +
@@ -944,13 +947,15 @@
   els.passModal.addEventListener("click", function (e) { if (e.target === els.passModal && guard("passClose")) closePass(); });
   els.signPass.addEventListener("click", function () { if (!guard("signPass")) return; openPass(); emit("signPassTapped"); });
   /* 正式 V幣讀到後：通行證若開著，重新顯示（lobby-launch.js 負責讀取） */
-  on("walletLoaded", function () {
+  on("walletLoaded", refreshOpenPass);
+  on("collectionLoaded", refreshOpenPass);
+  function refreshOpenPass() {
     var d = current();
     if (!d || els.passModal.hidden) return;
     els.passPanel.innerHTML = passPanelHtml(d, "full");
     fitPass(els.passPanel);
     setPassTab(state.passTab);
-  });
+  }
 
   /* ==========================================================
      遊戲介紹面板按鈕

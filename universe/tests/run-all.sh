@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 遊戲宇宙 v0.3.0 全部回歸測試（v0.2.0 三款遊戲＋v0.3.0 正式成績／排行榜／V幣／派對島）
+# 遊戲宇宙 v0.3.1 全部回歸測試（v0.2.0 三款遊戲＋v0.3.0 正式成績／排行榜／V幣／派對島＋v0.3.1 稱號／頭像收藏、試營運）
 # 用法（repository 根目錄）：bash universe/tests/run-all.sh <vparty-tetris clone> <vparty-rhythm-game clone> <vparty-quiz-game clone> <balloon-v-rush 分支 clone> [輸出資料夾]
 # 需要：Node 20+、Playwright + Chromium（NODE_PATH 指到全域套件）
 set -euo pipefail
@@ -26,4 +26,5 @@ node universe/tests/browser/rhythm-e2e.mjs "$T" "$R" "$Q" "$OUT/rhythm"
 node universe/tests/browser/quiz-e2e.mjs "$T" "$R" "$Q" "$OUT/quiz"
 node universe/tests/browser/integration-e2e.mjs "$T" "$R" "$Q" "$OUT/integration"
 node universe/tests/browser/launch-e2e.mjs "$T" "$R" "$Q" "$RUSH" "$OUT/launch"
+node universe/tests/browser/collection-e2e.mjs "$T" "$R" "$Q" "$RUSH" "$OUT/collection"
 echo "全部完成：截圖與結果在 $OUT"

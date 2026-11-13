@@ -90,6 +90,36 @@
     </section>
 
     <section class="card">
+      <h2>玩家收藏（稱號／展示頭像）</h2>
+      <div class="row">
+        <label>playerId<input id="cPlayer" placeholder="p_…" maxlength="22" autocomplete="off"></label>
+        <button id="btnColl" type="button">查詢</button>
+        <button id="btnBackfill" type="button" class="secondary">歷史成績補判定</button>
+        <button id="btnCsvColl" type="button" class="secondary">匯出收藏 CSV</button>
+      </div>
+      <div id="collStatus" class="status">輸入 playerId 查詢已解鎖的稱號、頭像（含解鎖時間與來源）與目前裝備。</div>
+      <div id="collBody" class="hidden">
+        <p id="collEquipped"></p>
+        <div class="tablewrap"><table id="collTable"><thead><tr><th>種類</th><th>名稱</th><th>key</th><th>遊戲</th><th>解鎖時間</th><th>來源</th></tr></thead><tbody></tbody></table></div>
+        <h3 style="font-size:1rem;margin:14px 0 6px">人工發放頭像（學生專屬、社群、活動）</h3>
+        <p class="muted">只有「由管理員發放」的頭像可以在這裡發放或收回；遊戲成績自動解鎖、或條件尚未定案的頭像不能人工發放。學生專屬頭像只會出現在被授權的玩家收藏裡。</p>
+        <div class="row"><label>備註（只存在後台）<input id="gNote" maxlength="200"></label></div>
+        <div class="tablewrap"><table id="grantTable"><thead><tr><th>頭像</th><th>key</th><th>私人</th><th>狀態</th><th></th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>正式寫入狀態與驗收工具</h2>
+      <div id="launchStatus" class="status">讀取中…</div>
+      <div class="row">
+        <button id="btnSelftest" type="button" class="secondary">真實資料庫自我檢查</button>
+        <button id="btnPurge" type="button" class="bad">清除試營運資料（trial/）</button>
+      </div>
+      <p class="muted">自我檢查只在資料庫的 _selftest/ 底下寫入測試資料並立即刪除，不碰任何玩家、成績、排行榜或錢包。清除試營運資料只刪除 trial/，正式資料與玩家身份不受影響；全面開放（on）後無法使用。</p>
+      <pre id="selftestOut" class="hidden"></pre>
+    </section>
+
+    <section class="card">
       <h2>審核紀錄</h2>
       <button id="btnAudits" type="button" class="secondary">重新整理</button>
       <div class="tablewrap"><table id="auditTable"><thead><tr><th>時間</th><th>決定</th><th>遊戲</th><th>playerId</th><th>分數</th><th>成績編號</th><th>備註</th></tr></thead><tbody></tbody></table></div>

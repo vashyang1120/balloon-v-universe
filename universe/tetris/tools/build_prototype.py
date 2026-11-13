@@ -132,11 +132,9 @@ replace_body("savePlayerLocal", "  UniverseTetris.applyPlayerTo(PLAYER);  // 身
 replace_body("savePlayer", "  savePlayerLocal();")
 replace_body("ensurePlayerProfile", "  return Promise.resolve();")
 replace_body("isProfileIdentityDirty", "  return false;")
-replace_body("isDisplayAvatarAllowed", "  return !!key && key === PLAYER.baseAvatarKey;  // 展示頭像解鎖尚未接入：只允許身份頭像")
+replace_body("isDisplayAvatarAllowed", "  return UniverseTetris.isDisplayAvatarAllowed(key);  // v0.3.1：身份頭像或遊戲宇宙共用收藏目前裝備的展示頭像")
 replace_body("validateDisplayAvatarForCurrentIdentity",
-             "  PLAYER.displayAvatarKey = PLAYER.baseAvatarKey;\n  PLAYER.avatarKey = PLAYER.baseAvatarKey;\n"
-             "  PLAYER.avKey = PLAYER.baseAvatarKey;\n  PLAYER.avatarSrc = getAvatarUrl(PLAYER.baseAvatarKey);\n"
-             "  PLAYER.avUrl = PLAYER.avatarSrc;\n  return true;")
+             "  UniverseTetris.applyPlayerTo(PLAYER);  // v0.3.1：展示頭像＝遊戲宇宙共用收藏目前裝備的（伺服器已檢查）\n  return true;")
 insert_at_start("getAvatarByKey", "var uni = UniverseTetris.avatarFor(key); if (uni) return uni;")
 insert_at_start("getBaseAvatarDisplayName", "var uniLabel = UniverseTetris.avatarLabel(baseAvatarKey || (PLAYER && PLAYER.baseAvatarKey)); if (uniLabel) return uniLabel;")
 rep("  if(keyEl) keyEl.textContent = PLAYER.playerKey || makePlayerKey(id, PLAYER.baseAvatarKey || 'boy1');",

@@ -18,6 +18,16 @@
  *   GET  /v1/admin/exports/scores.csv?gameId=&playerId=&status=
  *   GET  /v1/admin/exports/ledger.csv?playerId=
  * 預留：V幣消費與 PIN（/v1/shop/*、/v1/wallet/:playerId/pin）一律 501，消費功能準備好前維持停用。
+ *
+ * v0.3.1 新增：
+ *   GET  /v1/collections/catalog                   稱號＋公開展示頭像目錄（私人頭像不列出）
+ *   GET  /v1/players/:playerId/collection          這位玩家的稱號、頭像收藏與目前裝備
+ *   POST /v1/players/:playerId/equip               裝備稱號／展示頭像 { displayId, baseAvatarKey, titleKey?, displayAvatarKey? }
+ *                                                  （需要 ID＋身份頭像；只能選自己已解鎖的；不能改 playerId／baseAvatarKey）
+ *   管理員：GET /v1/admin/launch、GET /v1/admin/collections/:playerId、POST /v1/admin/collections/:playerId/avatars、
+ *           POST /v1/admin/collections/:playerId/backfill、GET /v1/admin/collection-audits、GET /v1/admin/exports/collections.csv、
+ *           POST /v1/admin/selftest（真實資料庫自我檢查，只寫 _selftest/ 並清除）、POST /v1/admin/trial/purge（清除試營運資料）
+ *   受控試營運：SCORES_ENABLED="trial" → 只有 TRIAL_PLAYER_IDS 可以寫入，資料全部在 trial/ 底下（見 launch/namespace.js）
  */
 import { ok, json } from "../utils/response.js";
 import { ApiError } from "../utils/errors.js";
@@ -29,21 +39,43 @@ import { createScoreService } from "../launch/score-service.js";
 import { boardCatalog, isValidBoard } from "../launch/leaderboard-service.js";
 import { OFFICIAL_GAME_IDS } from "../launch/game-rules.js";
 import { REWARD_RULES } from "../launch/wallet-service.js";
+import { namespaceFor, namespacedDb, TRIAL_ROOT } from "../launch/namespace.js";
+import { publicCatalog, TITLE_CATALOG, AVATAR_CATALOG } from "../launch/collection-catalog.js";
+import { normalizeDisplayId } from "../players/id-rules.js";
 
 const MAX_BODY = 8 * 1024;
 
 function svc(ctx) {
   return createScoreService({ db: lazyDb(ctx), now: ctx.now || (() => Date.now()), newId: () => crypto.randomUUID(), logger: ctx.logger });
 }
-/** 延後取得資料庫：輸入格式錯誤時不需要（也不會觸碰）Firebase */
-function lazyDb(ctx) {
+/** 延後取得資料庫：輸入格式錯誤時不需要（也不會觸碰）Firebase。試營運時自動套上 trial/ 命名空間 */
+function rawLazyDb(ctx) {
   const d = () => ctx.firebase();
   return { get: (...a) => d().get(...a), getWithEtag: (...a) => d().getWithEtag(...a), putIfMatch: (...a) => d().putIfMatch(...a),
-    put: (...a) => d().put(...a), patch: (...a) => d().patch(...a) };
+    put: (...a) => d().put(...a), patch: (...a) => d().patch(...a), remove: (...a) => d().remove(...a) };
 }
-function flags(ctx) { return { scoresEnabled: ctx.cfg.scoresEnabled, rewardsEnabled: ctx.cfg.rewardsEnabled }; }
-function requireScores(ctx) {
-  if (!ctx.cfg.scoresEnabled) throw new ApiError("SERVICE_DISABLED", { details: { feature: "scores", hint: "正式成績服務尚未啟用（SCORES_ENABLED=off）" } });
+function lazyDb(ctx) { return namespacedDb(rawLazyDb(ctx), namespaceFor(ctx.cfg)); }
+export function launchDb(ctx) { return lazyDb(ctx); }
+function flags(ctx) { return { scoresEnabled: ctx.cfg.scoresMode !== "off", rewardsEnabled: ctx.cfg.rewardsMode !== "off" }; }
+/** 這位玩家現在可以寫入正式資料嗎？on＝所有人；trial＝只有名單內；off＝沒有人 */
+export function writeAllowed(cfg, playerId) {
+  if (cfg.scoresMode === "on") return true;
+  if (cfg.scoresMode === "trial") return cfg.trialPlayerIds.includes(playerId);
+  return false;
+}
+function requireScores(ctx, playerId) {
+  if (!writeAllowed(ctx.cfg, playerId)) {
+    throw new ApiError("SERVICE_DISABLED", { details: { feature: "scores", hint: ctx.cfg.scoresMode === "trial" ? "目前是受控試營運，只有指定的測試玩家可以寫入" : "正式成績服務尚未啟用（SCORES_ENABLED=off）" } });
+  }
+}
+function statusFor(ctx, playerId) {
+  const allowed = playerId && PATTERNS.playerId.test(String(playerId)) ? writeAllowed(ctx.cfg, playerId) : ctx.cfg.scoresMode === "on";
+  return { scores: allowed ? "enabled" : "disabled", rewards: allowed && ctx.cfg.rewardsMode !== "off" ? "enabled" : "disabled", mode: ctx.cfg.scoresMode };
+}
+async function profileOf(ctx, playerId) {
+  const p = await ctx.firebase().get(`players/${playerId}/profile`);
+  if (!p || p.playerId !== playerId || p.status === "deleted") throw new ApiError("PLAYER_NOT_FOUND");
+  return p;
 }
 function playerParam(ctx) {
   const id = ctx.params.playerId;
@@ -64,14 +96,73 @@ function csvResponse(name, text) {
 }
 const iso = (t) => (t ? new Date(t).toISOString() : "");
 
+
+/**
+ * 真實資料庫自我檢查（v0.3.1 驗收階段 2）：在 _selftest/{runId} 底下驗證這個 Worker 依賴的資料庫行為，最後刪除。
+ * 不碰任何玩家、成績、排行榜、錢包資料。
+ */
+async function selfTest(db, now) {
+  const runId = "t" + now() + "_" + crypto.randomUUID().slice(0, 8);
+  const base = `_selftest/${runId}`;
+  const steps = [];
+  const step = async (name, fn) => {
+    const t0 = Date.now();
+    try { const detail = await fn(); steps.push({ name, ok: true, ms: Date.now() - t0, detail: detail || null }); return true; }
+    catch (e) { steps.push({ name, ok: false, ms: Date.now() - t0, error: (e && (e.code || e.message)) || "error" }); return false; }
+  };
+  await step("寫入與讀回", async () => {
+    await db.put(`${base}/a`, { v: 1 });
+    const r = await db.get(`${base}/a`);
+    if (!r || r.v !== 1) throw new Error("讀回內容不一致");
+  });
+  await step("條件寫入：版本相同時成功", async () => {
+    const { etag } = await db.getWithEtag(`${base}/a`);
+    if (!etag) throw new Error("沒有取得 ETag");
+    await db.putIfMatch(`${base}/a`, { v: 2 }, etag);
+  });
+  await step("條件寫入：版本過期時被拒絕（防重複發幣的基礎）", async () => {
+    const { etag } = await db.getWithEtag(`${base}/a`);
+    await db.put(`${base}/a`, { v: 3 });
+    try { await db.putIfMatch(`${base}/a`, { v: 99 }, etag); } catch (e) { if (e && e.code === "CONFLICT") return "412 → CONFLICT"; throw e; }
+    throw new Error("過期版本仍然寫入成功");
+  });
+  await step("條件寫入：不存在時才建立", async () => {
+    const { value, etag } = await db.getWithEtag(`${base}/new`);
+    if (value !== null && value !== undefined) throw new Error("應該不存在");
+    await db.putIfMatch(`${base}/new`, { created: true }, etag);
+    const again = await db.getWithEtag(`${base}/new`);
+    try { await db.putIfMatch(`${base}/new`, { created: "twice" }, etag); } catch (e) { if (e && e.code === "CONFLICT") return again.value && again.value.created === true ? "第二次建立被拒絕" : "?"; throw e; }
+    throw new Error("同一個節點被建立兩次");
+  });
+  await step("同時兩個條件寫入：只有一個成功", async () => {
+    const { etag } = await db.getWithEtag(`${base}/race`);
+    const rs = await Promise.allSettled([db.putIfMatch(`${base}/race`, { w: "A" }, etag), db.putIfMatch(`${base}/race`, { w: "B" }, etag)]);
+    const okN = rs.filter((r) => r.status === "fulfilled").length;
+    if (okN !== 1) throw new Error(`成功 ${okN} 個`);
+    return "1 成功／1 被拒絕";
+  });
+  await step("多路徑更新", async () => {
+    await db.patch(base, { "m/x": 1, "m/y": 2 });
+    const m = await db.get(`${base}/m`);
+    if (!m || m.x !== 1 || m.y !== 2) throw new Error("多路徑更新不一致");
+  });
+  const cleaned = await step("清除測試資料", async () => {
+    await db.remove(base);
+    const r = await db.get(base);
+    if (r !== null && r !== undefined) throw new Error("沒有清除乾淨");
+  });
+  if (!cleaned) { try { await db.remove(base); } catch { /* 交給管理員 */ } }
+  return { runId, ok: steps.every((s) => s.ok), steps };
+}
+
 export function launchRoutes() {
   return [
     {
       method: "GET", path: "/v1/launch/status", auth: "public", summary: "正式功能狀態",
       handler: (ctx) => ok(ctx, {
-        scores: ctx.cfg.scoresEnabled ? "enabled" : "disabled",
-        rewards: ctx.cfg.rewardsEnabled ? "enabled" : "disabled",
+        ...statusFor(ctx, ctx.url.searchParams.get("playerId")),
         spending: "disabled",
+        collections: "enabled",
         games: OFFICIAL_GAME_IDS,
         rewardRules: { dailyPlay: REWARD_RULES.daily.amount, dailyChallenge: REWARD_RULES.challenge.amount, challengeGames: REWARD_RULES.challenge.games, timezone: "Asia/Taipei" },
         today: taipeiDateKey(new Date(ctx.now ? ctx.now() : Date.now())),
@@ -80,25 +171,27 @@ export function launchRoutes() {
     {
       method: "POST", path: "/v1/sessions", auth: "public", summary: "遊戲開始：取得場次",
       handler: async (ctx) => {
-        requireScores(ctx);
+        if (ctx.cfg.scoresMode === "off") requireScores(ctx);
         await enforceRateLimit(ctx, "score");
         const body = await readJson(ctx.request, MAX_BODY);
+        requireScores(ctx, body && body.playerId);
         return ok(ctx, await svc(ctx).startSession(body, ctx.client), 201);
       },
     },
     {
       method: "POST", path: "/v1/scores", auth: "public", summary: "遊戲完成：提交成績",
       handler: async (ctx) => {
-        requireScores(ctx);
+        if (ctx.cfg.scoresMode === "off") requireScores(ctx);
         await enforceRateLimit(ctx, "score");
         const body = await readJson(ctx.request, MAX_BODY);
+        requireScores(ctx, body && body.playerId);
         const r = await svc(ctx).submit(body, flags(ctx));
         return ok(ctx, r, r.replayed ? 200 : 201);
       },
     },
     {
       method: "GET", path: "/v1/leaderboards", auth: "public", summary: "排行榜目錄",
-      handler: (ctx) => ok(ctx, { games: boardCatalog(), scores: ctx.cfg.scoresEnabled ? "enabled" : "disabled" }, 200, { "cache-control": "public, max-age=60" }),
+      handler: (ctx) => ok(ctx, { games: boardCatalog(), scores: ctx.cfg.scoresMode === "on" ? "enabled" : "disabled", mode: ctx.cfg.scoresMode }, 200, { "cache-control": "public, max-age=60" }),
     },
     {
       method: "GET", path: "/v1/leaderboards/:gameId/:boardId", auth: "public", summary: "排行榜",
@@ -109,7 +202,7 @@ export function launchRoutes() {
         const limit = Math.min(Math.max(parseInt(ctx.url.searchParams.get("limit") || "50", 10) || 50, 1), 100);
         const pid = ctx.url.searchParams.get("playerId");
         const board = await svc(ctx).leaderboards.getBoard(gameId, boardId, { limit, playerId: PATTERNS.playerId.test(String(pid)) ? pid : undefined });
-        return ok(ctx, { ...board, official: true, scores: ctx.cfg.scoresEnabled ? "enabled" : "disabled" }, 200, { "cache-control": "public, max-age=15" });
+        return ok(ctx, { ...board, official: true, scores: ctx.cfg.scoresMode === "on" ? "enabled" : "disabled", mode: ctx.cfg.scoresMode }, 200, { "cache-control": "public, max-age=15" });
       },
     },
     {
@@ -129,9 +222,49 @@ export function launchRoutes() {
         await enforceRateLimit(ctx, "read");
         const today = taipeiDateKey(new Date(ctx.now ? ctx.now() : Date.now()));
         const w = await svc(ctx).wallet.getPublicSummary(playerParam(ctx), today);
-        return ok(ctx, { ...w, rewards: ctx.cfg.rewardsEnabled ? "enabled" : "disabled" });
+        return ok(ctx, { ...w, rewards: statusFor(ctx, ctx.params.playerId).rewards, mode: ctx.cfg.scoresMode });
       },
     },
+
+    /* ---------- v0.3.1：稱號＋展示頭像收藏 ---------- */
+    {
+      method: "GET", path: "/v1/collections/catalog", auth: "public", summary: "稱號與公開展示頭像目錄",
+      handler: (ctx) => ok(ctx, publicCatalog(), 200, { "cache-control": "public, max-age=300" }),
+    },
+    {
+      method: "GET", path: "/v1/players/:playerId/collection", auth: "public", summary: "玩家的稱號、頭像收藏與目前裝備",
+      handler: async (ctx) => {
+        await enforceRateLimit(ctx, "read");
+        const pid = playerParam(ctx);
+        const profile = await profileOf(ctx, pid);
+        const view = await svc(ctx).collections.get(pid, profile);
+        return ok(ctx, { ...view, canEquip: writeAllowed(ctx.cfg, pid), mode: ctx.cfg.scoresMode });
+      },
+    },
+    {
+      method: "POST", path: "/v1/players/:playerId/equip", auth: "public", summary: "裝備稱號／展示頭像",
+      handler: async (ctx) => {
+        await enforceRateLimit(ctx, "lookup");
+        const pid = playerParam(ctx);
+        const body = await readJson(ctx.request, 1024);
+        if (!body || typeof body !== "object") throw new ApiError("VALIDATION_FAILED");
+        const allowed = ["displayId", "baseAvatarKey", "titleKey", "displayAvatarKey"];
+        const extra = Object.keys(body).filter((k) => !allowed.includes(k));
+        if (extra.length) throw new ApiError("VALIDATION_FAILED", { details: { errors: extra.map((f) => ({ field: f, issue: "不接受的欄位" })) } });
+        if (body.titleKey === undefined && body.displayAvatarKey === undefined) throw new ApiError("VALIDATION_FAILED", { message: "請選擇要裝備的稱號或頭像" });
+        for (const f of ["titleKey", "displayAvatarKey"]) {
+          if (body[f] !== undefined && body[f] !== null && !/^[a-z0-9_]{1,48}$/.test(String(body[f]))) throw new ApiError("VALIDATION_FAILED", { details: { errors: [{ field: f, issue: "格式不正確" }] } });
+        }
+        requireScores(ctx, pid);
+        const profile = await profileOf(ctx, pid);
+        // 身份確認：需要和找回玩家相同的 ID＋身份頭像（playerId 不是密碼）
+        const n = normalizeDisplayId(body.displayId);
+        if (!n.ok || n.value !== profile.displayId || body.baseAvatarKey !== profile.baseAvatarKey) throw new ApiError("FORBIDDEN", { message: "玩家 ID 或身份頭像不正確" });
+        const view = await svc(ctx).collections.equip(pid, profile, { titleKey: body.titleKey, displayAvatarKey: body.displayAvatarKey });
+        return ok(ctx, { ...view, canEquip: true, mode: ctx.cfg.scoresMode });
+      },
+    },
+
     /* ---------- 管理員 ---------- */
     {
       method: "GET", path: "/v1/admin/scores", auth: "admin", summary: "成績紀錄查詢",
@@ -167,6 +300,72 @@ export function launchRoutes() {
     {
       method: "GET", path: "/v1/admin/wallet/:playerId/ledger", auth: "admin", summary: "V幣帳本",
       handler: async (ctx) => ok(ctx, await svc(ctx).wallet.getLedger(playerParam(ctx))),
+    },
+
+    /* ---------- v0.3.1 管理員：收藏、試營運、真實資料庫自我檢查 ---------- */
+    {
+      method: "GET", path: "/v1/admin/launch", auth: "admin", summary: "正式功能設定",
+      handler: (ctx) => ok(ctx, { scoresMode: ctx.cfg.scoresMode, rewardsMode: ctx.cfg.rewardsMode, trialPlayers: ctx.cfg.trialPlayerIds.length, namespace: namespaceFor(ctx.cfg) || "/" }),
+    },
+    {
+      method: "GET", path: "/v1/admin/collections/:playerId", auth: "admin", summary: "玩家收藏（含私人頭像）",
+      handler: async (ctx) => {
+        const pid = playerParam(ctx);
+        const profile = await profileOf(ctx, pid);
+        const view = await svc(ctx).collections.get(pid, profile);
+        const raw = (await lazyDb(ctx).get(`collections/${pid}`)) || {};
+        return ok(ctx, { ...view, displayId: profile.displayId, sources: { titles: raw.titles || {}, avatars: raw.avatars || {} },
+          adminAvatars: AVATAR_CATALOG.filter((a) => a.unlock === "admin").map((a) => ({ avatarKey: a.avatarKey, name: a.name, private: a.visibility === "private", owned: !!(raw.avatars && raw.avatars[a.avatarKey]) })) });
+      },
+    },
+    {
+      method: "POST", path: "/v1/admin/collections/:playerId/avatars", auth: "admin", summary: "人工發放／收回頭像",
+      handler: async (ctx) => {
+        const pid = playerParam(ctx);
+        const body = await readJson(ctx.request, 1024);
+        const profile = await profileOf(ctx, pid);
+        return ok(ctx, await svc(ctx).collections.adminAvatar(pid, profile, { avatarKey: body && body.avatarKey, action: body && body.action, note: body && body.note }, ctx.admin));
+      },
+    },
+    {
+      method: "POST", path: "/v1/admin/collections/:playerId/backfill", auth: "admin", summary: "歷史成績補判定",
+      handler: async (ctx) => {
+        const pid = playerParam(ctx);
+        const body = (await readJson(ctx.request, 256)) || {};
+        const offset = Math.max(0, parseInt(body.offset || 0, 10) || 0);
+        return ok(ctx, await svc(ctx).backfill(pid, { offset }));
+      },
+    },
+    {
+      method: "GET", path: "/v1/admin/collection-audits", auth: "admin", summary: "收藏發放紀錄",
+      handler: async (ctx) => ok(ctx, { rows: await svc(ctx).collections.adminAudits() }),
+    },
+    {
+      method: "GET", path: "/v1/admin/exports/collections.csv", auth: "admin", summary: "收藏 CSV",
+      handler: async (ctx) => {
+        const all = await svc(ctx).collections.all();
+        const rows = [];
+        for (const [pid, c] of Object.entries(all)) {
+          for (const t of Object.values((c && c.titles) || {})) rows.push({ playerId: pid, kind: "title", key: t.titleKey, gameId: t.gameId, unlockedAt: iso(t.unlockedAt), sourceType: t.source && t.source.type, sourceSubmissionId: t.source && t.source.submissionId, equipped: c.equipped && c.equipped.titleKey === t.titleKey ? "yes" : "" });
+          for (const a of Object.values((c && c.avatars) || {})) rows.push({ playerId: pid, kind: "avatar", key: a.avatarKey, gameId: a.source && a.source.gameId, unlockedAt: iso(a.unlockedAt), sourceType: a.source && a.source.type, sourceSubmissionId: a.source && a.source.submissionId, equipped: c.equipped && c.equipped.displayAvatarKey === a.avatarKey ? "yes" : "" });
+        }
+        rows.sort((a, b) => (a.unlockedAt < b.unlockedAt ? -1 : 1));
+        return csvResponse(`collections-${taipeiDateKey()}.csv`, toCsv(["playerId", "kind", "key", "gameId", "unlockedAt", "sourceType", "sourceSubmissionId", "equipped"], rows));
+      },
+    },
+    {
+      method: "POST", path: "/v1/admin/selftest", auth: "admin", summary: "真實資料庫自我檢查（只寫 _selftest/ 並清除）",
+      handler: async (ctx) => ok(ctx, await selfTest(rawLazyDb(ctx), ctx.now || (() => Date.now()))),
+    },
+    {
+      method: "POST", path: "/v1/admin/trial/purge", auth: "admin", summary: "清除試營運資料（trial/）",
+      handler: async (ctx) => {
+        const body = (await readJson(ctx.request, 256)) || {};
+        if (body.confirm !== "PURGE TRIAL") throw new ApiError("VALIDATION_FAILED", { message: "請輸入確認文字 PURGE TRIAL" });
+        if (ctx.cfg.scoresMode === "on") throw new ApiError("CONFLICT", { message: "已全面開放（on），不能清除；請先改回 trial 或 off" });
+        await rawLazyDb(ctx).remove(TRIAL_ROOT);
+        return ok(ctx, { purged: TRIAL_ROOT + "/" });
+      },
     },
     {
       method: "GET", path: "/v1/admin/exports/scores.csv", auth: "admin", summary: "成績 CSV",

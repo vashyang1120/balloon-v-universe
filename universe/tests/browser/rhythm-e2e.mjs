@@ -121,11 +121,14 @@ async function playScripted(page, songId, diff) {
     lobby: !!document.getElementById("bv-profile-lobby")
   }));
   check("節奏｜角色設定", "唯讀：玩家 ID 不能改、顯示 playerId、隱藏變更身份與確認按鈕、提供回大廳切換", pf.ro && pf.val === "節奏甲" && pf.code === A.playerId && pf.hidden && pf.lobby, JSON.stringify(pf));
-  check("節奏｜未開放", "V幣顯示「未開放」、稱號顯示「準備中」（不是 0）", pf.wallet === "未開放" && pf.title === "準備中", pf.wallet + "/" + pf.title);
+  check("節奏｜未開放", "V幣顯示「未開放」（不是 0）；v0.3.1 稱號顯示共用收藏的裝備狀態（未裝備）", pf.wallet === "未開放" && pf.title === "未裝備", pf.wallet + "/" + pf.title);
   await page.click("#btn-open-vcoin-wallet"); await sleep(200);
   check("節奏｜未開放", "V幣錢包：顯示尚未開放提示", /尚未開放/.test(await text(page, "#bv-toast")), await text(page, "#bv-toast"));
-  await page.click("#btn-open-unlock"); await sleep(200);
-  check("節奏｜未開放", "頭像收藏：顯示準備中提示，不開啟 PIN 解鎖", /準備中/.test(await text(page, "#bv-toast")) && await page.evaluate(() => document.getElementById("s-unlock").classList.contains("off")));
+  await page.click("#btn-open-unlock");
+  await page.waitForFunction(() => { const b = document.getElementById("bv-collection"); return b && !b.hidden && /要更換稱號或展示頭像/.test(b.textContent); }, null, { timeout: 8000, polling: 100 }).catch(() => {});
+  check("節奏｜收藏", "v0.3.1：開啟遊戲宇宙共用收藏視窗（只讀；更換在大廳通行證）", await page.evaluate(() => { const b = document.getElementById("bv-collection"); return !!b && !b.hidden && /我的收藏/.test(b.textContent) && /大廳「我的通行證 → 收藏」/.test(b.textContent); }));
+  await page.click("#bv-collection [data-bv-close]");
+  check("節奏｜收藏", "不開啟舊的 PIN 解鎖畫面", await page.evaluate(() => document.getElementById("s-unlock").classList.contains("off")));
   await page.screenshot({ path: `${OUT}/rhythm-02-profile-readonly.png` });
   await page.click("#btn-profile-back");
   for (let i = 0; i < 6; i++) await page.click(".logo");

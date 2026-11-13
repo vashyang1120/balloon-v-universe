@@ -28,6 +28,8 @@ import { casUpdate } from "./cas.js";
 import { GAME_RULES } from "./game-rules.js";
 import { createLeaderboardService } from "./leaderboard-service.js";
 import { createWalletService } from "./wallet-service.js";
+import { createCollectionService } from "./collection-service.js";
+import { evaluateUnlocks, TITLES_BY_KEY, AVATARS_BY_KEY } from "./collection-catalog.js";
 
 export const SESSION_TTL_MS = 6 * 3600 * 1000;
 export const SCORE_SCHEMA_VERSION = 1;
@@ -85,6 +87,7 @@ export function toPublicScore(s, extra = {}) {
 export function createScoreService({ db, now, newId, logger }) {
   const lb = createLeaderboardService({ db, now });
   const wallet = createWalletService({ db, now });
+  const collections = createCollectionService({ db, now });
 
   async function getProfile(playerId) {
     const p = await db.get(paths.profile(playerId));
@@ -93,9 +96,9 @@ export function createScoreService({ db, now, newId, logger }) {
     return p;
   }
 
-  /** 已接受成績的補齊動作：入榜＋獎勵（重複執行安全） */
+  /** 已接受成績的補齊動作：入榜＋獎勵＋稱號／頭像解鎖（重複執行安全） */
   async function reconcile(score, { rewardsEnabled }) {
-    if (score.status !== "accepted") return { boards: [], rewards: [], balance: null };
+    if (score.status !== "accepted") return { boards: [], rewards: [], balance: null, unlocks: { titles: [], avatars: [] } };
     const profile = await getProfile(score.playerId);
     const boards = await lb.applyScore(score, profile);
     let rewards = [], balance = null, rewardState = "disabled";
@@ -104,8 +107,12 @@ export function createScoreService({ db, now, newId, logger }) {
       rewards = w.awarded.map((tx) => ({ txId: tx.txId, type: tx.type, amount: tx.amount, dateKey: tx.dateKey, balanceAfter: tx.balanceAfter }));
       balance = w.balance; rewardState = "applied";
     }
-    await db.patch(paths.score(score.submissionId), { applied: { boards: true, rewards: rewardState, at: now() } });
-    return { boards, rewards, balance, rewardState };
+    // v0.3.1：稱號／展示頭像（只由已接受的正式成績觸發；已擁有的不會重複建立）
+    const quizProgress = score.gameId === "quiz" ? (await lb.getQuizProgress(score.playerId)).progress : undefined;
+    const unlocks = await collections.applyScore(score, profile, { quizProgress });
+    await db.patch(paths.score(score.submissionId), { applied: { boards: true, rewards: rewardState, collections: true, at: now() } });
+    const unlockNames = [...unlocks.titles.map((k) => "稱號「" + TITLES_BY_KEY[k].name + "」"), ...unlocks.avatars.map((k) => "頭像「" + AVATARS_BY_KEY[k].name + "」")];
+    return { boards, rewards, balance, rewardState, unlocks, unlockNames };
   }
 
   return {
@@ -236,7 +243,34 @@ export function createScoreService({ db, now, newId, logger }) {
       return Object.values(a).sort((x, y) => y.at - x.at).slice(0, 500);
     },
 
+    /**
+     * 歷史成績補判定（v0.3.1）：重新讀這位玩家「已接受」的正式成績，補上應有的稱號／頭像。
+     * 可以重複執行（已擁有的不會重複建立）；每次最多處理 25 筆，回傳 next 讓管理後台接著跑。
+     * 只讀新遊戲宇宙的正式成績；不讀舊 Firebase、不讀 Mock、不讀待審核／拒絕的成績。
+     */
+    async backfill(playerId, { offset = 0, batch = 25 } = {}) {
+      const profile = await getProfile(playerId);
+      const idx = (await db.get(`scoreIndex/byPlayer/${playerId}`)) || {};
+      const ids = Object.entries(idx).filter(([, v]) => v && v.status === "accepted").sort((a, b) => a[1].receivedAt - b[1].receivedAt).map(([k]) => k);
+      const slice = ids.slice(offset, offset + batch);
+      const titles = new Set(), avatars = new Set();
+      let quizProgress;
+      for (const id of slice) {
+        const s = await db.get(paths.score(id));
+        if (!s || s.status !== "accepted" || s.playerId !== playerId) continue;
+        if (s.gameId === "quiz" && quizProgress === undefined) quizProgress = (await lb.getQuizProgress(playerId)).progress;
+        const u = evaluateUnlocks(s.gameId, s.scoreData || {}, { quizProgress });
+        u.titles.forEach((k) => titles.add(k)); u.avatars.forEach((k) => avatars.add(k));
+      }
+      const granted = titles.size || avatars.size
+        ? await collections.grantKeys(playerId, profile, { titles: [...titles], avatars: [...avatars] }, { type: "backfill" })
+        : { titles: [], avatars: [] };
+      const next = offset + slice.length < ids.length ? offset + slice.length : null;
+      return { playerId, scanned: slice.length, totalAccepted: ids.length, granted, next };
+    },
+
     leaderboards: lb,
     wallet,
+    collections,
   };
 }

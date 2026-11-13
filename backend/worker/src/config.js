@@ -4,8 +4,8 @@
  * 這裡只回報「有沒有設定」，絕不回傳私密值本身。
  */
 export const SERVICE_NAME = "balloon-v-universe-api";
-export const API_VERSION = "0.4.0";
-export const RELEASE = "balloon-v-universe-v0.3.0-launch-integration-test-1";
+export const API_VERSION = "0.5.0";
+export const RELEASE = "balloon-v-universe-v0.3.1-official-data-collection-test-1";
 
 const DB_URL = /^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)*\.(firebaseio\.com|firebasedatabase\.app)$/;
 const PROJECT_ID = /^[a-z][a-z0-9-]{4,28}[a-z0-9]$/;
@@ -47,5 +47,13 @@ export function readConfig(env = {}) {
     // v0.3.0：正式寫入開關（預設關閉；只有明確設成 "on" 才開啟）
     scoresEnabled: env.SCORES_ENABLED === "on",
     rewardsEnabled: env.SCORES_ENABLED === "on" && env.REWARDS_ENABLED === "on",
+    // v0.3.1：受控試營運（"trial"）
+    //   SCORES_ENABLED="trial"：只有 TRIAL_PLAYER_IDS 名單內的玩家可以寫入；所有正式資料寫在獨立的 trial/ 底下
+    //   （不碰正式排行榜、正式錢包；驗收後可用管理後台一鍵清除，再切換成 "on"）
+    //   REWARDS_ENABLED="trial" 或 "on"：試營運時也發 V幣（同樣寫在 trial/ 底下）
+    scoresMode: env.SCORES_ENABLED === "on" ? "on" : env.SCORES_ENABLED === "trial" ? "trial" : "off",
+    rewardsMode: env.SCORES_ENABLED === "on" ? (env.REWARDS_ENABLED === "on" ? "on" : "off")
+      : env.SCORES_ENABLED === "trial" ? (env.REWARDS_ENABLED === "trial" || env.REWARDS_ENABLED === "on" ? "trial" : "off") : "off",
+    trialPlayerIds: String(env.TRIAL_PLAYER_IDS || "").split(/[\s,]+/).filter((s) => /^p_[a-z2-7]{20}$/.test(s)).slice(0, 20),
   };
 }

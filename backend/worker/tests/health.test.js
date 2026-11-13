@@ -13,7 +13,7 @@ test("/health 回傳 service、version、status、timestamp", async () => {
   const body = await res.json();
   assert.equal(body.service, "balloon-v-universe-api");
   assert.equal(body.version, API_VERSION);
-  assert.equal(API_VERSION, "0.4.0");
+  assert.equal(API_VERSION, "0.5.0");
   assert.equal(body.status, "ok");
   assert.ok(!Number.isNaN(Date.parse(body.timestamp)), "timestamp 必須是 ISO-8601");
   assert.ok(Math.abs(Date.parse(body.timestamp) - Date.now()) < 5000, "timestamp 由伺服器即時產生");

@@ -17,6 +17,7 @@ import { enforceRateLimit } from "../middleware/rate-limit.js";
 import { createPlayerService } from "../players/player-service.js";
 import { publicBaseAvatarList, BASE_AVATAR_CATALOG_VERSION, AVATAR_KEY_PATTERN } from "../players/base-avatars.js";
 import { ID_RULES } from "../players/id-rules.js";
+import { namespaceFor, namespacedDb } from "../launch/namespace.js";
 
 const MAX_PLAYER_BODY = 2 * 1024;
 
@@ -67,7 +68,15 @@ export function playerRoutes() {
       summary: "讀取玩家公開基本資料",
       handler: async (ctx) => {
         await enforceRateLimit(ctx, "lookup");
-        return ok(ctx, await service(ctx).getPublic(ctx.params.playerId));
+        const r = await service(ctx).getPublic(ctx.params.playerId);
+        // v0.3.1：目前裝備的展示頭像與稱號（遊戲宇宙共用收藏；伺服器已檢查過只能是自己已解鎖的）
+        //   baseAvatarKey 永遠不變；讀不到收藏時維持身份頭像，不影響玩家資料讀取
+        try {
+          const pp = await namespacedDb(ctx.firebase(), namespaceFor(ctx.cfg)).get(`publicProfiles/${r.player.playerId}`);
+          if (pp && typeof pp.displayAvatarKey === "string" && /^[a-z0-9_]{1,48}$/.test(pp.displayAvatarKey)) r.player.displayAvatarKey = pp.displayAvatarKey;
+          r.player.title = pp && pp.titleKey ? { titleKey: pp.titleKey, name: pp.titleName } : null;
+        } catch { r.player.title = null; }
+        return ok(ctx, r);
       },
     },
     {

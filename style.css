@@ -1122,3 +1122,30 @@ html.page-hidden .actor, html.page-hidden .actor * { animation-play-state: pause
   .lb-game__btn { padding: 0 10px; font-size: 14px; }
   .lb-tabs .tab { min-width: 0; flex: 1 1 22%; font-size: 14px; }
 }
+
+/* ==========================================================
+   v0.3.1 我的通行證「收藏」：共用稱號＋展示頭像（沿用通行證既有字體、顏色）
+   ========================================================== */
+.coll-note { margin: 0 0 8px !important; padding: 8px 12px; border-radius: 12px; background: #fff4d6; color: #8a5a00; font-size: 14px !important; font-weight: 800; }
+.coll-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.coll-chip { display: inline-flex; flex-direction: column; align-items: flex-start; min-height: 44px; padding: 6px 12px; border: 3px solid var(--purple-soft); border-radius: 14px; background: #fff; color: var(--ink); font: inherit; font-weight: 900; font-size: 15px; cursor: pointer; }
+.coll-chip small { font-size: 11px; font-weight: 700; color: var(--ink-soft); }
+.coll-chip.is-on { border-color: var(--gold); background: #fff6d6; }
+.coll-chip:disabled { cursor: default; }
+.coll-link { margin-top: 6px; min-height: 36px; padding: 0 10px; border: 0; background: none; color: var(--purple-dark); font: inherit; font-weight: 800; text-decoration: underline; cursor: pointer; }
+.coll-locked { margin-top: 8px; font-size: 14px; }
+.coll-locked summary { cursor: pointer; font-weight: 800; color: var(--ink-soft); min-height: 32px; }
+.coll-locked ul { list-style: none; margin: 4px 0 0; padding: 0; }
+.coll-locked li { display: flex; flex-wrap: wrap; gap: 4px 8px; padding: 4px 0; border-bottom: 1px dashed #eee4fb; }
+.coll-locked li span { color: var(--ink-soft); font-size: 12px; }
+.coll-hint { margin: 0 0 8px !important; font-size: 12px !important; color: var(--ink-soft); }
+.coll-avs { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 8px; }
+.coll-av { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 96px; padding: 6px 4px; border: 3px solid var(--purple-soft); border-radius: 14px; background: #fff; font: inherit; cursor: pointer; }
+.coll-av img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; background: #fff7e6; }
+.coll-av small { font-size: 11px; font-weight: 800; color: var(--ink); text-align: center; line-height: 1.2; }
+.coll-av.is-on { border-color: var(--gold); background: #fff6d6; }
+.coll-av.is-locked img { filter: grayscale(1); opacity: .45; }
+.coll-av.is-locked i { position: absolute; top: 26px; font-style: normal; font-size: 18px; }
+.coll-av:disabled { cursor: default; }
+.coll-msg { min-height: 20px; margin: 8px 0 0 !important; font-weight: 800; color: var(--purple-dark); font-size: 14px !important; }
+.lb-row__title { display: block; font-style: normal; font-size: 12px; font-weight: 800; color: var(--pink-dark); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

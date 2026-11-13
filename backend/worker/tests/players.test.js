@@ -162,7 +162,7 @@ test("讀取公開資料：存在 → 公開欄位；格式錯誤或不存在 �
   const a = (await create(call, "小明", "boy1")).body.data.player;
   const r = await call("GET", `/v1/players/${a.playerId}`);
   assert.equal(r.status, 200);
-  assert.deepEqual(r.body.data.player, a);
+  assert.deepEqual(r.body.data.player, { ...a, title: null }, "v0.3.1：多了目前裝備的稱號（沒有＝null）");
   const before = db.log.length;
   for (const bad of ["p_zzz", "..%2F..%2Fidentities", "identities", "p_" + "A".repeat(20)]) {
     assert.equal((await call("GET", `/v1/players/${bad}`)).status, 404, bad);

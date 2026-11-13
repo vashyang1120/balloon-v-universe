@@ -8,7 +8,9 @@
        知識學院：主榜／低年級／中年級／高年級（原版規則：科目最佳 → 年級加總 → 三個年級加總）
        派對島大作戰：每個大陸一個榜（只收完整通關總分）；尚未開放的大陸顯示「未開放」，不顯示任何分數
    ■ 我的通行證：顯示伺服器上的正式 V幣餘額與最近紀錄（只讀；消費尚未開放）
-   ■ 只有讀取（GET）；這個檔案不會寫入任何資料。
+   ■ v0.3.1 我的通行證「收藏」：遊戲宇宙共用稱號＋展示頭像；可以裝備（POST /v1/players/:id/equip，
+     伺服器檢查 ID＋身份頭像，而且只能選自己已解鎖的）。四款遊戲讀同一份資料。
+   ■ 除了「裝備」之外只有讀取（GET）；V幣、稱號、頭像解鎖都由伺服器依正式成績發放，前端不能寫入。
    ■ 測試沙盒（?sandbox=1）不連線正式排行榜與錢包。
    ========================================================== */
 (function () {
@@ -37,10 +39,13 @@
   if (!els.modal) return;
 
   /* ---------- 只讀 API ---------- */
-  function get(path) {
+  function get(path) { return call("GET", path); }
+  function call(method, path, body) {
     var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
     var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, CFG.player.apiTimeoutMs || 15000);
-    return fetch(API + path, { method: "GET", headers: { accept: "application/json" }, signal: ctrl ? ctrl.signal : undefined })
+    var headers = { accept: "application/json" };
+    if (body !== undefined) headers["content-type"] = "application/json";
+    return fetch(API + path, { method: method, headers: headers, body: body === undefined ? undefined : JSON.stringify(body), signal: ctrl ? ctrl.signal : undefined })
       .then(function (r) { return r.json().catch(function () { return null; }).then(function (b) { return { status: r.status, body: b }; }); })
       .then(function (res) {
         clearTimeout(timer);
@@ -178,8 +183,8 @@
       var medal = r.rank === 1 ? "🥇" : r.rank === 2 ? "🥈" : r.rank === 3 ? "🥉" : String(r.rank);
       return '<li class="lb-row' + (mine ? " is-me" : "") + '">' +
         '<span class="lb-row__rank">' + medal + "</span>" +
-        '<img class="lb-row__av" src="' + esc(AV + r.displayAvatarKey + ".png") + '" alt="" onerror="this.style.visibility=\'hidden\'">' +
-        '<span class="lb-row__info"><b>' + esc(r.displayId || "玩家") + (mine ? " ⭐" : "") + "</b><small>" + esc(metaFor(gameId, boardId, r)) + "</small></span>" +
+        '<img class="lb-row__av" src="' + esc(window.PlayerIdentity.avatarSrc(r.displayAvatarKey) || (AV + r.displayAvatarKey + ".png")) + '" alt="" onerror="this.style.visibility=\'hidden\'">' +
+        '<span class="lb-row__info"><b>' + esc(r.displayId || "玩家") + (mine ? " ⭐" : "") + "</b>" + (r.titleName ? '<em class="lb-row__title">🎖 ' + esc(r.titleName) + "</em>" : "") + "<small>" + esc(metaFor(gameId, boardId, r)) + "</small></span>" +
         '<span class="lb-row__score">' + Number(r.score || 0).toLocaleString() + "</span></li>";
     }).join("");
     var mineLine = "";
@@ -237,9 +242,104 @@
       L.emit("walletFailed", err);
     });
   }
-  L.on("playerChanged", loadWallet);
-  L.on("passOpened", function () { var d = L.current(); if (d && d.walletState !== "loading") loadWallet(d); });
-  if (L.current()) loadWallet(L.current());
 
-  window.LobbyLaunch = { open: open, close: close, showGame: showGame, loadWallet: loadWallet, isOpen: function () { return !els.modal.hidden; } };
+  /* ==========================================================
+     v0.3.1 共用收藏（稱號＋展示頭像）— 我的通行證「收藏」頁
+     ========================================================== */
+  var GAME_NAMES = CFG.player.gameNames;
+  var collToken = 0;
+  function applyCollection(d, c) {
+    d.collection = c;
+    d.features.titles = true;
+    d.features.avatarUnlocks = true;
+    d.title = c.equipped.titleKey ? { titleKey: c.equipped.titleKey, name: c.equipped.titleName } : null;
+    d.unlockedTitles = c.titles.map(function (t) { return { titleKey: t.titleKey, gameId: t.gameId, name: t.name }; });
+    d.unlockedAvatarKeys = c.avatars.map(function (a) { return a.avatarKey; });
+    d.unlockedAvatars = {};
+    c.catalog.avatars.forEach(function (a) { d.unlockedAvatars[a.avatarKey] = { image: a.image, name: a.name, unlocked: a.unlocked }; });
+    d.displayAvatarKey = c.equipped.displayAvatarKey || d.baseAvatarKey;
+  }
+  function loadCollection(d) {
+    if (SANDBOX || !d || !d.playerId) return;
+    var token = ++collToken;
+    get("/v1/players/" + encodeURIComponent(d.playerId) + "/collection").then(function (c) {
+      if (token !== collToken || L.current() !== d) return;
+      applyCollection(d, c);
+      L.renderAll();
+      L.emit("collectionLoaded", c);
+    }, function (err) {
+      if (token !== collToken || L.current() !== d) return;
+      d.collectionError = err.message;
+    });
+  }
+
+  function collectionHtml(d) {
+    var c = d.collection;
+    var off = !c.canEquip;
+    var note = off ? '<p class="coll-note">正式收藏功能尚未開啟：目前只能查看，暫時不能更換。</p>' : "";
+    var eqT = c.equipped.titleKey;
+    // 稱號：已解鎖（可裝備）＋各遊戲尚未解鎖／準備中
+    var unlocked = c.titles.length
+      ? '<div class="coll-chips">' + c.titles.map(function (t) {
+          var on = t.titleKey === eqT;
+          return '<button type="button" class="coll-chip' + (on ? " is-on" : "") + '" data-equip-title="' + esc(t.titleKey) + '"' + (off || on ? " disabled" : "") + ">" +
+            esc(t.name) + "<small>" + esc(GAME_NAMES[t.gameId] || t.gameId) + (on ? "・裝備中" : "") + "</small></button>";
+        }).join("") + "</div>" +
+        (eqT ? '<button type="button" class="coll-link" data-equip-title=""' + (off ? " disabled" : "") + ">不裝備稱號</button>" : "")
+      : '<p class="empty">還沒有解鎖稱號。玩遊戲達成條件就會自動解鎖！</p>';
+    var locked = ["tetris", "rhythm", "quiz", "adventure"].map(function (g) {
+      var rows = c.catalog.titles.filter(function (t) { return t.gameId === g && !t.unlocked; });
+      if (!rows.length) return "";
+      return "<details class=\"coll-locked\"><summary>" + esc(GAME_NAMES[g]) + "：還有 " + rows.length + " 個稱號</summary><ul>" + rows.map(function (t) {
+        return "<li>🔒 <b>" + esc(t.name) + "</b><span>" + esc(t.status === "preparing" ? "準備中" : t.conditionText) + "</span></li>";
+      }).join("") + "</ul></details>";
+    }).join("");
+    // 展示頭像：身份頭像＋可解鎖頭像（未解鎖顯示鎖定；私人頭像只有被授權才會出現）
+    var eqA = c.equipped.displayAvatarKey || d.baseAvatarKey;
+    var avs = [{ avatarKey: d.baseAvatarKey, name: "身份頭像", unlocked: true, base: true }].concat(c.catalog.avatars);
+    var grid = '<div class="coll-avs">' + avs.map(function (a) {
+      var on = a.avatarKey === eqA;
+      var src = a.base ? window.PlayerIdentity.avatarSrc(a.avatarKey) : a.image;
+      return '<button type="button" class="coll-av' + (on ? " is-on" : "") + (a.unlocked ? "" : " is-locked") + '" data-equip-avatar="' + esc(a.base ? "" : a.avatarKey) + '"' +
+        (!a.unlocked || on || off ? " disabled" : "") + ' title="' + esc(a.unlocked ? a.name : a.conditionText) + '">' +
+        '<img src="' + esc(src) + '" alt="" onerror="this.style.visibility=\'hidden\'">' + (a.unlocked ? "" : '<i aria-hidden="true">🔒</i>') +
+        "<small>" + esc(a.name) + (on ? "・使用中" : "") + "</small></button>";
+    }).join("") + "</div>";
+    return note +
+      '<h4 class="sec">🎖 目前稱號：' + esc(c.equipped.titleName || "未裝備") + "</h4>" + unlocked + locked +
+      '<h4 class="sec">🖼 展示頭像</h4><p class="coll-hint">身份頭像固定不變；展示頭像只改變外觀，不會改變玩家身份、成績、排行榜和 V幣。</p>' + grid +
+      '<p class="coll-msg" id="collMsg" role="status"></p>';
+  }
+
+  var equipBusy = false;
+  function equip(patch) {
+    var d = L.current();
+    if (!d || !d.collection || equipBusy) return;
+    equipBusy = true;
+    var msg = $("collMsg"); if (msg) msg.textContent = "儲存中…";
+    call("POST", "/v1/players/" + encodeURIComponent(d.playerId) + "/equip", Object.assign({ displayId: d.id, baseAvatarKey: d.baseAvatarKey }, patch)).then(function (c) {
+      equipBusy = false;
+      if (L.current() !== d) return;
+      applyCollection(d, c);
+      L.renderAll();
+      L.emit("collectionLoaded", c);
+      var m = $("collMsg"); if (m) m.textContent = "✅ 已更新，四款遊戲會一起換成新的展示內容";
+    }, function (err) {
+      equipBusy = false;
+      var m = $("collMsg"); if (m) m.textContent = "⚠️ " + err.message;
+    });
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("#passTabBody [data-equip-title], #passTabBody [data-equip-avatar]");
+    if (!b || b.disabled) return;
+    if (b.hasAttribute("data-equip-title")) equip({ titleKey: b.getAttribute("data-equip-title") || null });
+    else equip({ displayAvatarKey: b.getAttribute("data-equip-avatar") || null });
+  });
+
+  L.on("playerChanged", function (d) { loadWallet(d); loadCollection(d); });
+  L.on("passOpened", function () { var d = L.current(); if (d && d.walletState !== "loading") loadWallet(d); if (d) loadCollection(d); });
+  if (L.current()) { loadWallet(L.current()); loadCollection(L.current()); }
+
+  window.LobbyLaunch = { open: open, close: close, showGame: showGame, loadWallet: loadWallet, loadCollection: loadCollection, collectionHtml: collectionHtml,
+    isOpen: function () { return !els.modal.hidden; } };
 })();
