@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="version" content="universe-lobby-v0.4.0-three-games-integration-test-1">
+  <meta name="version" content="balloon-v-universe-v0.3.0-launch-integration-test-1">
   <title>氣球小V遊戲宇宙</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="style.css?v=0.3.4-3">
+  <link rel="stylesheet" href="style.css?v=0.3.0-launch-1">
 </head>
 <body class="is-booting">
 
@@ -18,7 +18,7 @@
     <div class="brand">
       <span class="brand__balloon" aria-hidden="true">🎈</span>
       <h1 class="brand__title">氣球小V遊戲宇宙</h1>
-      <span class="version-tag">v0.4.0 三款遊戲整合測試</span>
+      <span class="version-tag">v0.3.0 正式上線整合測試</span>
     </div>
   </header>
 
@@ -68,13 +68,13 @@
       <!-- 四個遊戲入口（桌機：在地圖上；手機：地圖下方一排） -->
       <nav class="entries" id="entries" aria-label="遊戲入口"></nav>
 
-      <!-- 下方：選擇玩家木牌、玩家頭像列、我的通行證木牌
+      <!-- 下方：排行榜木牌（v0.3.0；原「選擇玩家」）、玩家頭像列、我的通行證木牌
            手機：放在遊樂園前景區（foreground）上；木牌只露出牌面與上半段腳柱 -->
       <div class="dock" id="dock" hidden>
         <div class="foreground" id="foreground" aria-hidden="true"><div class="foreground__mist"></div></div>
-        <button class="sign sign--select" id="signSelect" type="button" aria-label="選擇玩家">
+        <button class="sign sign--select" id="signSelect" type="button" aria-label="排行榜">
           <span class="sign__img"></span>
-          <span class="sign__text">選擇玩家</span>
+          <span class="sign__text">排行榜</span>
         </button>
         <div class="avatar-row" id="avatarRow" role="list" aria-label="這台裝置記住的玩家"></div>
         <button class="sign sign--pass" id="signPass" type="button" aria-label="我的通行證">
@@ -164,6 +164,16 @@
     </div>
   </div>
 
+  <!-- ===== 排行榜總覽（v0.3.0；lobby-launch.js 產生內容） ===== -->
+  <div class="modal" id="lbModal" hidden>
+    <div class="modal__card lb-modal" role="dialog" aria-modal="true" aria-labelledby="lbTitle">
+      <button class="modal__close lb-back" id="lbBack" type="button" aria-label="回排行榜總覽" hidden>←</button>
+      <button class="modal__close" id="lbClose" type="button" aria-label="關閉">✕</button>
+      <h3 id="lbTitle" class="lb-modal__title">🏆 排行榜</h3>
+      <div class="lb-body" id="lbBody"></div>
+    </div>
+  </div>
+
   <!-- ===== 「開始遊玩」測試提示 ===== -->
   <div class="modal" id="testModal" hidden>
     <div class="modal__card" role="dialog" aria-modal="true" aria-labelledby="testTitle">
@@ -177,14 +187,15 @@
 
   <div class="toast" id="toast" role="status" hidden></div>
 
-  <script src="zones.js?v=0.4.0-1"></script>
+  <script src="zones.js?v=0.3.0-launch-1"></script>
   <script src="audio.js?v=0.3.4"></script>
   <script src="identity.js?v=0.3.4"></script>
   <script src="player-store.js?v=0.4.0-1"></script>
   <script src="rpg-text.js?v=0.3.4"></script>
   <script src="rpg-actor.js?v=0.3.4"></script>
   <script src="dialogue.js?v=0.3.4"></script>
-  <script src="main.js?v=0.4.0-1"></script>
+  <script src="main.js?v=0.3.0-launch-1"></script>
+  <script src="lobby-launch.js?v=0.3.0-launch-1"></script>
   <script src="onboarding.js?v=0.3.4-3"></script>
 </body>
 </html>

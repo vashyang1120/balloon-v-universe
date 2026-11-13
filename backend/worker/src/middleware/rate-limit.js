@@ -45,6 +45,14 @@ export const RULES = Object.freeze({
   lookup: Object.freeze([
     Object.freeze({ id: "lookup-ip",     binding: "RL_LOOKUP_IP",     limit: 300, periodSec: 60, scope: "ip" }),
   ]),
+  // v0.3.0：開始場次＋提交成績（每場 2 次請求；一般遊玩遠低於此）
+  score: Object.freeze([
+    Object.freeze({ id: "score-ip",      binding: "RL_SCORE_IP",      limit: 120, periodSec: 60, scope: "ip" }),
+  ]),
+  // v0.3.0：排行榜、錢包等公開讀取
+  read: Object.freeze([
+    Object.freeze({ id: "read-ip",       binding: "RL_READ_IP",       limit: 600, periodSec: 60, scope: "ip" }),
+  ]),
 });
 
 const MAX_TRACKED = 5000;
@@ -95,7 +103,7 @@ async function check(ctx, rule, nowMs) {
 
 /**
  * 依序檢查這個動作的所有規則；任何一條超過就回 429。
- * @param {"create"|"lookup"} action
+ * @param {"create"|"lookup"|"score"|"read"} action
  * @returns {Promise<string[]>} 每條規則使用的層（binding / memory），測試與記錄用
  */
 export async function enforceRateLimit(ctx, action, nowMs = Date.now()) {

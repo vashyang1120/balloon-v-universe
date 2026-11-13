@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>遊戲宇宙 成績管理</title>
+  <!-- balloon-v-universe-v0.3.0-launch-integration-test-1：最小管理後台（成績審核、V幣帳本、CSV 匯出） -->
+  <style>
+    :root { --bg:#f6f3fb; --card:#fff; --ink:#2b2140; --muted:#6e6485; --line:#e3dcef; --brand:#7b4fd6;
+      --ok:#1e8a4c; --ok-bg:#e8f6ee; --warn:#9a6200; --warn-bg:#fff4dc; --bad:#b3261e; --bad-bg:#fdecea; --idle:#f1eef7; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.55 system-ui,-apple-system,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; }
+    main { max-width: 1100px; margin: 0 auto; padding: 20px 16px 48px; }
+    h1 { font-size: 1.45rem; margin: 0 0 4px; } .sub { color: var(--muted); margin: 0 0 16px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+    .card h2 { font-size: 1.05rem; margin: 0 0 10px; }
+    .status { border-radius: 10px; padding: 9px 12px; margin: 8px 0; background: var(--idle); color: var(--muted); }
+    .status.ok { background: var(--ok-bg); color: var(--ok); } .status.warn { background: var(--warn-bg); color: var(--warn); } .status.bad { background: var(--bad-bg); color: var(--bad); }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    label { display: inline-flex; flex-direction: column; gap: 2px; font-size: .85rem; color: var(--muted); }
+    input, select, textarea { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; min-height: 40px; background: #fff; color: var(--ink); }
+    button { font: inherit; border: 0; border-radius: 9px; padding: 8px 14px; min-height: 40px; cursor: pointer; background: var(--brand); color: #fff; }
+    button.secondary { background: #ece6f8; color: var(--ink); } button.ok { background: var(--ok); } button.bad { background: var(--bad); }
+    button:disabled { background: #d9d3e5; color: #8d859e; cursor: not-allowed; }
+    .tablewrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; white-space: nowrap; }
+    td.wrap { white-space: normal; min-width: 200px; }
+    .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: .8rem; font-weight: 700; }
+    .pill.accepted { background: var(--ok-bg); color: var(--ok); } .pill.pending_review { background: var(--warn-bg); color: var(--warn); } .pill.rejected { background: var(--bad-bg); color: var(--bad); }
+    pre { background: var(--idle); padding: 10px; border-radius: 8px; overflow: auto; max-height: 260px; font-size: .82rem; }
+    .hidden { display: none !important; } .muted { color: var(--muted); font-size: .85rem; }
+    code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .85rem; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>遊戲宇宙 成績管理</h1>
+  <p class="sub">管理員專用：成績審核、V幣帳本、CSV 匯出。所有動作都由伺服器驗證管理員身份（Google 登入＋伺服器管理員名單）後才執行；這個頁面本身沒有任何密碼。</p>
+
+  <section class="card">
+    <h2>登入</h2>
+    <div id="authStatus" class="status">正在載入登入元件…</div>
+    <div class="row">
+      <button id="btnLogin" type="button" disabled>使用 Google 登入</button>
+      <button id="btnLogout" type="button" class="secondary hidden">登出</button>
+    </div>
+    <p class="muted">登入只存在這個分頁的記憶體裡，關閉或重新整理就會登出。</p>
+  </section>
+
+  <div id="adminArea" class="hidden">
+    <section class="card">
+      <h2>成績紀錄</h2>
+      <div class="row">
+        <label>遊戲<select id="fGame"><option value="">全部</option><option value="tetris">方塊</option><option value="rhythm">節奏</option><option value="quiz">問答</option><option value="adventure">派對島</option></select></label>
+        <label>狀態<select id="fStatus"><option value="">全部</option><option value="pending_review" selected>待審核</option><option value="accepted">已接受</option><option value="rejected">已拒絕</option></select></label>
+        <label>playerId<input id="fPlayer" placeholder="p_…" maxlength="22" autocomplete="off"></label>
+        <button id="btnSearch" type="button">查詢</button>
+        <button id="btnCsvScores" type="button" class="secondary">匯出成績 CSV</button>
+      </div>
+      <div id="listStatus" class="status">尚未查詢</div>
+      <div class="tablewrap"><table id="scoreTable"><thead><tr><th>時間</th><th>遊戲</th><th>playerId</th><th>分數</th><th>狀態</th><th>異常原因</th><th></th></tr></thead><tbody></tbody></table></div>
+    </section>
+
+    <section class="card hidden" id="detailCard">
+      <h2>成績詳細 <code id="dId"></code></h2>
+      <div id="dSummary"></div>
+      <pre id="dData"></pre>
+      <div id="reviewBox" class="hidden">
+        <label style="display:flex">審核備註（只存在後台，不會公開）<textarea id="rNote" rows="2" maxlength="200"></textarea></label>
+        <div class="row" style="margin-top:8px">
+          <button id="btnAccept" type="button" class="ok">接受（列入排行榜並補發 V幣）</button>
+          <button id="btnReject" type="button" class="bad">拒絕</button>
+        </div>
+      </div>
+      <div id="reviewStatus" class="status hidden"></div>
+    </section>
+
+    <section class="card">
+      <h2>V幣帳本</h2>
+      <div class="row">
+        <label>playerId<input id="wPlayer" placeholder="p_…" maxlength="22" autocomplete="off"></label>
+        <button id="btnLedger" type="button">查詢</button>
+        <button id="btnCsvLedger" type="button" class="secondary">匯出帳本 CSV</button>
+      </div>
+      <div id="ledgerStatus" class="status">輸入 playerId 查詢；匯出時不填 playerId 會匯出全部帳本。</div>
+      <div class="tablewrap"><table id="ledgerTable"><thead><tr><th>時間</th><th>日期</th><th>類型</th><th>遊戲</th><th>金額</th><th>交易後餘額</th><th>來源成績</th><th>txId</th></tr></thead><tbody></tbody></table></div>
+    </section>
+
+    <section class="card">
+      <h2>審核紀錄</h2>
+      <button id="btnAudits" type="button" class="secondary">重新整理</button>
+      <div class="tablewrap"><table id="auditTable"><thead><tr><th>時間</th><th>決定</th><th>遊戲</th><th>playerId</th><th>分數</th><th>成績編號</th><th>備註</th></tr></thead><tbody></tbody></table></div>
+    </section>
+  </div>
+</main>
+<script type="module" src="admin.js"></script>
+</body>
+</html>

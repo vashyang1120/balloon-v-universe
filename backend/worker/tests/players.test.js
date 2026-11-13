@@ -362,7 +362,8 @@ test("玩家 API 不能取得管理資料、不提供修改或刪除玩家", asy
   }
   assert.equal((await call("GET", "/v1/players")).status, 501, "沒有列出所有玩家的 API");
   assert.equal((await call("GET", "/v1/admin/whoami")).status, 503, "管理 API 仍需管理員（此環境未設定名單）");
-  assert.equal((await call("GET", "/v1/wallet/me")).status, 501);
+  assert.equal((await call("GET", "/v1/wallet/me")).status, 400, "錢包只能用 playerId 唯讀查詢");
+  assert.equal((await call("POST", `/v1/wallet/${a.playerId}/pin`, {})).status, 501, "PIN／消費尚未開放");
   assert.equal((await call("POST", "/v1/shop/buy", {})).status, 501, "找回身份不等於消費授權");
 });
 

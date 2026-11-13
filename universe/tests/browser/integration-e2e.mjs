@@ -5,7 +5,7 @@
    流程：
    1. 玩家 A：大廳 → 方塊工坊 → 完成一場 → 回大廳；→ 音樂舞台 → 完成一首 → 回大廳；→ 知識學院 → 完成一局 → 回大廳
    2. 大廳切換成玩家 B → 三款遊戲都顯示 B、看不到 A 的資料 → 回大廳仍是 B
-   3. 派對島大作戰：維持原本行為（不跳轉）
+   3. 派對島大作戰（v0.3.0）：直接開啟 balloon-v-rush 第一大陸宇宙版，網址帶 playerId（完整流程見 launch-e2e.mjs）
    4. 四種視窗（1920×1080、1440×900、390×844、360×640）：大廳 → 各遊戲開始畫面與遊戲中畫面 → 回大廳
    全程確認：playerId 一致、沒有重建身份（沒有 POST）、沒有舊 Firebase 或其他外部連線、玩家資料庫不變 */
 import fs from "node:fs";
@@ -43,7 +43,7 @@ async function seedLobby(page, players, currentId) {
   }, { players, currentId });
   await page.goto(LOBBY);
 }
-const lobbyPlayer = (page) => page.waitForFunction(() => { const el = document.getElementById("playerCardId"); return el && el.textContent.trim().length > 0 && !document.getElementById("playerCard").hidden; }, null, { timeout: 15000 })
+const lobbyPlayer = (page) => page.waitForFunction(() => { const el = document.getElementById("playerCardId"); const card = document.getElementById("playerCard"); return el && el.textContent.trim().length > 0 && !card.hidden && !card.classList.contains("is-loading"); }, null, { timeout: 15000 })
   .then(() => page.evaluate(() => ({ id: document.getElementById("playerCardId").textContent.trim(), cur: localStorage.getItem("bvUniverse_v2_currentPlayerId"), flowHidden: document.getElementById("flow").hidden })));
 
 async function enterGame(page, zone) {
@@ -178,14 +178,16 @@ for (const [i, z] of ZONES.entries()) {
 }
 await page.screenshot({ path: `${OUT}/int-08-lobby-B-after-games.png` });
 
-/* ========== 3. 派對島大作戰：維持原本行為 ========== */
-await enterGame(page, "island");
-await sleep(500);
-const island = await page.evaluate(() => ({ modal: !document.getElementById("testModal").hidden, url: location.pathname, text: document.getElementById("testHandoff").textContent }));
-check("整合｜派對島", "派對島大作戰：不跳轉、維持原本的測試說明視窗（未換殼）", island.modal && island.url === "/index.html" && /派對島大作戰/.test(island.text), JSON.stringify(island));
-await page.screenshot({ path: `${OUT}/int-09-island-unchanged.png` });
-await page.click("#testOk");
+/* ========== 3. 派對島大作戰（v0.3.0）：直接開啟真正的遊戲 ========== */
 check("整合｜穩定", "整合流程沒有 JavaScript 錯誤", page.errors.length === 0, page.errors.join(" | "));
+// 這個測試不載入 balloon-v-rush（派對島完整流程在 launch-e2e.mjs）：用一個空白頁代替，只確認網址
+await page.context().route("https://vashyang1120.github.io/balloon-v-rush/**", (r) => r.fulfill({ status: 200, contentType: "text/html", body: "<!doctype html><title>派對島（測試替身）</title>" }));
+await enterGame(page, "island");
+await page.waitForURL(/balloon-v-rush\/rpg-continent1-universe\/\?bvPlayerId=/, { timeout: 10000 }).catch(() => {});
+const islandUrl = page.url();
+check("整合｜派對島", "派對島大作戰：直接開啟 balloon-v-rush 第一大陸宇宙版，網址帶目前玩家 playerId（不再顯示說明視窗）", islandUrl === "https://vashyang1120.github.io/balloon-v-rush/rpg-continent1-universe/?bvPlayerId=" + B.playerId, islandUrl);
+await page.goto(LOBBY);
+await lobbyPlayer(page);
 
 /* ========== 4. 大廳新手教學、33 款頭像 ========== */
 {

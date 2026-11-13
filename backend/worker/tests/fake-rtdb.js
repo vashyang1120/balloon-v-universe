@@ -74,8 +74,8 @@ export function createFakeRtdb() {
         res = new Response(u.searchParams.get("print") === "silent" ? "" : init.body, { status: 200, headers: { etag: etagOf(getAt(path)) } });
       }
     } else if (method === "PATCH") {
-      const cur = getAt(path) || {};
-      setAt(path, { ...cur, ...JSON.parse(init.body) });
+      // Firebase PATCH：每個鍵（可以是 "a/b" 多層路徑）各自寫入；值為 null 代表刪除
+      for (const [k, v] of Object.entries(JSON.parse(init.body))) setAt((path ? path + "/" : "") + k, v);
       res = new Response("", { status: 200 });
     } else if (method === "DELETE") {
       setAt(path, null);

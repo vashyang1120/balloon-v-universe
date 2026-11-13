@@ -6,7 +6,8 @@
      身份      → BVUniverse SDK 讀取 playerId 的公開資料（唯讀，網址 ?bvPlayerId=）
      V幣       → 未開放（不發放、不寫入）；今日挑戰保留「完成任一首歌」判定，+10 待開放
      稱號／頭像收藏 → 準備中（共用 API 尚未完成）
-     成績／排行榜   → Mock（只存在目前分頁，依 playerId 分開，畫面標示「尚未記入正式排行榜」）
+     成績／排行榜   → v0.3.0：後端正式成績開啟時 → 開局取得場次、結算送出、伺服器判定（每首歌×每個難度一個排行榜）；
+                      未開啟或沙盒 → Mock（只存在目前分頁，依 playerId 分開，畫面標示「尚未記入正式排行榜」）
      舊 Firebase    → 完全不載入、不讀、不寫
    音符判定、速度、Hit Window、Perfect/Good/Miss、Hold、計分、Combo、歌曲、Beatmap、字幕、音訊、
    YouTube、難度、手機操作、結算流程、音樂編輯器：完全沒有修改。
@@ -14,7 +15,7 @@
 (function () {
   "use strict";
 
-  var GAME_VERSION = "rhythm-v2.6.4+universe-v0.2.0-test-1";
+  var GAME_VERSION = "rhythm-v2.6.4+universe-v0.3.0-test-1";
   var AV_BASE = "../../assets/avatars/base/";
   var BLANK = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
   var U = window.BVUniverse;
@@ -32,6 +33,13 @@
   var labels = {};
   var round = { startedAt: null, submissionId: null };
   var readyCallbacks = [];
+  var wallet = null, lastOfficial = null;
+  function officialOn() { return S.official.isEnabled(); }
+  function onWallet(w) {
+    wallet = w;
+    if (typeof window.refreshProfileMetaInfo === "function") { try { window.refreshProfileMetaInfo(); } catch (e) {} }
+  }
+  function refreshWallet() { if (officialOn() && player) S.official.getWallet().then(onWallet, function () {}); }
 
   function $(id) { return document.getElementById(id); }
   function esc(s) {
@@ -155,6 +163,7 @@
     return S.start().then(function (p) {
       player = p;
       showIdentityState("ready");
+      S.bootOfficial({ onWallet: onWallet });
       readyCallbacks.forEach(function (fn) { try { fn(); } catch (e) { console.warn("[Universe] ready callback", e); } });
       return p;
     }, function (err) {
@@ -164,7 +173,7 @@
     });
   }
 
-  S.onReset(function () { player = null; round.startedAt = null; round.submissionId = null; });
+  S.onReset(function () { player = null; wallet = null; round.startedAt = null; round.submissionId = null; });
 
   /* 每一場開局時固定 submissionId（再玩一次＝新的一場），結算時用來防止重複提交 */
   function wrapInitGame() {
@@ -173,6 +182,8 @@
     var wrapped = function () {
       round.startedAt = new Date().toISOString();
       round.submissionId = null;
+      lastOfficial = null;
+      if (player) S.startRun();   // 正式成績開啟時向伺服器取得場次（沒開啟／沙盒不會寫入任何資料）
       return orig.apply(this, arguments);
     };
     wrapped.__bvWrapped = true;
@@ -180,6 +191,44 @@
   }
 
   function bestKey(songId) { return "best_" + songId; }
+
+
+  /* 正式排行榜：每首歌×每個難度一個榜。「全部」頁籤分成三個難度各列前 5 名（不把不同難度混在同一個名次裡） */
+  var DIFF_NAME = { easy: "EASY", normal: "NORMAL", hard: "HARD" };
+  function toRows(board, songTitle) {
+    return board.rows.map(function (r) {
+      var mine = player && r.playerId === player.playerId;
+      var x = r.extra || {};
+      return { playerKey: r.playerId, name: (r.displayId || "玩家") + (mine ? " ⭐" : ""), displayAvatarKey: r.displayAvatarKey || "",
+        bestScore: r.score, score: r.score, diff: x.difficulty, grade: x.grade, acc: x.accuracy, song: songTitle,
+        date: r.achievedAt ? new Date(r.achievedAt).toLocaleDateString("zh-TW") : "" };
+    });
+  }
+  function renderOfficialBoard(el, songId, lbMode, renderRows) {
+    var titleOf = {};
+    (window.SONGS || []).forEach(function (s) { titleOf[s.id] = s.title; });
+    var title = titleOf[songId] || songId;
+    var diffs = lbMode && lbMode !== "all" ? [lbMode] : ["easy", "normal", "hard"];
+    el.innerHTML = '<div style="text-align:center;padding:28px;">🎈 載入中…</div>';
+    return Promise.all(diffs.map(function (d) { return S.official.getBoard(songId + "--" + d, { limit: diffs.length > 1 ? 5 : 15 }); })).then(function (boards) {
+      if (diffs.length === 1) {
+        renderRows(el, toRows(boards[0], title));
+        var me = boards[0].me;
+        if (me && me.rank > boards[0].rows.length) el.insertAdjacentHTML("beforeend", '<div class="bv-note">我的名次：第 ' + me.rank + " 名（" + Number(me.score).toLocaleString() + "）</div>");
+        return;
+      }
+      el.innerHTML = "";
+      boards.forEach(function (b, i) {
+        var h = document.createElement("div"); h.className = "bv-note"; h.textContent = DIFF_NAME[diffs[i]] + " 排行榜";
+        var box = document.createElement("div");
+        el.appendChild(h); el.appendChild(box);
+        renderRows(box, toRows(b, title));
+      });
+    }, function (err) {
+      el.innerHTML = '<div style="text-align:center;padding:28px;">⚠️ ' + esc(err && err.userMessage || "排行榜暫時無法顯示") + ' <button type="button" class="bv-btn bv-btn-outline" id="bv-lb-retry">🔄 再試一次</button></div>';
+      var b = document.getElementById("bv-lb-retry"); if (b) b.addEventListener("click", function () { renderOfficialBoard(el, songId, lbMode, renderRows); });
+    });
+  }
 
   window.UniverseRhythm = {
     session: S,
@@ -226,16 +275,26 @@
     },
     avatarLabel: function (key) { return labels[key] || ""; },
 
-    notReady: function (feature) { U.ui.toast(FEATURE_TEXT[feature] || "這個功能準備中"); return true; },
+    notReady: function (feature) {
+      if (feature === "wallet" && officialOn()) {
+        U.ui.toast(wallet ? "🪙 V幣餘額：" + Number(wallet.balance || 0).toLocaleString() + "（V幣紀錄請到遊戲宇宙大廳「我的通行證」查看；消費尚未開放）" : "🪙 V幣讀取中…");
+        refreshWallet();
+        return true;
+      }
+      U.ui.toast(FEATURE_TEXT[feature] || "這個功能準備中"); return true;
+    },
     identityLocked: function () { U.ui.toast(FEATURE_TEXT.identity); return true; },
     adminDisabled: function () { return true; },   // 宇宙版停用舊管理後台（不顯示、不寫入）
     explainNotReady: function () {
       var st = S.getStatus();
       U.ui.toast(st.status === "error" && st.error ? st.error.userMessage : "正在讀取玩家資料，請稍候…");
     },
-    walletText: function () { return L.vcoinClosed; },
+    walletText: function () { return officialOn() && wallet ? Number(wallet.balance || 0).toLocaleString() : (officialOn() ? "讀取中" : L.vcoinClosed); },
     titleText: function () { return L.titlePending; },
-    resultVcoinText: function () { return L.vcoinResult; },
+    resultVcoinText: function () {
+      if (officialOn()) return lastOfficial ? S.describeOfficialResult(lastOfficial) : "🪙 V幣：成績送出中，等待伺服器確認…";
+      return L.vcoinResult;
+    },
 
     /* 今日挑戰「完成任一首歌」：完成判定保留，只記錄完成，不發 +10 */
     markDailyChallengeDone: function () { return S.dailyChallenge.markDone("rhythm_any_song"); },
@@ -263,6 +322,26 @@
       var isNew = prev === null || d.score > prev;
       if (isNew) S.playerStore.set(bestKey(d.songId), String(d.score));
 
+      var scoreData = { songId: d.songId, difficulty: d.difficulty, score: d.score, maxCombo: d.maxCombo,
+        perfect: d.perfect, good: d.good, miss: d.miss, accuracy: d.accuracy, grade: d.grade };
+      if (officialOn()) {
+        if (note) note.textContent = L.sending;
+        S.finishRun(scoreData).then(function (out) {
+          if (out.official && out.result) {
+            lastOfficial = out.result;
+            var msg = S.describeOfficialResult(out.result);
+            if (note) note.textContent = msg;
+            if (typeof window.setResultVCoinMessage === "function") { try { window.setResultVCoinMessage(msg, out.result.status === "accepted" && out.result.rewards.length ? "ok" : "claimed"); } catch (e) {} }
+            refreshWallet();
+          } else if (out.queued) {
+            if (note) note.textContent = L.queued;
+          } else if (note) {
+            note.textContent = "本場成績沒有記入正式排行榜（" + ((out.error && out.error.userMessage) || "沒有取得正式場次") + "）";
+          }
+        });
+        return isNew;
+      }
+      S.finishRun(null);   // 未開啟正式成績：丟棄（不會送出）
       var now = new Date().toISOString();
       var sub;
       try {
@@ -291,6 +370,7 @@
     /* 測試排行榜：用原版的 renderLBRows 畫（版面相同），資料來自本分頁 Mock */
     renderMockBoard: function (el, songId, lbMode, renderRows) {
       if (!el) return Promise.resolve();
+      if (officialOn()) return renderOfficialBoard(el, songId, lbMode, renderRows);
       var q = { gameId: "rhythm", songId: songId, limit: 15 };
       if (lbMode && lbMode !== "all") q.difficulty = lbMode;
       return S.services.leaderboard.getBoard(q).then(function (board) {
