@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="referrer" content="no-referrer">
   <title>遊戲宇宙 成績管理</title>
-  <!-- balloon-v-universe-v0.3.0-launch-integration-test-1：最小管理後台（成績審核、V幣帳本、CSV 匯出） -->
+  <!-- balloon-v-universe-v0.3.2-player-management-sync-test-1：A. 玩家管理中心（用玩家 ID 搜尋、選一次、全部共用）＋ B. 全體紀錄與系統管理 -->
   <style>
     :root { --bg:#f6f3fb; --card:#fff; --ink:#2b2140; --muted:#6e6485; --line:#e3dcef; --brand:#7b4fd6;
       --ok:#1e8a4c; --ok-bg:#e8f6ee; --warn:#9a6200; --warn-bg:#fff4dc; --bad:#b3261e; --bad-bg:#fdecea; --idle:#f1eef7; }
@@ -33,12 +33,30 @@
     pre { background: var(--idle); padding: 10px; border-radius: 8px; overflow: auto; max-height: 260px; font-size: .82rem; }
     .hidden { display: none !important; } .muted { color: var(--muted); font-size: .85rem; }
     code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .85rem; }
+    .group { font-size: 1.15rem; margin: 22px 0 10px; padding-left: 10px; border-left: 5px solid var(--brand); }
+    .scope { display:inline-block; font-size:.75rem; font-weight:700; padding:1px 8px; border-radius:999px; margin-left:6px; vertical-align:middle; }
+    .scope.me { background:#e6f0ff; color:#1f4fa8; } .scope.all { background:#f1e7ff; color:#5b2fb0; }
+    .trialtag { display:inline-block; background:var(--warn-bg); color:var(--warn); font-weight:700; font-size:.8rem; padding:2px 10px; border-radius:999px; }
+    .results { display:grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap:10px; margin-top:8px; }
+    .pcard { display:flex; gap:10px; align-items:center; text-align:left; background:#fff; color:var(--ink); border:1px solid var(--line); border-radius:12px; padding:10px; min-height:84px; width:100%; }
+    .pcard:hover { border-color: var(--brand); } .pcard.sel { border:2px solid var(--brand); background:#f7f2ff; }
+    .ava { width:52px; height:52px; border-radius:50%; object-fit:cover; background:var(--idle); flex:none; border:1px solid var(--line); }
+    .ava.lg { width:72px; height:72px; }
+    .pcard .t { display:flex; flex-direction:column; gap:1px; min-width:0; } .pcard b { font-size:1.02rem; } .pcard small { color:var(--muted); overflow-wrap:anywhere; }
+    .summary { display:flex; flex-wrap:wrap; gap:14px; align-items:center; }
+    .avapair { display:flex; gap:8px; align-items:flex-end; } .avapair figure { margin:0; text-align:center; font-size:.75rem; color:var(--muted); }
+    .kv { display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap:6px 14px; flex:1; min-width:260px; }
+    .kv div { display:flex; flex-direction:column; } .kv span { color:var(--muted); font-size:.78rem; } .kv b { font-size:1rem; overflow-wrap:anywhere; }
+    .tabs { display:flex; flex-wrap:wrap; gap:6px; margin:14px 0 10px; border-bottom:1px solid var(--line); padding-bottom:8px; }
+    .tabs button { background:#ece6f8; color:var(--ink); } .tabs button[aria-selected="true"] { background:var(--brand); color:#fff; }
+    details summary { cursor:pointer; color:var(--muted); margin-top:10px; }
+    @media (max-width: 560px) { main { padding: 14px 12px 40px; } .kv { min-width: 0; } }
   </style>
 </head>
 <body>
 <main>
   <h1>遊戲宇宙 成績管理</h1>
-  <p class="sub">管理員專用：成績審核、V幣帳本、CSV 匯出。所有動作都由伺服器驗證管理員身份（Google 登入＋伺服器管理員名單）後才執行；這個頁面本身沒有任何密碼。</p>
+  <p class="sub">管理員專用：玩家管理中心、成績審核、V幣帳本、收藏、CSV 匯出。所有動作都由伺服器驗證管理員身份（Google 登入＋伺服器管理員名單）後才執行；這個頁面本身沒有任何密碼。</p>
 
   <section class="card">
     <h2>登入</h2>
@@ -51,21 +69,99 @@
   </section>
 
   <div id="adminArea" class="hidden">
+    <h2 class="group">A. 玩家管理中心</h2>
     <section class="card">
-      <h2>成績紀錄</h2>
+      <h2>搜尋玩家</h2>
       <div class="row">
-        <label>遊戲<select id="fGame"><option value="">全部</option><option value="tetris">方塊</option><option value="rhythm">節奏</option><option value="quiz">問答</option><option value="adventure">派對島</option></select></label>
-        <label>狀態<select id="fStatus"><option value="">全部</option><option value="pending_review" selected>待審核</option><option value="accepted">已接受</option><option value="rejected">已拒絕</option></select></label>
-        <label>playerId<input id="fPlayer" placeholder="p_…" maxlength="22" autocomplete="off"></label>
-        <button id="btnSearch" type="button">查詢</button>
-        <button id="btnCsvScores" type="button" class="secondary">匯出成績 CSV</button>
+        <label style="flex:1;min-width:220px">搜尋玩家 ID（玩家自己取的名字：中文、英文、數字都可以）<input id="pQuery" placeholder="例如：宇宙測試1" maxlength="40" autocomplete="off"></label>
+        <button id="btnPSearch" type="button">搜尋</button>
       </div>
-      <div id="listStatus" class="status">尚未查詢</div>
-      <div class="tablewrap"><table id="scoreTable"><thead><tr><th>時間</th><th>遊戲</th><th>playerId</th><th>分數</th><th>狀態</th><th>異常原因</th><th></th></tr></thead><tbody></tbody></table></div>
+      <details id="advSearch"><summary>進階搜尋：用完整 playerId（p_ 開頭）精確查詢</summary>
+        <div class="row" style="margin-top:8px">
+          <label>playerId<input id="pExact" placeholder="p_…" maxlength="22" autocomplete="off"></label>
+          <button id="btnPExact" type="button" class="secondary">精確查詢</button>
+        </div>
+      </details>
+      <div id="pSearchStatus" class="status">輸入玩家 ID 後按搜尋。同名但身份圖案不同的是不同玩家，會分開列出，請選擇正確的一位。</div>
+      <div id="pResults" class="results"></div>
     </section>
 
+    <section class="card hidden" id="playerPanel">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0">目前選擇的玩家 <span id="pTrialTag" class="trialtag hidden">🧪 試營運資料</span></h2>
+        <button id="btnPClear" type="button" class="secondary">換一位玩家</button>
+      </div>
+      <div class="summary" style="margin-top:10px">
+        <div class="avapair">
+          <figure><img id="pBaseImg" class="ava lg" alt="身份頭像"><figcaption>身份頭像</figcaption></figure>
+          <figure><img id="pDispImg" class="ava lg" alt="展示頭像"><figcaption>展示頭像</figcaption></figure>
+        </div>
+        <div class="kv" id="pSummary">
+          <div><span>玩家 ID</span><b data-k="displayId"></b></div>
+          <div><span>目前稱號</span><b data-k="titleName"></b></div>
+          <div><span>展示頭像</span><b data-k="displayAvatarName"></b></div>
+          <div><span>V幣餘額</span><b data-k="balance"></b></div>
+          <div><span>成績筆數</span><b data-k="scoreCount"></b></div>
+          <div><span>稱號數</span><b data-k="titleCount"></b></div>
+          <div><span>頭像數</span><b data-k="avatarCount"></b></div>
+          <div><span>playerId</span><b data-k="playerId" style="font-size:.82rem;font-weight:500"></b></div>
+        </div>
+      </div>
+      <div id="pPanelStatus" class="status">讀取中…</div>
+
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" data-tab="basic" aria-selected="true">基本資料</button>
+        <button type="button" role="tab" data-tab="scores" aria-selected="false">遊戲成績</button>
+        <button type="button" role="tab" data-tab="wallet" aria-selected="false">V幣錢包</button>
+        <button type="button" role="tab" data-tab="collection" aria-selected="false">稱號／展示頭像</button>
+        <button type="button" role="tab" data-tab="actions" aria-selected="false">管理操作</button>
+      </div>
+
+      <div class="tabpane" id="tab-basic">
+        <div class="tablewrap"><table id="pBasicTable"><tbody></tbody></table></div>
+        <h3 style="font-size:1rem;margin:14px 0 6px">各遊戲個人最佳（已接受的正式成績）</h3>
+        <div class="tablewrap"><table id="pBestTable"><thead><tr><th>遊戲</th><th>榜單</th><th>最佳分數</th><th>達成時間</th></tr></thead><tbody></tbody></table></div>
+      </div>
+
+      <div class="tabpane hidden" id="tab-scores">
+        <div class="row">
+          <label>遊戲<select id="pScoreGame"><option value="">全部</option><option value="tetris">方塊</option><option value="rhythm">節奏</option><option value="quiz">問答</option><option value="adventure">派對島</option></select></label>
+          <label>狀態<select id="pScoreStatus"><option value="">全部</option><option value="pending_review">待審核</option><option value="accepted">已接受</option><option value="rejected">已拒絕</option></select></label>
+          <button id="btnPScores" type="button">重新整理</button>
+          <button id="btnPCsvScores" type="button" class="secondary">匯出此玩家成績 CSV<span class="scope me">個人</span></button>
+        </div>
+        <div id="pScoreStatusMsg" class="status">讀取中…</div>
+        <div class="tablewrap"><table id="pScoreTable"><thead><tr><th>時間</th><th>遊戲</th><th>分數</th><th>狀態</th><th>成績編號</th><th></th></tr></thead><tbody></tbody></table></div>
+      </div>
+
+      <div class="tabpane hidden" id="tab-wallet">
+        <div class="row"><button id="btnPLedger" type="button">重新整理</button><button id="btnPCsvLedger" type="button" class="secondary">匯出此玩家帳本 CSV<span class="scope me">個人</span></button></div>
+        <div id="pLedgerStatus" class="status">讀取中…</div>
+        <div class="tablewrap"><table id="pLedgerTable"><thead><tr><th>時間</th><th>日期</th><th>類型</th><th>遊戲</th><th>金額</th><th>交易後餘額</th><th>來源成績</th><th>txId</th></tr></thead><tbody></tbody></table></div>
+      </div>
+
+      <div class="tabpane hidden" id="tab-collection">
+        <div id="pCollStatus" class="status">讀取中…</div>
+        <p id="pCollEquipped"></p>
+        <div class="tablewrap"><table id="pCollTable"><thead><tr><th>種類</th><th>名稱</th><th>key</th><th>遊戲</th><th>解鎖時間</th><th>來源</th></tr></thead><tbody></tbody></table></div>
+        <div class="row" style="margin-top:8px"><button id="btnPCsvColl" type="button" class="secondary">匯出此玩家收藏 CSV<span class="scope me">個人</span></button></div>
+      </div>
+
+      <div class="tabpane hidden" id="tab-actions">
+        <div id="pActStatus" class="status">以下動作只會套用在上方「目前選擇的玩家」。</div>
+        <h3 style="font-size:1rem;margin:10px 0 6px">人工發放／收回頭像（學生專屬、社群、活動）</h3>
+        <p class="muted">只有「由管理員發放」的頭像可以在這裡發放或收回；遊戲成績自動解鎖、或條件尚未定案的頭像不能人工發放。學生專屬頭像只會出現在被授權的玩家收藏裡。</p>
+        <div class="row"><label>備註（只存在後台）<input id="pGNote" maxlength="200"></label></div>
+        <div class="tablewrap"><table id="pGrantTable"><thead><tr><th>頭像</th><th>key</th><th>私人</th><th>狀態</th><th></th></tr></thead><tbody></tbody></table></div>
+        <h3 style="font-size:1rem;margin:14px 0 6px">歷史成績補判定</h3>
+        <button id="btnPBackfill" type="button" class="secondary">為這位玩家執行歷史成績補判定</button>
+        <h3 style="font-size:1rem;margin:14px 0 6px">稽核紀錄（這位玩家）</h3>
+        <div class="tablewrap"><table id="pAuditTable"><thead><tr><th>時間</th><th>種類</th><th>內容</th><th>備註</th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </section>
     <section class="card hidden" id="detailCard">
       <h2>成績詳細 <code id="dId"></code></h2>
+      <p class="muted">從「玩家管理中心 → 遊戲成績」或「全體成績紀錄」點「查看」都會在這裡打開；審核只作用在這一筆成績。</p>
       <div id="dSummary"></div>
       <pre id="dData"></pre>
       <div id="reviewBox" class="hidden">
@@ -78,34 +174,41 @@
       <div id="reviewStatus" class="status hidden"></div>
     </section>
 
+    <h2 class="group">B. 全體紀錄與系統管理</h2>
+    <p class="muted">這一區是全體玩家的資料，不會因為上方選擇了某位玩家而被篩選。</p>
     <section class="card">
-      <h2>V幣帳本</h2>
+      <h2>全體成績紀錄<span class="scope all">全體</span></h2>
+      <div class="row">
+        <label>遊戲<select id="fGame"><option value="">全部</option><option value="tetris">方塊</option><option value="rhythm">節奏</option><option value="quiz">問答</option><option value="adventure">派對島</option></select></label>
+        <label>狀態<select id="fStatus"><option value="">全部</option><option value="pending_review" selected>待審核</option><option value="accepted">已接受</option><option value="rejected">已拒絕</option></select></label>
+        <label>playerId（選填）<input id="fPlayer" placeholder="p_…" maxlength="22" autocomplete="off"></label>
+        <button id="btnSearch" type="button">查詢</button>
+        <button id="btnCsvScores" type="button" class="secondary">匯出全體成績 CSV<span class="scope all">全體</span></button>
+      </div>
+      <div id="listStatus" class="status">尚未查詢</div>
+      <div class="tablewrap"><table id="scoreTable"><thead><tr><th>時間</th><th>遊戲</th><th>playerId</th><th>分數</th><th>狀態</th><th>異常原因</th><th></th></tr></thead><tbody></tbody></table></div>
+    </section>
+
+
+    <section class="card">
+      <h2>V幣帳本查詢與全體匯出<span class="scope all">全體</span></h2>
       <div class="row">
         <label>playerId<input id="wPlayer" placeholder="p_…" maxlength="22" autocomplete="off"></label>
         <button id="btnLedger" type="button">查詢</button>
-        <button id="btnCsvLedger" type="button" class="secondary">匯出帳本 CSV</button>
+        <button id="btnCsvLedger" type="button" class="secondary">匯出帳本 CSV（不填 playerId＝全體）</button>
       </div>
       <div id="ledgerStatus" class="status">輸入 playerId 查詢；匯出時不填 playerId 會匯出全部帳本。</div>
       <div class="tablewrap"><table id="ledgerTable"><thead><tr><th>時間</th><th>日期</th><th>類型</th><th>遊戲</th><th>金額</th><th>交易後餘額</th><th>來源成績</th><th>txId</th></tr></thead><tbody></tbody></table></div>
     </section>
 
     <section class="card">
-      <h2>玩家收藏（稱號／展示頭像）</h2>
+      <h2>全體收藏與發放紀錄<span class="scope all">全體</span></h2>
       <div class="row">
-        <label>playerId<input id="cPlayer" placeholder="p_…" maxlength="22" autocomplete="off"></label>
-        <button id="btnColl" type="button">查詢</button>
-        <button id="btnBackfill" type="button" class="secondary">歷史成績補判定</button>
-        <button id="btnCsvColl" type="button" class="secondary">匯出收藏 CSV</button>
+        <button id="btnCsvColl" type="button" class="secondary">匯出全體收藏 CSV<span class="scope all">全體</span></button>
+        <button id="btnCollAudits" type="button" class="secondary">重新整理發放紀錄</button>
       </div>
-      <div id="collStatus" class="status">輸入 playerId 查詢已解鎖的稱號、頭像（含解鎖時間與來源）與目前裝備。</div>
-      <div id="collBody" class="hidden">
-        <p id="collEquipped"></p>
-        <div class="tablewrap"><table id="collTable"><thead><tr><th>種類</th><th>名稱</th><th>key</th><th>遊戲</th><th>解鎖時間</th><th>來源</th></tr></thead><tbody></tbody></table></div>
-        <h3 style="font-size:1rem;margin:14px 0 6px">人工發放頭像（學生專屬、社群、活動）</h3>
-        <p class="muted">只有「由管理員發放」的頭像可以在這裡發放或收回；遊戲成績自動解鎖、或條件尚未定案的頭像不能人工發放。學生專屬頭像只會出現在被授權的玩家收藏裡。</p>
-        <div class="row"><label>備註（只存在後台）<input id="gNote" maxlength="200"></label></div>
-        <div class="tablewrap"><table id="grantTable"><thead><tr><th>頭像</th><th>key</th><th>私人</th><th>狀態</th><th></th></tr></thead><tbody></tbody></table></div>
-      </div>
+      <div id="collStatus" class="status">查詢個別玩家的稱號／頭像、人工發放與補判定，請使用上方「玩家管理中心」。</div>
+      <div class="tablewrap"><table id="collAuditTable"><thead><tr><th>時間</th><th>動作</th><th>頭像</th><th>playerId</th><th>備註</th></tr></thead><tbody></tbody></table></div>
     </section>
 
     <section class="card">
@@ -120,7 +223,7 @@
     </section>
 
     <section class="card">
-      <h2>審核紀錄</h2>
+      <h2>全體審核紀錄<span class="scope all">全體</span></h2>
       <button id="btnAudits" type="button" class="secondary">重新整理</button>
       <div class="tablewrap"><table id="auditTable"><thead><tr><th>時間</th><th>決定</th><th>遊戲</th><th>playerId</th><th>分數</th><th>成績編號</th><th>備註</th></tr></thead><tbody></tbody></table></div>
     </section>

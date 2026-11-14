@@ -171,30 +171,35 @@ await page.click("#lbClose");
   await p.waitForFunction(() => !document.getElementById("adminArea").classList.contains("hidden"), null, { timeout: 10000 });
   await p.waitForFunction(() => /全面開放/.test(document.getElementById("launchStatus").textContent), null, { timeout: 10000 });
   check("後台｜狀態", "顯示正式寫入狀態（本測試設定為全面開放）", /正式成績：全面開放｜V幣：全面開放/.test(await text(p, "#launchStatus")), await text(p, "#launchStatus"));
-  // 玩家 A 收藏查詢
-  await p.fill("#cPlayer", A.playerId); await p.click("#btnColl");
-  await p.waitForFunction(() => /稱號 \d+ 個/.test(document.getElementById("collStatus").textContent), null, { timeout: 10000 });
-  const rowsA = await p.evaluate(() => [...document.querySelectorAll("#collTable tbody tr")].map((r) => r.innerText.replace(/\s+/g, " ")));
-  check("後台｜收藏查詢", "依 playerId 查詢稱號／頭像（含解鎖時間、來源成績）與目前裝備", rowsA.length === 7 && rowsA.every((r) => /正式成績 [0-9a-f-]{20,}/.test(r)) && /派對節拍手/.test(await text(p, "#collEquipped")), rowsA.join("｜").slice(0, 200));
+  // 玩家 A 收藏查詢（v0.3.2：改由「玩家管理中心」搜尋玩家 ID → 選擇 → 稱號／展示頭像分頁）
+  const pick = async (name, pid) => {
+    await p.fill("#pQuery", name); await p.click("#btnPSearch");
+    await p.waitForSelector(`#pResults button[data-pick="${pid}"]`, { timeout: 10000 });
+    await p.click(`#pResults button[data-pick="${pid}"]`);
+    await p.waitForFunction((pid) => document.querySelector('#pSummary [data-k="playerId"]').textContent === pid && /稱號 \d+ 個/.test(document.getElementById("pCollStatus").textContent), pid, { timeout: 10000 });
+  };
+  await pick("收藏甲", A.playerId); await p.click('.tabs [data-tab="collection"]');
+  const rowsA = await p.evaluate(() => [...document.querySelectorAll("#pCollTable tbody tr")].map((r) => r.innerText.replace(/\s+/g, " ")));
+  check("後台｜收藏查詢", "玩家管理中心：稱號／頭像（含解鎖時間、來源成績）與目前裝備", rowsA.length === 7 && rowsA.every((r) => /正式成績 [0-9a-f-]{20,}/.test(r)) && /派對節拍手/.test(await text(p, "#pCollEquipped")), rowsA.join("｜").slice(0, 200));
   await p.screenshot({ path: `${OUT}/coll-07-admin-collection.png`, fullPage: true });
   // 授權學生頭像給 B
-  await p.fill("#cPlayer", B.playerId); await p.click("#btnColl");
-  await p.waitForSelector('#grantTable button[data-grant="student_hanhan"]');
-  await p.fill("#gNote", "家長確認：涵涵本人");
-  await p.click('#grantTable button[data-grant="student_hanhan"]');
-  await p.waitForFunction(() => /已發放/.test(document.getElementById("collStatus").textContent), null, { timeout: 10000 });
-  check("後台｜發放", "管理員把學生專屬頭像授權給 B（伺服器記錄發放者與備註）", !!col(B.playerId).avatars.student_hanhan && col(B.playerId).avatars.student_hanhan.source.type === "admin", JSON.stringify(col(B.playerId).avatars));
+  await pick("收藏乙", B.playerId); await p.click('.tabs [data-tab="actions"]');
+  await p.waitForSelector(`#pGrantTable button[data-grant="student_hanhan"][data-pid="${B.playerId}"]`);
+  await p.fill("#pGNote", "家長確認：涵涵本人");
+  await p.click('#pGrantTable button[data-grant="student_hanhan"]');
+  await p.waitForFunction(() => /已發放/.test(document.getElementById("pActStatus").textContent), null, { timeout: 10000 });
+  check("後台｜發放", "管理員把學生專屬頭像授權給 B（伺服器記錄發放者與備註）", !!col(B.playerId).avatars.student_hanhan && col(B.playerId).avatars.student_hanhan.source.type === "admin" && !col(A.playerId).avatars.student_hanhan, JSON.stringify(col(B.playerId).avatars));
   // 歷史補判定、自我檢查、收藏 CSV
-  await p.fill("#cPlayer", A.playerId); await p.click("#btnBackfill");
-  await p.waitForFunction(() => /補判定完成/.test(document.getElementById("collStatus").textContent), null, { timeout: 15000 });
-  check("後台｜補判定", "歷史成績補判定：讀取已接受的正式成績；已擁有的不重複（新增 0）", /新增稱號 0 個、頭像 0 個/.test(await text(p, "#collStatus")), await text(p, "#collStatus"));
+  await pick("收藏甲", A.playerId); await p.click('.tabs [data-tab="actions"]'); await p.click("#btnPBackfill");
+  await p.waitForFunction(() => /補判定完成/.test(document.getElementById("pActStatus").textContent), null, { timeout: 15000 });
+  check("後台｜補判定", "歷史成績補判定：讀取已接受的正式成績；已擁有的不重複（新增 0）", /新增稱號 0 個、頭像 0 個/.test(await text(p, "#pActStatus")), await text(p, "#pActStatus"));
   await p.click("#btnSelftest");
   await p.waitForFunction(() => /自我檢查(全部通過|有項目失敗)/.test(document.getElementById("launchStatus").textContent), null, { timeout: 15000 });
   check("後台｜資料庫自我檢查", "自我檢查 7 個步驟（本機假 Firebase；正式資料庫要部署後在後台按一次）", /全部通過/.test(await text(p, "#launchStatus")) && (await text(p, "#selftestOut")).split("\n").length === 7, await text(p, "#selftestOut"));
   const [dl] = await Promise.all([p.waitForEvent("download", { timeout: 10000 }), p.click("#btnCsvColl")]);
   const csvPath = path.join(OUT, "admin-collections-export.csv"); await dl.saveAs(csvPath);
   const csv = fs.readFileSync(csvPath, "utf8").replace(/^﻿/, "").trim().split("\r\n");
-  check("後台｜CSV", "收藏 CSV 可下載（新增的檔案；原本的成績／帳本 CSV 欄位不變）", csv[0] === "playerId,kind,key,gameId,unlockedAt,sourceType,sourceSubmissionId,equipped" && csv.length >= 9, csv[0] + " rows " + (csv.length - 1));
+  check("後台｜CSV", "全體收藏 CSV 可下載（選了玩家也不會被篩選；原本的成績／帳本 CSV 欄位不變）", csv[0] === "playerId,kind,key,gameId,unlockedAt,sourceType,sourceSubmissionId,equipped" && csv.length >= 9 && csv.some((l) => l.startsWith(B.playerId + ",")) && csv.some((l) => l.startsWith(A.playerId + ",")), csv[0] + " rows " + (csv.length - 1));
   await ctx.close();
 }
 // B 的大廳：看得到並裝備學生頭像；A 看不到

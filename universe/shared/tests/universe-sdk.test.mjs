@@ -318,3 +318,12 @@ test("v0.2.0 遊戲專屬 Mock 紀錄（問答年級榜／總榜）：依遊戲�
   // 沒有明確選擇 Mock → NOT_IMPLEMENTED
   await assert.rejects(mk("quiz", {}).services.records.list("board-low"), (e) => e.kind === "notImplemented");
 });
+
+/* v0.3.2：派對島等外部頁面共用的頭像圖片解析 */
+test("v0.3.2 avatarImageUrl：身份頭像→遊戲宇宙素材；展示頭像（含學生專屬）→共用頭像素材；不合法的 key 回空字串", () => {
+  assert.equal(U.avatarImageUrl("girl2"), "https://vashyang1120.github.io/balloon-v-universe/assets/avatars/base/girl2.png");
+  assert.equal(U.avatarImageUrl("balloon_brother_02"), "https://vashyang1120.github.io/vparty-rhythm-game/assets/avatars/balloon_brother_02.png");
+  assert.match(U.avatarImageUrl("student_hanhan"), /vparty-rhythm-game\/assets\/avatars\/student_hanhan_01\.png$/);
+  assert.equal(U.avatarImageUrl("../x"), "");
+  assert.equal(U.avatarImageUrl(""), "");
+});

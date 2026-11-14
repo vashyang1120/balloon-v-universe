@@ -28,6 +28,12 @@
  *           POST /v1/admin/collections/:playerId/backfill、GET /v1/admin/collection-audits、GET /v1/admin/exports/collections.csv、
  *           POST /v1/admin/selftest（真實資料庫自我檢查，只寫 _selftest/ 並清除）、POST /v1/admin/trial/purge（清除試營運資料）
  *   受控試營運：SCORES_ENABLED="trial" → 只有 TRIAL_PLAYER_IDS 可以寫入，資料全部在 trial/ 底下（見 launch/namespace.js）
+ *
+ * v0.3.2 管理員「玩家管理中心」：
+ *   GET /v1/admin/players/search?q=        用玩家自訂 ID（中文／英文／數字；完全相同優先、再列包含的）或完整 playerId 搜尋
+ *                                          同名不同身份圖案＝不同玩家，全部列出，由管理員選擇
+ *   GET /v1/admin/players/:playerId/overview  玩家摘要：身份、目前裝備、V幣、成績數、各遊戲個人最佳、收藏數（試營運時讀 trial/）
+ *   GET /v1/admin/audits?playerId=、GET /v1/admin/collection-audits?playerId=、GET /v1/admin/exports/collections.csv?playerId=  個人篩選
  */
 import { ok, json } from "../utils/response.js";
 import { ApiError } from "../utils/errors.js";
@@ -40,7 +46,7 @@ import { boardCatalog, isValidBoard } from "../launch/leaderboard-service.js";
 import { OFFICIAL_GAME_IDS } from "../launch/game-rules.js";
 import { REWARD_RULES } from "../launch/wallet-service.js";
 import { namespaceFor, namespacedDb, TRIAL_ROOT } from "../launch/namespace.js";
-import { publicCatalog, TITLE_CATALOG, AVATAR_CATALOG } from "../launch/collection-catalog.js";
+import { publicCatalog, TITLE_CATALOG, AVATAR_CATALOG, AVATARS_BY_KEY } from "../launch/collection-catalog.js";
 import { normalizeDisplayId } from "../players/id-rules.js";
 
 const MAX_BODY = 8 * 1024;
@@ -153,6 +159,28 @@ async function selfTest(db, now) {
   });
   if (!cleaned) { try { await db.remove(base); } catch { /* 交給管理員 */ } }
   return { runId, ok: steps.every((s) => s.ok), steps };
+}
+
+
+/* v0.3.2 玩家管理中心：管理員看到的玩家列（身份頭像固定；展示頭像與稱號＝目前裝備） */
+const HUB_AVATAR_BASE = "https://vashyang1120.github.io/balloon-v-universe/assets/avatars/base/";
+function avatarImage(key) {
+  const a = key && AVATARS_BY_KEY[key];
+  return a ? a.image : key ? HUB_AVATAR_BASE + key + ".png" : "";
+}
+function adminPlayerRow(p, pub) {
+  const disp = (pub && pub.displayAvatarKey) || p.baseAvatarKey;
+  return {
+    playerId: p.playerId, displayId: p.displayId, baseAvatarKey: p.baseAvatarKey, baseAvatarImage: avatarImage(p.baseAvatarKey),
+    displayAvatarKey: disp, displayAvatarImage: avatarImage(disp), displayAvatarName: (AVATARS_BY_KEY[disp] && AVATARS_BY_KEY[disp].name) || null,
+    titleName: (pub && pub.titleName) || null, createdAt: iso(p.createdAt),
+  };
+}
+function optionalPlayer(ctx) {
+  const v = ctx.url.searchParams.get("playerId");
+  if (!v) return null;
+  if (!PATTERNS.playerId.test(v)) throw new ApiError("VALIDATION_FAILED", { details: { errors: [{ field: "playerId", issue: "格式不正確" }] } });
+  return v;
 }
 
 export function launchRoutes() {
@@ -296,11 +324,77 @@ export function launchRoutes() {
     },
     {
       method: "GET", path: "/v1/admin/audits", auth: "admin", summary: "審核紀錄",
-      handler: async (ctx) => ok(ctx, { rows: await svc(ctx).audits() }),
+      handler: async (ctx) => {
+        const pid = optionalPlayer(ctx);
+        const rows = await svc(ctx).audits();
+        return ok(ctx, { rows: pid ? rows.filter((r) => r.playerId === pid) : rows, scope: pid ? "player" : "all" });
+      },
     },
     {
       method: "GET", path: "/v1/admin/wallet/:playerId/ledger", auth: "admin", summary: "V幣帳本",
-      handler: async (ctx) => ok(ctx, await svc(ctx).wallet.getLedger(playerParam(ctx))),
+      handler: async (ctx) => ok(ctx, { ...(await svc(ctx).wallet.getLedger(playerParam(ctx))), mode: ctx.cfg.rewardsMode }),   // v0.3.2：標示試營運
+    },
+
+
+    /* ---------- v0.3.2 玩家管理中心 ---------- */
+    {
+      method: "GET", path: "/v1/admin/players/search", auth: "admin", summary: "用玩家自訂 ID 或 playerId 搜尋玩家",
+      handler: async (ctx) => {
+        const q = String(ctx.url.searchParams.get("q") || "").trim();
+        if (!q) throw new ApiError("VALIDATION_FAILED", { message: "請輸入玩家 ID" });
+        if (q.length > 40) throw new ApiError("VALIDATION_FAILED", { message: "搜尋文字太長" });
+        const fb = ctx.firebase();
+        const profiles = [];
+        let by = "displayId";
+        if (PATTERNS.playerId.test(q)) {
+          by = "playerId";
+          const p = await fb.get(`players/${q}/profile`);
+          if (p && p.playerId === q && p.status !== "deleted") profiles.push(p);
+        } else {
+          // 讀一次玩家清單在 Worker 篩選（不需要新增資料庫索引或修改 Rules）；只回傳管理需要的欄位
+          const n = normalizeDisplayId(q);
+          const needle = (n.ok ? n.value : q).toLowerCase();
+          const all = (await fb.get("players")) || {};
+          for (const v of Object.values(all)) {
+            const p = v && v.profile;
+            if (!p || p.status === "deleted" || typeof p.displayId !== "string") continue;
+            if (p.displayId.toLowerCase().includes(needle)) profiles.push(p);
+          }
+          profiles.sort((a, b) => (Number(b.displayId.toLowerCase() === needle) - Number(a.displayId.toLowerCase() === needle)) || a.displayId.localeCompare(b.displayId, "zh-Hant") || a.createdAt - b.createdAt);
+        }
+        const pub = profiles.length ? ((await lazyDb(ctx).get("publicProfiles")) || {}) : {};
+        const rows = profiles.slice(0, 50).map((p) => adminPlayerRow(p, pub[p.playerId]));
+        return ok(ctx, { by, query: q, total: profiles.length, rows, truncated: profiles.length > 50, mode: ctx.cfg.scoresMode });
+      },
+    },
+    {
+      method: "GET", path: "/v1/admin/players/:playerId/overview", auth: "admin", summary: "玩家摘要（身份、裝備、V幣、成績、收藏）",
+      handler: async (ctx) => {
+        const pid = playerParam(ctx);
+        const profile = await profileOf(ctx, pid);
+        const db = lazyDb(ctx);
+        const [pub, wallet, idx, col, tetris, rhythm, quiz, adventure] = await Promise.all([
+          db.get(`publicProfiles/${pid}`), db.get(`wallets/${pid}`), db.get(`scoreIndex/byPlayer/${pid}`), db.get(`collections/${pid}`),
+          db.get(`leaderboards/tetris/total/${pid}`), db.get("leaderboards/rhythm"), db.get("leaderboards/quiz"), db.get("leaderboards/adventure"),
+        ]);
+        const scores = Object.values(idx || {});
+        const count = (st) => scores.filter((x) => x && x.status === st).length;
+        const bests = [];
+        if (tetris) bests.push({ gameId: "tetris", boardId: "total", score: tetris.score, achievedAt: iso(tetris.achievedAt) });
+        for (const [board, rows] of Object.entries(rhythm || {})) if (rows && rows[pid]) bests.push({ gameId: "rhythm", boardId: board, score: rows[pid].score, achievedAt: iso(rows[pid].achievedAt), extra: rows[pid].extra || {} });
+        for (const b of ["main", "low", "middle", "high"]) { const r = quiz && quiz[b] && quiz[b][pid]; if (r) bests.push({ gameId: "quiz", boardId: b, score: r.score, achievedAt: iso(r.updatedAt) }); }
+        for (const [board, rows] of Object.entries(adventure || {})) if (rows && rows[pid]) bests.push({ gameId: "adventure", boardId: board, score: rows[pid].score, achievedAt: iso(rows[pid].achievedAt) });
+        return ok(ctx, {
+          ...adminPlayerRow(profile, pub),
+          mode: ctx.cfg.scoresMode, namespace: namespaceFor(ctx.cfg) || "/",
+          wallet: { balance: Number((wallet && wallet.balance) || 0), transactions: Object.keys((wallet && wallet.ledger) || {}).length },
+          scores: { total: scores.length, accepted: count("accepted"), pending_review: count("pending_review"), rejected: count("rejected"),
+            byGame: Object.fromEntries(["tetris", "rhythm", "quiz", "adventure"].map((g) => [g, scores.filter((x) => x && x.gameId === g).length])) },
+          bests,
+          collection: { titles: Object.keys((col && col.titles) || {}).length, avatars: Object.keys((col && col.avatars) || {}).length },
+          canWrite: writeAllowed(ctx.cfg, pid),
+        });
+      },
     },
 
     /* ---------- v0.3.1 管理員：收藏、試營運、真實資料庫自我檢查 ---------- */
@@ -339,19 +433,25 @@ export function launchRoutes() {
     },
     {
       method: "GET", path: "/v1/admin/collection-audits", auth: "admin", summary: "收藏發放紀錄",
-      handler: async (ctx) => ok(ctx, { rows: await svc(ctx).collections.adminAudits() }),
+      handler: async (ctx) => {
+        const pid = optionalPlayer(ctx);
+        const rows = await svc(ctx).collections.adminAudits();
+        return ok(ctx, { rows: pid ? rows.filter((r) => r.playerId === pid) : rows, scope: pid ? "player" : "all" });
+      },
     },
     {
       method: "GET", path: "/v1/admin/exports/collections.csv", auth: "admin", summary: "收藏 CSV",
       handler: async (ctx) => {
+        const only = optionalPlayer(ctx);
         const all = await svc(ctx).collections.all();
         const rows = [];
         for (const [pid, c] of Object.entries(all)) {
+          if (only && pid !== only) continue;
           for (const t of Object.values((c && c.titles) || {})) rows.push({ playerId: pid, kind: "title", key: t.titleKey, gameId: t.gameId, unlockedAt: iso(t.unlockedAt), sourceType: t.source && t.source.type, sourceSubmissionId: t.source && t.source.submissionId, equipped: c.equipped && c.equipped.titleKey === t.titleKey ? "yes" : "" });
           for (const a of Object.values((c && c.avatars) || {})) rows.push({ playerId: pid, kind: "avatar", key: a.avatarKey, gameId: a.source && a.source.gameId, unlockedAt: iso(a.unlockedAt), sourceType: a.source && a.source.type, sourceSubmissionId: a.source && a.source.submissionId, equipped: c.equipped && c.equipped.displayAvatarKey === a.avatarKey ? "yes" : "" });
         }
         rows.sort((a, b) => (a.unlockedAt < b.unlockedAt ? -1 : 1));
-        return csvResponse(`collections-${taipeiDateKey()}.csv`, toCsv(["playerId", "kind", "key", "gameId", "unlockedAt", "sourceType", "sourceSubmissionId", "equipped"], rows));
+        return csvResponse(`collections-${only ? only + "-" : ""}${taipeiDateKey()}.csv`, toCsv(["playerId", "kind", "key", "gameId", "unlockedAt", "sourceType", "sourceSubmissionId", "equipped"], rows));
       },
     },
     {
