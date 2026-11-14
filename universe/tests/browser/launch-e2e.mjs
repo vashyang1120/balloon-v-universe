@@ -22,8 +22,11 @@ const ADMIN_KEY = await helpers.newRsaKey("kid-launch-e2e");
 
 const [TETRIS, RHYTHM, QUIZ, RUSH, OUT] = process.argv.slice(2);
 if (!OUT) { console.error("用法：launch-e2e.mjs <tetris> <rhythm> <quiz> <balloon-v-rush> <out>"); process.exit(2); }
-const H = await createHarness({ clones: { tetris: TETRIS, rhythm: RHYTHM, quiz: QUIZ, rush: RUSH }, out: OUT, flags: { SCORES_ENABLED: "on", REWARDS_ENABLED: "on", ADMIN_UIDS: helpers.ADMIN_UID }, jwks: helpers.staticJwks(ADMIN_KEY) });
+// v0.3.3：直接使用 wrangler.jsonc 的正式設定（合併後 Cloudflare 會部署的值）
+const PROD = JSON.parse(fs.readFileSync(path.join(ROOT, "backend/worker/wrangler.jsonc"), "utf8").replace(/^\s*\/\/.*$/gm, "").replace(/,(\s*[}\]])/g, "$1")).vars;
+const H = await createHarness({ clones: { tetris: TETRIS, rhythm: RHYTHM, quiz: QUIZ, rush: RUSH }, out: OUT, flags: { SCORES_ENABLED: PROD.SCORES_ENABLED, REWARDS_ENABLED: PROD.REWARDS_ENABLED, TRIAL_PLAYER_IDS: PROD.TRIAL_PLAYER_IDS, ADMIN_UIDS: helpers.ADMIN_UID }, jwks: helpers.staticJwks(ADMIN_KEY) });
 const { check, note, newPage } = H;
+check("設定", "使用 wrangler.jsonc 的正式設定：on／on／試營運名單空白", PROD.SCORES_ENABLED === "on" && PROD.REWARDS_ENABLED === "on" && PROD.TRIAL_PLAYER_IDS === "", JSON.stringify([PROD.SCORES_ENABLED, PROD.REWARDS_ENABLED, PROD.TRIAL_PLAYER_IDS]));
 const A = await H.apiCreate("上線甲", "avatar_rabbit_hoodie");
 const B = await H.apiCreate("上線乙", "girl2");
 const LOBBY = H.SITE + "index.html";

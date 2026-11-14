@@ -59,8 +59,10 @@
     // v0.3.1-trial-setup：受控試營運（使用者確認合併後由 Cloudflare 自動部署生效）
     //   只有下方測試玩家可以寫入；資料全部在 trial/；其他玩家照常遊玩但不寫入任何正式資料
     //   回復：三個值改回 "off"／"off"／""；試營運資料在管理後台「清除試營運資料」
-    "SCORES_ENABLED": "trial",
-    "REWARDS_ENABLED": "trial",
-    "TRIAL_PLAYER_IDS": "p_qfvmhs7ewmcn6ez6bdub"
+    // v0.3.3 正式全面上線（使用者已同意）：合併前請先在管理後台匯出測試紀錄 CSV、清除 trial/ 並確認已清空
+    //   緊急停止：SCORES_ENABLED、REWARDS_ENABLED 改成 "off"（不要改回 "trial"；正式資料會保留，不會被撤銷）
+    "SCORES_ENABLED": "on",
+    "REWARDS_ENABLED": "on",
+    "TRIAL_PLAYER_IDS": ""
   }
 }

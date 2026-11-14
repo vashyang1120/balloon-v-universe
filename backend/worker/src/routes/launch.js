@@ -400,7 +400,12 @@ export function launchRoutes() {
     /* ---------- v0.3.1 管理員：收藏、試營運、真實資料庫自我檢查 ---------- */
     {
       method: "GET", path: "/v1/admin/launch", auth: "admin", summary: "正式功能設定",
-      handler: (ctx) => ok(ctx, { scoresMode: ctx.cfg.scoresMode, rewardsMode: ctx.cfg.rewardsMode, trialPlayers: ctx.cfg.trialPlayerIds.length, namespace: namespaceFor(ctx.cfg) || "/" }),
+      handler: async (ctx) => {
+        // v0.3.3：一併回報 trial/ 底下還有哪些資料（只讀、shallow），讓管理員確認清除結果；正式模式不會讀 trial/
+        const trial = await rawLazyDb(ctx).get(TRIAL_ROOT, { shallow: true });
+        return ok(ctx, { scoresMode: ctx.cfg.scoresMode, rewardsMode: ctx.cfg.rewardsMode, trialPlayers: ctx.cfg.trialPlayerIds.length, namespace: namespaceFor(ctx.cfg) || "/",
+          trialRoots: trial && typeof trial === "object" ? Object.keys(trial).sort() : [] });
+      },
     },
     {
       method: "GET", path: "/v1/admin/collections/:playerId", auth: "admin", summary: "玩家收藏（含私人頭像）",

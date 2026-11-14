@@ -13,7 +13,9 @@ const LH = await import(path.join(ROOT, "backend/worker/tests/launch-helpers.js"
 const [TETRIS, RHYTHM, QUIZ, RUSH, OUT] = process.argv.slice(2);
 if (!OUT) { console.error("用法：player-admin-e2e.mjs <tetris> <rhythm> <quiz> <balloon-v-rush> <out>"); process.exit(2); }
 const raw = fs.readFileSync(path.join(ROOT, "backend/worker/wrangler.jsonc"), "utf8");
-const VARS = JSON.parse(raw.replace(/^\s*\/\/.*$/gm, "").replace(/,(\s*[}\]])/g, "$1")).vars;
+const PROD = JSON.parse(raw.replace(/^\s*\/\/.*$/gm, "").replace(/,(\s*[}\]])/g, "$1")).vars;
+// v0.3.3：wrangler.jsonc 已是正式（on）；這個測試驗證「合併前的試營運流程」，所以明確使用試營運設定
+const VARS = { SCORES_ENABLED: "trial", REWARDS_ENABLED: "trial", TRIAL_PLAYER_IDS: "p_qfvmhs7ewmcn6ez6bdub" };
 const RUSH_URL = "https://vashyang1120.github.io/balloon-v-rush/rpg-continent1-universe/";
 const KEY = await helpers.newRsaKey("kid-player-admin-e2e");
 
@@ -21,7 +23,7 @@ const KEY = await helpers.newRsaKey("kid-player-admin-e2e");
 const H = await createHarness({ clones: { tetris: TETRIS, rhythm: RHYTHM, quiz: QUIZ, rush: RUSH }, out: OUT,
   flags: { SCORES_ENABLED: VARS.SCORES_ENABLED, REWARDS_ENABLED: VARS.REWARDS_ENABLED, TRIAL_PLAYER_IDS: VARS.TRIAL_PLAYER_IDS, ADMIN_UIDS: helpers.ADMIN_UID }, jwks: helpers.staticJwks(KEY) });
 const { check, note, newPage } = H;
-check("設定", "模式使用 wrangler.jsonc 的實際值：SCORES_ENABLED／REWARDS_ENABLED 都是 trial（沒有改成 on）", VARS.SCORES_ENABLED === "trial" && VARS.REWARDS_ENABLED === "trial", JSON.stringify([VARS.SCORES_ENABLED, VARS.REWARDS_ENABLED, VARS.TRIAL_PLAYER_IDS]));
+check("設定", "以試營運模式測試玩家管理中心（trial 標示、trial/ 隔離）；正式模式另有 production-e2e", VARS.SCORES_ENABLED === "trial" && VARS.REWARDS_ENABLED === "trial", JSON.stringify([VARS.SCORES_ENABLED, VARS.REWARDS_ENABLED]));
 
 /* ---------- 測試玩家（本機假資料庫；程式裡沒有寫死任何玩家） ---------- */
 const T = await H.apiCreate("宇宙測試1", "girl2");          // 主角：身份頭像 女生2
