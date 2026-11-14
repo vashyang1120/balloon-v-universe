@@ -29,7 +29,7 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function (root) {
   "use strict";
 
-  var SDK_VERSION = "0.3.1";
+  var SDK_VERSION = "0.3.2";
   var DEFAULT_API_BASE = "https://balloon-v-universe-api.vashyang1120.workers.dev";
   var PLAYER_ID_RE = /^p_[a-z2-7]{20}$/;
   var AVATAR_KEY_RE = /^[a-z0-9_]{1,40}$/;
@@ -476,6 +476,7 @@
   var OUTBOX_MAX = 10;
   /* v0.3.1 展示頭像素材（與後端 collection-catalog.js 相同；圖片沿用節奏遊戲 assets/avatars 正式素材） */
   var LEGACY_AVATAR_BASE = "https://vashyang1120.github.io/vparty-rhythm-game/assets/avatars/";
+  var HUB_AVATAR_BASE = "https://vashyang1120.github.io/balloon-v-universe/assets/avatars/base/";
   var DISPLAY_AVATAR_FILES = { xiaov_base: "xiaov_base.png", balloon_brother_01: "balloon_brother_01.png", balloon_brother_02: "balloon_brother_02.png",
     balloon_brother_03: "balloon_brother_03.png", dance_sister_01: "dance_sister_01.png", balloon_sister_01: "balloon_sister_01.png",
     balloon_sister_02: "balloon_sister_02.png", bubble_brother_01: "bubble_brother_01.png", xiaov_special: "xiaov_special.png",
@@ -960,6 +961,15 @@
     describeOfficialResult: describeOfficialResult,
     /* v0.3.1：是否為可解鎖的展示頭像（小V、氣球哥哥…、學生專屬）— 用來顯示其他玩家目前的展示頭像 */
     isDisplayAvatarKey: function (key) { return Object.prototype.hasOwnProperty.call(DISPLAY_AVATAR_FILES, String(key || "")); },
+    /* v0.3.2：頭像圖片網址（給其他 Repository 的遊戲，例如派對島）。
+       身份頭像 → 遊戲宇宙 assets/avatars/base/；可解鎖展示頭像（含管理員授權、學生專屬）→ 節奏遊戲既有正式素材。
+       不在這裡判斷「誰可以用」：玩家目前裝備哪一個由伺服器決定（GET /v1/players/:id 的 displayAvatarKey）。 */
+    avatarImageUrl: function (key) {
+      key = String(key || "");
+      if (!AVATAR_KEY_RE.test(key)) return "";
+      if (DISPLAY_AVATAR_FILES[key]) return LEGACY_AVATAR_BASE + DISPLAY_AVATAR_FILES[key];
+      return HUB_AVATAR_BASE + key + ".png";
+    },
     /* 給自己管理玩家身份的遊戲（例如派對島大作戰）：直接建立正式成績客戶端
        o = { gameId, gameVersion, getPlayer: () => ({ playerId }) | null, mode?: "production"|"sandbox", apiBaseUrl?, fetch? } */
     createOfficialClient: function (o) {

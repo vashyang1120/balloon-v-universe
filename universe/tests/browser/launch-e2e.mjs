@@ -371,7 +371,7 @@ await mainCtx.close();
 // 6d. 跨站載入失敗：派對島載不到大廳的共用 SDK → 遊戲照常開啟，不送成績、不報錯中斷
 {
   const { ctx, page: p } = await newPage();
-  await ctx.route("https://vashyang1120.github.io/balloon-v-universe/universe/shared/universe-sdk.js", (r) => r.abort());
+  await ctx.route(/^https:\/\/vashyang1120\.github\.io\/balloon-v-universe\/universe\/shared\/universe-sdk\.js(\?.*)?$/, (r) => r.abort());
   await p.goto(RUSH_URL + "?bvPlayerId=" + A.playerId);
   await p.waitForFunction(() => typeof C1U !== "undefined" && typeof LEVELS !== "undefined", null, { timeout: 20000 });
   await sleep(1500);
