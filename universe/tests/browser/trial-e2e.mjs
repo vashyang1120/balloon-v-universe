@@ -10,10 +10,10 @@ const helpers = await import(path.join(ROOT, "backend/worker/tests/helpers.js"))
 const [TETRIS, RHYTHM, QUIZ, RUSH, OUT] = process.argv.slice(2);
 if (!OUT) { console.error("用法：trial-e2e.mjs <tetris> <rhythm> <quiz> <balloon-v-rush> <out>"); process.exit(2); }
 const raw = fs.readFileSync(path.join(ROOT, "backend/worker/wrangler.jsonc"), "utf8");
+const TESTER_ID = "p_qfvmhs7ewmcn6ez6bdub";
 const PROD = JSON.parse(raw.replace(/^\s*\/\/.*$/gm, "").replace(/,(\s*[}\]])/g, "$1")).vars;
 // v0.3.3：wrangler.jsonc 已是正式（on）；這個測試驗證「合併前的試營運流程」，所以明確使用試營運設定
 const VARS = { SCORES_ENABLED: "trial", REWARDS_ENABLED: "trial", TRIAL_PLAYER_IDS: TESTER_ID };
-const TESTER_ID = "p_qfvmhs7ewmcn6ez6bdub";
 const KEY = await helpers.newRsaKey("kid-trial-e2e");
 const H = await createHarness({ clones: { tetris: TETRIS, rhythm: RHYTHM, quiz: QUIZ, rush: RUSH }, out: OUT,
   flags: { SCORES_ENABLED: VARS.SCORES_ENABLED, REWARDS_ENABLED: VARS.REWARDS_ENABLED, TRIAL_PLAYER_IDS: VARS.TRIAL_PLAYER_IDS, ADMIN_UIDS: helpers.ADMIN_UID }, jwks: helpers.staticJwks(KEY) });

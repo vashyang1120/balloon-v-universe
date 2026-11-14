@@ -2,7 +2,7 @@
    用法（repository 根目錄）：
      NODE_PATH=$(npm root -g) node universe/tests/browser/player-admin-e2e.mjs <tetris> <rhythm> <quiz> <balloon-v-rush 分支 clone> <輸出資料夾>
    - 使用 wrangler.jsonc 的實際模式（trial／trial）；為了測「全體 CSV 不被篩選」「切換玩家不混資料」，本測試在試營運名單多加一位同名玩家（只在本機）
-   - 「修正前」截圖：同一個網頁，但把派對島 main.js 換回 balloon-v-rush main 分支的版本（git show origin/main） */
+   - 「修正前」截圖：同一個網頁，但把派對島 main.js 換回修正前的版本（balloon-v-rush PR #29 修正 commit 的前一版） */
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
@@ -56,7 +56,7 @@ const profT0 = JSON.stringify(H.db.get(`players/${T.playerId}/profile`));
 const profS0 = JSON.stringify(H.db.get(`players/${S.playerId}/profile`));
 
 /* ========== 1. 派對島：修正前（main 分支 main.js）＝紅色氣球 ========== */
-const OLD_MAIN = execFileSync("git", ["-C", RUSH, "show", "origin/main:rpg-continent1-universe/main.js"], { maxBuffer: 64 * 1024 * 1024 });
+const OLD_MAIN = execFileSync("git", ["-C", RUSH, "show", "a714b292e7d7bd6f498c2b3b5bfe1abf04a97945^:rpg-continent1-universe/main.js"], { maxBuffer: 64 * 1024 * 1024 });
 async function openIsland({ old = false, failDisplay = false, viewport = { width: 1280, height: 800 } } = {}) {
   const { ctx, page } = await newPage({ viewport });
   if (old) await ctx.route(/balloon-v-rush\/rpg-continent1-universe\/main\.js/, (r) => r.fulfill({ status: 200, contentType: "text/javascript", body: OLD_MAIN }));
