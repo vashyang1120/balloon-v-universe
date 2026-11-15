@@ -22,14 +22,19 @@ const ADMIN_KEY = await helpers.newRsaKey("kid-launch-e2e");
 
 const [TETRIS, RHYTHM, QUIZ, RUSH, OUT] = process.argv.slice(2);
 if (!OUT) { console.error("用法：launch-e2e.mjs <tetris> <rhythm> <quiz> <balloon-v-rush> <out>"); process.exit(2); }
-const H = await createHarness({ clones: { tetris: TETRIS, rhythm: RHYTHM, quiz: QUIZ, rush: RUSH }, out: OUT, flags: { SCORES_ENABLED: "on", REWARDS_ENABLED: "on", ADMIN_UIDS: helpers.ADMIN_UID }, jwks: helpers.staticJwks(ADMIN_KEY) });
+// v0.3.3：直接使用 wrangler.jsonc 的正式設定（合併後 Cloudflare 會部署的值）
+const PROD = JSON.parse(fs.readFileSync(path.join(ROOT, "backend/worker/wrangler.jsonc"), "utf8").replace(/^\s*\/\/.*$/gm, "").replace(/,(\s*[}\]])/g, "$1")).vars;
+const H = await createHarness({ clones: { tetris: TETRIS, rhythm: RHYTHM, quiz: QUIZ, rush: RUSH }, out: OUT, flags: { SCORES_ENABLED: PROD.SCORES_ENABLED, REWARDS_ENABLED: PROD.REWARDS_ENABLED, TRIAL_PLAYER_IDS: PROD.TRIAL_PLAYER_IDS, ADMIN_UIDS: helpers.ADMIN_UID }, jwks: helpers.staticJwks(ADMIN_KEY) });
 const { check, note, newPage } = H;
+check("設定", "使用 wrangler.jsonc 的正式設定：on／on／試營運名單空白", PROD.SCORES_ENABLED === "on" && PROD.REWARDS_ENABLED === "on" && PROD.TRIAL_PLAYER_IDS === "", JSON.stringify([PROD.SCORES_ENABLED, PROD.REWARDS_ENABLED, PROD.TRIAL_PLAYER_IDS]));
 const A = await H.apiCreate("上線甲", "avatar_rabbit_hoodie");
 const B = await H.apiCreate("上線乙", "girl2");
 const LOBBY = H.SITE + "index.html";
 const RUSH_URL = "https://vashyang1120.github.io/balloon-v-rush/rpg-continent1-universe/";
 const wallet = (pid) => H.db.get(`wallets/${pid}`) || { balance: 0, ledger: {} };
 const ledgerOk = (pid) => { const w = wallet(pid); const sum = Object.values(w.ledger || {}).reduce((s, t) => s + t.amount, 0); return sum === (w.balance || 0); };
+// 方塊「今日挑戰」依台北日期輪替：有些日子測試分數剛好也完成方塊挑戰（+10）。用伺服器實際的領獎紀錄算預期值（規則本身由後端單元測試驗證）
+const tBonus = (pid) => Object.keys(wallet(pid).claims || {}).some((k) => k.startsWith("challenge:tetris:")) ? 10 : 0;
 const minutes = (n) => { H.clock.offset += n * 60000; };
 
 const VCLOCK = `(() => { if (!/\\/universe\\/rhythm\\//.test(location.pathname)) return;
@@ -193,7 +198,7 @@ const qStatus = await text(page, "#save-status");
 const qBanner = await text(page, "#result-vcoin-banner");
 const qScore = await page.evaluate(() => quizState.score);
 check("問答｜正式成績", "完成今日挑戰（指定年級＋科目）→ 伺服器接受；今日挑戰 +10", /已記入正式排行榜/.test(qStatus) && /今日挑戰 \+10/.test(qStatus), qStatus.replace(/\n/g, "／"));
-check("問答｜V幣", "結算 V幣橫幅顯示伺服器結果與目前餘額（30＋10＋10＝50）", /\+10/.test(qBanner) && /目前 50 V幣/.test(qBanner), qBanner.replace(/\n/g, "／"));
+check("問答｜V幣", `結算 V幣橫幅顯示伺服器結果與目前餘額（30＋10＋10${tBonus(A.playerId) ? "＋方塊今日挑戰 10" : ""}＝${50 + tBonus(A.playerId)}）`, /\+10/.test(qBanner) && new RegExp(`目前 ${50 + tBonus(A.playerId)} V幣`).test(qBanner), qBanner.replace(/\n/g, "／"));
 const qp = H.db.get(`quizProgress/${A.playerId}`);
 check("問答｜排行榜", "伺服器用原版規則更新科目最佳、年級榜與主榜", qp && qp.progress[qc.gradeBand][qc.subject].bestScore === qScore && (H.db.get(`leaderboards/quiz/main/${A.playerId}`) || {}).score === qScore, JSON.stringify(H.db.get(`leaderboards/quiz/main/${A.playerId}`) || {}).slice(0, 120));
 await page.screenshot({ path: `${OUT}/launch-06-quiz-result-official.png` });
@@ -207,16 +212,17 @@ await page.click("#btn-game-menu");
 await page.waitForURL(/balloon-v-universe\/index\.html/);
 await lobbyReady(page);
 
-check("V幣｜規則", "A 今天：+30（一次）＋方塊/節奏/問答今日挑戰（方塊今天的任務未完成）→ 50；帳本與餘額一致", wallet(A.playerId).balance === 50 && ledgerOk(A.playerId) && Object.keys(wallet(A.playerId).ledger).length === 3, JSON.stringify(Object.values(wallet(A.playerId).ledger || {}).map((t) => t.type + ":" + t.gameId + ":" + t.amount)));
+check("V幣｜規則", `A 今天：+30（一次）＋節奏/問答今日挑戰${tBonus(A.playerId) ? "＋方塊今日挑戰（今天的方塊任務剛好完成）" : "（方塊今天的任務未完成）"} → ${50 + tBonus(A.playerId)}；帳本與餘額一致`, wallet(A.playerId).balance === 50 + tBonus(A.playerId) && ledgerOk(A.playerId) && Object.keys(wallet(A.playerId).ledger).length === 3 + tBonus(A.playerId) / 10, JSON.stringify(Object.values(wallet(A.playerId).ledger || {}).map((t) => t.type + ":" + t.gameId + ":" + t.amount)));
 
 /* ========== 3. 大廳：通行證 V幣、排行榜名次 ========== */
-await page.waitForFunction(() => /50/.test(document.getElementById("playerCardCoins").textContent), null, { timeout: 8000 }).catch(() => {});
+const EXP_A = 50 + tBonus(A.playerId);
+await page.waitForFunction((n) => new RegExp(String(n)).test(document.getElementById("playerCardCoins").textContent), EXP_A, { timeout: 8000 }).catch(() => {});
 const card = await text(page, "#playerCardCoins");
 await page.click("#signPass");
 await page.waitForSelector("#passModal:not([hidden])");
 await page.waitForFunction(() => /V幣紀錄/.test(document.getElementById("passTabBody").textContent), null, { timeout: 8000 }).catch(() => {});
 const passTxt = await text(page, "#passTabBody");
-check("大廳｜V幣", "右上玩家卡與通行證顯示正式 V幣 50；通行證有 V幣紀錄（3 筆）；標示消費尚未開放", /50/.test(card) && /V幣\s*50/.test(passTxt) && /消費功能尚未開放/.test(passTxt) && (passTxt.match(/\+(30|10)/g) || []).length === 3, card + "｜" + passTxt.replace(/\n/g, "／").slice(0, 300));
+check("大廳｜V幣", `右上玩家卡與通行證顯示正式 V幣 ${EXP_A}；通行證有 V幣紀錄（${3 + EXP_A / 10 - 5} 筆）；標示消費尚未開放`, new RegExp(String(EXP_A)).test(card) && new RegExp(`V幣\\s*${EXP_A}`).test(passTxt) && /消費功能尚未開放/.test(passTxt) && (passTxt.match(/\+(30|10)/g) || []).length === 3 + EXP_A / 10 - 5, card + "｜" + passTxt.replace(/\n/g, "／").slice(0, 300));
 await page.screenshot({ path: `${OUT}/launch-07-pass-wallet.png` });
 await page.click("#passClose");
 b = await openBoard(page, "tetris");
@@ -284,7 +290,7 @@ await page.waitForFunction(() => { const el = document.getElementById("c1u-offic
 const advLine = await text(page, "#c1u-official-result");
 const advBoard = H.db.get(`leaderboards/adventure/continent-1/${A.playerId}`) || {};
 check("派對島｜第一大陸成績", "完整、正式通關 → 送出派對島自己算的大陸總分 → 伺服器接受並入第一大陸排行榜", fin.complete && fin.eligible && !fin.testOnly && /已記入正式排行榜/.test(advLine) && advBoard.score === fin.total, JSON.stringify(fin) + "｜" + advLine + "｜" + advBoard.score);
-check("派對島｜V幣", "派對島沒有今日挑戰 +10；A 今天已領過 +30 → 不再加幣（仍是 50）", wallet(A.playerId).balance === 50 && ledgerOk(A.playerId), String(wallet(A.playerId).balance));
+check("派對島｜V幣", `派對島沒有今日挑戰 +10；A 今天已領過 +30 → 不再加幣（仍是 ${EXP_A}）`, wallet(A.playerId).balance === EXP_A && ledgerOk(A.playerId), String(wallet(A.playerId).balance));
 await page.screenshot({ path: `${OUT}/launch-11-adventure-final-official.png` });
 // 練習模式不送
 const practice = await page.evaluate(() => { const n = (window.C1UOfficial.client.pendingCount && window.C1UOfficial.client.pendingCount()) || 0; advPlayMode = "practice"; return n; });
@@ -332,7 +338,7 @@ await mainCtx.close();
   await p.waitForFunction(() => /已記入正式排行榜|暫存|沒有記入/.test(document.getElementById("bv-result-note").textContent), null, { timeout: 15000 });
   H.apiFault.fn = null;
   const n = await text(p, "#bv-result-note");
-  check("失敗｜回應遺失", "伺服器已寫入但回應遺失 → 自動重送同一筆 → 只入帳一次（B：30）", /已記入正式排行榜/.test(n) && wallet(B.playerId).balance === 30 && ledgerOk(B.playerId) && Object.keys(H.db.get("scores") || {}).filter((k) => H.db.get(`scores/${k}`).playerId === B.playerId).length === 1, n + "｜" + wallet(B.playerId).balance);
+  check("失敗｜回應遺失", "伺服器已寫入但回應遺失 → 自動重送同一筆 → 只入帳一次（B：30＋當天方塊挑戰）", /已記入正式排行榜/.test(n) && wallet(B.playerId).balance === 30 + tBonus(B.playerId) && Object.keys(wallet(B.playerId).ledger).length === 1 + tBonus(B.playerId) / 10 && ledgerOk(B.playerId) && Object.keys(H.db.get("scores") || {}).filter((k) => H.db.get(`scores/${k}`).playerId === B.playerId).length === 1, n + "｜" + wallet(B.playerId).balance);
   // 6b. 斷線：三次都失敗 → 暫存 → 重新整理後自動補送
   await p.click("#btn-res-retry").catch(() => {});
   await p.evaluate(() => { if (!running) { const b = [...document.querySelectorAll("#ov-btns button")][1]; if (b) b.click(); else startGame("normal"); } });
@@ -349,7 +355,7 @@ await mainCtx.close();
   await p.waitForFunction(() => window.UniverseTetris && window.UniverseTetris.isReady(), null, { timeout: 15000 });
   await p.waitForFunction(() => window.UniverseTetris.session.official.pendingCount() === 0, null, { timeout: 10000 }).catch(() => {});
   const scoresB = Object.values(H.db.get("scores") || {}).filter((s) => s.playerId === B.playerId);
-  check("失敗｜斷線", "送出時斷線 → 成績暫存並提示；重新整理後自動補送成功（B 共 2 筆成績、V幣不重複）", /暫存/.test(q) && queued === 1 && scoresB.length === 2 && wallet(B.playerId).balance === 30 && ledgerOk(B.playerId), q + "｜queued " + queued + "｜scores " + scoresB.length);
+  check("失敗｜斷線", "送出時斷線 → 成績暫存並提示；重新整理後自動補送成功（B 共 2 筆成績、V幣不重複）", /暫存/.test(q) && queued === 1 && scoresB.length === 2 && wallet(B.playerId).balance === 30 + tBonus(B.playerId) && ledgerOk(B.playerId), q + "｜queued " + queued + "｜scores " + scoresB.length);
   await ctx.close();
 }
 // 6c. 排行榜讀取失敗 → 錯誤訊息＋重試

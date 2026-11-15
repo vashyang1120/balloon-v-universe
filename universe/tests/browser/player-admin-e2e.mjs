@@ -2,7 +2,7 @@
    用法（repository 根目錄）：
      NODE_PATH=$(npm root -g) node universe/tests/browser/player-admin-e2e.mjs <tetris> <rhythm> <quiz> <balloon-v-rush 分支 clone> <輸出資料夾>
    - 使用 wrangler.jsonc 的實際模式（trial／trial）；為了測「全體 CSV 不被篩選」「切換玩家不混資料」，本測試在試營運名單多加一位同名玩家（只在本機）
-   - 「修正前」截圖：同一個網頁，但把派對島 main.js 換回 balloon-v-rush main 分支的版本（git show origin/main） */
+   - 「修正前」截圖：同一個網頁，但把派對島 main.js 換回修正前的版本（balloon-v-rush PR #29 修正 commit 的前一版） */
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
@@ -13,7 +13,9 @@ const LH = await import(path.join(ROOT, "backend/worker/tests/launch-helpers.js"
 const [TETRIS, RHYTHM, QUIZ, RUSH, OUT] = process.argv.slice(2);
 if (!OUT) { console.error("用法：player-admin-e2e.mjs <tetris> <rhythm> <quiz> <balloon-v-rush> <out>"); process.exit(2); }
 const raw = fs.readFileSync(path.join(ROOT, "backend/worker/wrangler.jsonc"), "utf8");
-const VARS = JSON.parse(raw.replace(/^\s*\/\/.*$/gm, "").replace(/,(\s*[}\]])/g, "$1")).vars;
+const PROD = JSON.parse(raw.replace(/^\s*\/\/.*$/gm, "").replace(/,(\s*[}\]])/g, "$1")).vars;
+// v0.3.3：wrangler.jsonc 已是正式（on）；這個測試驗證「合併前的試營運流程」，所以明確使用試營運設定
+const VARS = { SCORES_ENABLED: "trial", REWARDS_ENABLED: "trial", TRIAL_PLAYER_IDS: "p_qfvmhs7ewmcn6ez6bdub" };
 const RUSH_URL = "https://vashyang1120.github.io/balloon-v-rush/rpg-continent1-universe/";
 const KEY = await helpers.newRsaKey("kid-player-admin-e2e");
 
@@ -21,7 +23,7 @@ const KEY = await helpers.newRsaKey("kid-player-admin-e2e");
 const H = await createHarness({ clones: { tetris: TETRIS, rhythm: RHYTHM, quiz: QUIZ, rush: RUSH }, out: OUT,
   flags: { SCORES_ENABLED: VARS.SCORES_ENABLED, REWARDS_ENABLED: VARS.REWARDS_ENABLED, TRIAL_PLAYER_IDS: VARS.TRIAL_PLAYER_IDS, ADMIN_UIDS: helpers.ADMIN_UID }, jwks: helpers.staticJwks(KEY) });
 const { check, note, newPage } = H;
-check("設定", "模式使用 wrangler.jsonc 的實際值：SCORES_ENABLED／REWARDS_ENABLED 都是 trial（沒有改成 on）", VARS.SCORES_ENABLED === "trial" && VARS.REWARDS_ENABLED === "trial", JSON.stringify([VARS.SCORES_ENABLED, VARS.REWARDS_ENABLED, VARS.TRIAL_PLAYER_IDS]));
+check("設定", "以試營運模式測試玩家管理中心（trial 標示、trial/ 隔離）；正式模式另有 production-e2e", VARS.SCORES_ENABLED === "trial" && VARS.REWARDS_ENABLED === "trial", JSON.stringify([VARS.SCORES_ENABLED, VARS.REWARDS_ENABLED]));
 
 /* ---------- 測試玩家（本機假資料庫；程式裡沒有寫死任何玩家） ---------- */
 const T = await H.apiCreate("宇宙測試1", "girl2");          // 主角：身份頭像 女生2
@@ -54,7 +56,7 @@ const profT0 = JSON.stringify(H.db.get(`players/${T.playerId}/profile`));
 const profS0 = JSON.stringify(H.db.get(`players/${S.playerId}/profile`));
 
 /* ========== 1. 派對島：修正前（main 分支 main.js）＝紅色氣球 ========== */
-const OLD_MAIN = execFileSync("git", ["-C", RUSH, "show", "origin/main:rpg-continent1-universe/main.js"], { maxBuffer: 64 * 1024 * 1024 });
+const OLD_MAIN = execFileSync("git", ["-C", RUSH, "show", "a714b292e7d7bd6f498c2b3b5bfe1abf04a97945^:rpg-continent1-universe/main.js"], { maxBuffer: 64 * 1024 * 1024 });
 async function openIsland({ old = false, failDisplay = false, viewport = { width: 1280, height: 800 } } = {}) {
   const { ctx, page } = await newPage({ viewport });
   if (old) await ctx.route(/balloon-v-rush\/rpg-continent1-universe\/main\.js/, (r) => r.fulfill({ status: 200, contentType: "text/javascript", body: OLD_MAIN }));

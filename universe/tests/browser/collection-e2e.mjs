@@ -169,8 +169,8 @@ await page.click("#lbClose");
   await p.waitForFunction(() => !document.getElementById("btnLogin").disabled, null, { timeout: 10000 });
   await p.click("#btnLogin");
   await p.waitForFunction(() => !document.getElementById("adminArea").classList.contains("hidden"), null, { timeout: 10000 });
-  await p.waitForFunction(() => /全面開放/.test(document.getElementById("launchStatus").textContent), null, { timeout: 10000 });
-  check("後台｜狀態", "顯示正式寫入狀態（本測試設定為全面開放）", /正式成績：全面開放｜V幣：全面開放/.test(await text(p, "#launchStatus")), await text(p, "#launchStatus"));
+  await p.waitForFunction(() => /已啟用/.test(document.getElementById("launchStatus").textContent), null, { timeout: 10000 });
+  check("後台｜狀態", "顯示正式寫入狀態（v0.3.3：全面開放時顯示「正式成績：已啟用｜V幣：已啟用」）", /正式成績：已啟用｜V幣：已啟用/.test(await text(p, "#launchStatus")), await text(p, "#launchStatus"));
   // 玩家 A 收藏查詢（v0.3.2：改由「玩家管理中心」搜尋玩家 ID → 選擇 → 稱號／展示頭像分頁）
   const pick = async (name, pid) => {
     await p.fill("#pQuery", name); await p.click("#btnPSearch");

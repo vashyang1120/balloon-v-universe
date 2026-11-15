@@ -10,13 +10,15 @@ const helpers = await import(path.join(ROOT, "backend/worker/tests/helpers.js"))
 const [TETRIS, RHYTHM, QUIZ, RUSH, OUT] = process.argv.slice(2);
 if (!OUT) { console.error("用法：trial-e2e.mjs <tetris> <rhythm> <quiz> <balloon-v-rush> <out>"); process.exit(2); }
 const raw = fs.readFileSync(path.join(ROOT, "backend/worker/wrangler.jsonc"), "utf8");
-const VARS = JSON.parse(raw.replace(/^\s*\/\/.*$/gm, "").replace(/,(\s*[}\]])/g, "$1")).vars;
 const TESTER_ID = "p_qfvmhs7ewmcn6ez6bdub";
+const PROD = JSON.parse(raw.replace(/^\s*\/\/.*$/gm, "").replace(/,(\s*[}\]])/g, "$1")).vars;
+// v0.3.3：wrangler.jsonc 已是正式（on）；這個測試驗證「合併前的試營運流程」，所以明確使用試營運設定
+const VARS = { SCORES_ENABLED: "trial", REWARDS_ENABLED: "trial", TRIAL_PLAYER_IDS: TESTER_ID };
 const KEY = await helpers.newRsaKey("kid-trial-e2e");
 const H = await createHarness({ clones: { tetris: TETRIS, rhythm: RHYTHM, quiz: QUIZ, rush: RUSH }, out: OUT,
   flags: { SCORES_ENABLED: VARS.SCORES_ENABLED, REWARDS_ENABLED: VARS.REWARDS_ENABLED, TRIAL_PLAYER_IDS: VARS.TRIAL_PLAYER_IDS, ADMIN_UIDS: helpers.ADMIN_UID }, jwks: helpers.staticJwks(KEY) });
 const { check, newPage } = H;
-check("設定", "測試使用 wrangler.jsonc 的實際設定：trial／trial／指定測試玩家", VARS.SCORES_ENABLED === "trial" && VARS.REWARDS_ENABLED === "trial" && VARS.TRIAL_PLAYER_IDS === TESTER_ID, JSON.stringify([VARS.SCORES_ENABLED, VARS.REWARDS_ENABLED, VARS.TRIAL_PLAYER_IDS]));
+check("設定", "試營運流程（合併正式設定前）：trial／trial／指定測試玩家；wrangler.jsonc 本身已是正式 on／on／空", VARS.SCORES_ENABLED === "trial" && PROD.SCORES_ENABLED === "on" && PROD.REWARDS_ENABLED === "on" && PROD.TRIAL_PLAYER_IDS === "", JSON.stringify([PROD.SCORES_ENABLED, PROD.REWARDS_ENABLED, PROD.TRIAL_PLAYER_IDS]));
 
 // 指定的測試玩家（正式網站上已存在；這裡在假資料庫建立同一個 playerId）
 const tmp = await H.apiCreate("試營運玩家", "boy3");

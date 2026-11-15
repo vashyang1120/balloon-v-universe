@@ -384,7 +384,12 @@ const MODE = { off: "關閉", trial: "受控試營運", on: "全面開放" };
 async function launchStatus() {
   try {
     const l = await api("GET", "/v1/admin/launch");
-    setStatus("launchStatus", l.scoresMode === "on" ? "ok" : "warn", `正式成績：${MODE[l.scoresMode]}｜V幣：${MODE[l.rewardsMode]}｜試營運玩家 ${l.trialPlayers} 位｜資料位置 ${l.namespace}`);
+    const tr = (l.trialRoots || []).length ? `trial/ 仍有測試資料（${l.trialRoots.join("、")}）` : "trial/ 已清空";
+    if (l.scoresMode === "on") {   // v0.3.3 正式全面上線
+      setStatus("launchStatus", l.rewardsMode === "on" ? "ok" : "warn", `正式成績：已啟用｜V幣：${l.rewardsMode === "on" ? "已啟用" : MODE[l.rewardsMode]}｜資料位置：正式（/）｜${tr}` + ((l.trialRoots || []).length ? "（正式模式不會讀取）" : ""));
+    } else {
+      setStatus("launchStatus", "warn", `正式成績：${MODE[l.scoresMode]}｜V幣：${MODE[l.rewardsMode]}｜試營運玩家 ${l.trialPlayers} 位｜資料位置 ${l.namespace}｜${tr}`);
+    }
     $("btnPurge").disabled = l.scoresMode === "on";
   } catch (e) { setStatus("launchStatus", "bad", e.message); }
 }
@@ -400,7 +405,7 @@ async function selftest() {
 async function purge() {
   const typed = window.prompt("清除試營運資料（trial/）。正式資料與玩家身份不受影響。\n請輸入 PURGE TRIAL 確認：");
   if (typed !== "PURGE TRIAL") { setStatus("launchStatus", "", "已取消"); return; }
-  try { await api("POST", "/v1/admin/trial/purge", { confirm: "PURGE TRIAL" }); setStatus("launchStatus", "ok", "已清除 trial/"); }
+  try { await api("POST", "/v1/admin/trial/purge", { confirm: "PURGE TRIAL" }); setStatus("launchStatus", "ok", "已清除 trial/，重新讀取狀態中…"); setTimeout(launchStatus, 800); }
   catch (e) { setStatus("launchStatus", "bad", e.message); }
 }
 
