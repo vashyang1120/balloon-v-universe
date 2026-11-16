@@ -1,4 +1,4 @@
-/* 方塊派對 UI 測試版（tetris-universe-ui-v0.1.0-test-1）：核心完整性＋Sandbox 隔離（單元測試）
+/* 方塊派對 UI 測試版（tetris-universe-ui-v0.1.0-test-2）：核心完整性＋Sandbox 隔離（單元測試）
    執行（repository 根目錄）：node --test universe/tetris-ui-test/tests/ui-test-integrity.test.mjs
 
    正式版的 universe/tetris/tests/tetris-core-integrity.test.mjs 保留不動、照常執行。
@@ -59,7 +59,7 @@ test("B. 核心函式（方塊、旋轉、碰撞、消除、計分、連消、�
 });
 
 const INJECTED = [
-  /^<!-- \[UI 測試版\] tetris-universe-ui-v0\.1\.0-test-1：由 universe\/tetris\/index\.html 經 .*$/,
+  /^<!-- \[UI 測試版\] tetris-universe-ui-v0\.1\.0-test-\d+：由 universe\/tetris\/index\.html 經 .*$/,
   /^     永久 Sandbox（sandbox-guard\.js）；不讀寫任何正式資料。請勿手動修改本檔.*-->$/,
   /^<!-- \[UI 測試版\] Sandbox 強制隔離：必須在 SDK 之前載入 -->$/,
   /^<script src="sandbox-guard\.js"><\/script>$/,
