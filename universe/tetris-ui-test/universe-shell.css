@@ -1,0 +1,24 @@
+@import url("../shared/universe-ui.css");
+/* 氣球小V方塊派對 — 遊戲宇宙換殼層樣式（只新增，不覆蓋原版遊戲畫面樣式） */
+
+/* v0.2.0：常駐測試橫幅已移除，改為首頁一個狀態標示（樣式在 ../shared/universe-ui.css） */
+#s-title .bv-status-mark { display: flex; width: max-content; margin: 6px auto 0; }
+
+/* 玩家讀取中／錯誤卡 */
+.bv-identity-card { margin: 0 0 10px; padding: 10px 12px; border-radius: 14px; font-size: 13px; font-weight: 700; line-height: 1.5; text-align: center; }
+.bv-identity-card.is-loading { background: #f3ecff; color: #6a3fd0; }
+.bv-identity-card.is-error { background: #fff0f0; color: #c0392b; border: 1.5px solid #ffc9c9; }
+.bv-identity-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+
+/* 角色設定改為唯讀：隱藏原本的「變更身份／確認身份」控制 */
+body.bv-universe #btn-change-base-avatar,
+body.bv-universe #btn-change-display-avatar,
+body.bv-universe #btn-profile-ok,
+body.bv-universe #profile-id-dirty-hint { display: none !important; }
+body.bv-universe #player-id-input[readonly] { background: #f6f3fb !important; color: #6b5a86 !important; cursor: default; }
+
+/* 測試資料說明 */
+.bv-note { margin: 8px auto 0; max-width: 420px; padding: 6px 10px; border-radius: 10px; background: #fff4e5; color: #a35a00; font-size: 12px; font-weight: 700; line-height: 1.5; text-align: center; }
+#bv-lb-note { margin-bottom: 8px; }
+.bv-mock-tag { display: inline-block; padding: 0 6px; border-radius: 6px; background: #ffe2bf; color: #a35a00; font-size: 10px; font-weight: 800; }
+.bv-not-ready { padding: 14px 10px; font-weight: 700; color: #6b5a86; }
