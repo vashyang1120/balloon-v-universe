@@ -1,5 +1,5 @@
 /* ==========================================================
-   氣球小V方塊派對 UI 測試版 — 手機版 UI 樣式（tetris-universe-ui-v0.1.0-test-1）
+   氣球小V方塊派對 UI 測試版 — 手機版 UI 樣式（tetris-universe-ui-v0.1.0-test-2）
    全部規則都在 html.uit-m（手機版）底下，桌機版完全維持原版。
    原版 HTML 結構不變：只用 display:contents 把左右資訊欄的卡片排進頂部 HUD。
    ========================================================== */
@@ -34,11 +34,14 @@ html.uit-m #uit-badge-board { grid-area: badge; justify-self: start; margin-top:
 .uit-group { display: flex; align-items: flex-end; gap: var(--uit-btn-gap, 10px); }
 .uit-group-r { flex-direction: column; align-items: flex-end; }
 .uit-row { display: flex; gap: var(--uit-btn-gap, 10px); }
-/* 單列：旋轉、加速、落下排成一列 */
+/* 單列（test-2 起）：由左至右 加速下降 → 直接落下 → 旋轉（只改視覺順序，按鍵與事件不變） */
 #uit-ctrl:not(.is-stacked) .uit-group-r { flex-direction: row; }
 #uit-ctrl:not(.is-stacked) .uit-row { display: contents; }
-/* 兩層：旋轉在上（對齊右側中間）、加速／落下在下 */
-#uit-ctrl.is-stacked .uit-row-top { justify-content: center; width: 100%; }
+#uit-ctrl:not(.is-stacked) .uit-btn-down   { order: 1; }
+#uit-ctrl:not(.is-stacked) .uit-btn-drop   { order: 2; }
+#uit-ctrl:not(.is-stacked) .uit-btn-rotate { order: 3; }
+/* 兩層（極窄螢幕）：下層 加速下降 → 直接落下；旋轉在上層、靠右（在直接落下正上方），維持「旋轉在最右邊」 */
+#uit-ctrl.is-stacked .uit-row-top { justify-content: flex-end; width: 100%; }
 
 .uit-btn {
   pointer-events: auto; touch-action: none; -webkit-tap-highlight-color: transparent;

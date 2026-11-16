@@ -1,5 +1,5 @@
 /* ==========================================================
-   氣球小V方塊派對 UI 測試版 — 手機版 UI 重新配置（tetris-universe-ui-v0.1.0-test-1）
+   氣球小V方塊派對 UI 測試版 — 手機版 UI 重新配置（tetris-universe-ui-v0.1.0-test-2）
 
    只改「畫面配置」，遊戲核心一個字都不改：
      - 方塊、旋轉、碰撞、計分、連消、速度、關卡、落下鎖定、結束判定：完全沒有碰
@@ -11,7 +11,7 @@
 (function () {
   "use strict";
 
-  var VERSION = "tetris-universe-ui-v0.1.0-test-1";
+  var VERSION = "tetris-universe-ui-v0.1.0-test-2";
   var DOC = document.documentElement;
   var $ = function (id) { return document.getElementById(id); };
 

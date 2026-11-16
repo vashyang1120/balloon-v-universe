@@ -1,4 +1,4 @@
-/* 方塊派對 UI 測試版（tetris-universe-ui-v0.1.0-test-1）瀏覽器測試
+/* 方塊派對 UI 測試版（tetris-universe-ui-v0.1.0-test-2）瀏覽器測試
    用法（repository 根目錄）：
      NODE_PATH=$(npm root -g) node universe/tetris-ui-test/tests/browser/ui-test-e2e.mjs <vparty-tetris clone> <vparty-rhythm-game clone> [截圖資料夾]
 
@@ -226,6 +226,15 @@ for (const v of VIEWS) {
         check("版面", `${g}：HUD 字級可閱讀（標題 ≥ 11px、數值 ≥ 17px）`, m.minLabelFont >= 11 && m.minValFont >= 17, `label ${m.minLabelFont} val ${m.minValFont}`);
         const sizes = m.btns.map((b) => Math.round(b.box.w));
         check("版面", `${g}：五顆觸控按鍵都顯示、互不重疊、直徑 ≥ 52px、都在畫面內`, m.ctrlShown && m.btns.length === 5 && !m.overlap && Math.min(...sizes) >= 52 && m.btns.every((b) => b.box.x >= 0 && b.box.r <= v.w && b.box.b <= v.h), `sizes=${sizes.join(",")} stacked=${m.stacked} overlap=${m.overlap}`);
+        // test-2：右側由左至右 加速下降 → 直接落下 → 旋轉；兩層時旋轉在上層、位於直接落下正上方；左側 ← → 不變
+        const B = Object.fromEntries(m.btns.map((x) => [x.act, x.box]));
+        const cxOf = (k) => B[k].x + B[k].w / 2, cyOf = (k) => B[k].y + B[k].h / 2;
+        const leftOk = cxOf("left") < cxOf("right") && Math.abs(cyOf("left") - cyOf("right")) < 1 && cxOf("right") < cxOf("down");
+        const rightOk = m.stacked
+          ? cxOf("down") < cxOf("drop") && Math.abs(cyOf("down") - cyOf("drop")) < 1 && cyOf("rotate") < cyOf("drop") - B.drop.h * 0.9 && Math.abs(cxOf("rotate") - cxOf("drop")) < 1
+          : cxOf("down") < cxOf("drop") && cxOf("drop") < cxOf("rotate") && Math.abs(cyOf("down") - cyOf("rotate")) < 1 && Math.abs(cyOf("drop") - cyOf("rotate")) < 1;
+        check("版面", `${g}：右側按鍵順序 ↓ → 落 → ↻（${m.stacked ? "兩層：↓ 落 在下、↻ 在落的正上方" : "單列"}）；左側 ← → 不變`, leftOk && rightOk,
+          ["left", "right", "down", "drop", "rotate"].map((k) => `${k}(${Math.round(cxOf(k))},${Math.round(cyOf(k))})`).join(" "));
         const bottomOverlap = m.btns.every((b) => b.box.b > m.wrap.y + m.wrap.h * 0.6);
         check("版面", `${g}：按鍵位於畫面下方（${v.w > v.h ? "棋盤兩側下角" : "覆蓋在棋盤底部"}）`, bottomOverlap, JSON.stringify(m.btns.map((b) => Math.round(b.box.y))));
         check("版面", `${g}：原版下方按鍵列已隱藏（不再佔用高度）`, !m.mobCtrlShown);
