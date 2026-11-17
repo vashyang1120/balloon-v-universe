@@ -10,7 +10,7 @@
 <script>
 (function(){
   'use strict';
-  window.BV_TEST_ISOLATION = { version: 'v2.7.0-home-songselect-ui-test-1', namespace: 'vRhythmV270UniverseTest1::' };
+  window.BV_TEST_ISOLATION = { version: 'v2.7.0-home-songselect-ui-test-2', namespace: 'vRhythmV270UniverseTest1::' };
   var API = 'https://balloon-v-universe-api.vashyang1120.workers.dev';
   var API_READ = [/^\/v1\/players\/p_[a-z2-7]{20}$/, /^\/v1\/avatars\/base$/];
   var BLOCK_HOST = /firebaseio\.com|firebasedatabase\.app|identitytoolkit\.googleapis|securetoken\.googleapis|firebaseinstallations|firebase\.googleapis/i;
@@ -52,7 +52,7 @@
 </script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>【測試版／資料隔離】氣球小V魔法派對｜遊戲宇宙版 v2.7.0-home-songselect-ui-test-1</title>
+<title>【測試版／資料隔離】氣球小V魔法派對｜遊戲宇宙版 v2.7.0-home-songselect-ui-test-2</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;700;900&family=M+PLUS+Rounded+1c:wght@400;700;800;900&display=swap');
 
@@ -1922,7 +1922,7 @@ button,input,select,textarea{
   <link rel="stylesheet" href="../../universe/shared/universe-ui.css">
   <link rel="stylesheet" href="../../universe/rhythm/universe-shell.css">
   <link rel="stylesheet" href="test-isolation.css">
-  <!-- v2.7.0-home-songselect-ui-test-1：首頁＋選歌頁 A-4 橫向魔法音樂舞台、直向提示 -->
+  <!-- v2.7.0-home-songselect-ui-test-2：首頁＋選歌頁正式美術、動態演出、直向提示 -->
   <link rel="stylesheet" href="home-songselect-ui.css">
   <script src="home-songselect-ui.js"></script>
 </head>
@@ -1934,7 +1934,7 @@ button,input,select,textarea{
   <div class="title-deco">🎈 ✨ 🌸</div>
   <div class="logo" onclick="handleLogoClick()" style="cursor:default;user-select:none">氣球小V魔法派對<small>BALLOON V MAGIC PARTY</small></div>
   <div class="title-hint">Suno AI × YouTube MV</div>
-  <div id="game-version" style="font-size:9px;color:rgba(155,93,229,.35);letter-spacing:.12em;margin-top:3px;">v2.7.0-home-songselect-ui-test-1｜測試版／資料隔離</div>
+  <div id="game-version" style="font-size:9px;color:rgba(155,93,229,.35);letter-spacing:.12em;margin-top:3px;">v2.7.0-home-songselect-ui-test-2</div>
   <div id="home-daily-challenge-hint" class="rhythm-daily-hint-card need-profile">
     <div class="rhythm-daily-hint-top">
       <div>
@@ -2300,7 +2300,7 @@ button,input,select,textarea{
 </div>
 
 
-<div class="bv-test-banner" id="bv-test-banner">🧪 測試版／資料隔離 · v2.7.0-home-songselect-ui-test-1</div>
+<div class="bv-test-banner" id="bv-test-banner">🧪 測試版／資料隔離 · v2.7.0-home-songselect-ui-test-2</div>
 <button id="fs-btn" onclick="toggleFullscreen()" title="全螢幕">🔲</button>
 </div><!-- #root -->
 <script>
@@ -3662,7 +3662,7 @@ function renderSharedTitleCollection(filterGameId){
   var grid = document.getElementById('title-grid');
   var currentEl = document.getElementById('title-collection-current');
   if(!grid) return Promise.resolve();
-  grid.innerHTML = '<div class="title-empty-msg">🎈 載入 V宇宙稱號中...</div>';
+  grid.innerHTML = '<div class="title-empty-msg">🎈 載入遊戲宇宙稱號中...</div>';
   if(currentEl) currentEl.textContent = getEquippedTitleName();
   return Promise.all([loadSharedTitleCatalog(), loadSharedRhythmTitleCatalog(), loadUnlockedTitlesByGame(PLAYER && PLAYER.playerKey), loadEquippedTitleForCurrentPlayer()]).then(function(values){
     var catalog = values[0] || getSharedTitleCatalog();
@@ -4487,6 +4487,7 @@ var profileOpenedFromGame = false;
 var wasPausedBeforeProfile = false;
 var shouldResumeMediaFromProfile = false;
 var isResumeCountingDown = false;
+var resumeCountdownToken = 0; // [v2.7.0-home-songselect-ui-test-2] 恢復倒數代號：轉直向時可安全中止該次倒數
 
 function getProfileText(id, fallback) {
   var el = document.getElementById(id);
@@ -4580,6 +4581,7 @@ function resumeGameFromProfile() {
 function resumeGameWithCountdown(shouldResumeMedia) {
   if (!G.running || isResumeCountingDown) return;
   isResumeCountingDown = true;
+  var myToken = ++resumeCountdownToken; // [v2.7.0-home-songselect-ui-test-2] 被 cancelResumeCountdown() 取消後，舊倒數不再繼續
   G.paused = true;
   pauseAudio();
   pauseVideoForProfile();
@@ -4588,6 +4590,7 @@ function resumeGameWithCountdown(shouldResumeMedia) {
   var el = document.getElementById('countdown');
   var n = 3;
   function done() {
+    if (myToken !== resumeCountdownToken) return; // [v2.7.0-home-songselect-ui-test-2] 已取消：不啟動音訊／MV／計時
     isResumeCountingDown = false;
     if (!G.running) return;
     G.paused = false;
@@ -4600,6 +4603,7 @@ function resumeGameWithCountdown(shouldResumeMedia) {
     G.raf = requestAnimationFrame(loop);
   }
   function step() {
+    if (myToken !== resumeCountdownToken) return; // [v2.7.0-home-songselect-ui-test-2] 已取消
     if (!G.running) { isResumeCountingDown = false; return; }
     if (n === 0) {
       showCnt(el, 'GO!', '#06d6a0', done);
@@ -4608,6 +4612,18 @@ function resumeGameWithCountdown(shouldResumeMedia) {
     showCnt(el, String(n), '#fff', function(){ n--; step(); });
   }
   step();
+}
+// [v2.7.0-home-songselect-ui-test-2] 立即中止進行中的 3 秒恢復倒數，保持暫停並顯示原本暫停選單（倒數開始時已呼叫 pauseAudio／pauseVideoForProfile）
+function cancelResumeCountdown() {
+  if (!isResumeCountingDown) return false;
+  resumeCountdownToken++;
+  isResumeCountingDown = false;
+  G.paused = true;
+  var el = document.getElementById('countdown');
+  if (el) { el.classList.remove('pop'); el.textContent = ''; }
+  var ov = document.getElementById('pause-ov');
+  if (ov) ov.classList.remove('off');
+  return true;
 }
 
 

@@ -1,229 +1,315 @@
 /* ==========================================================
-   v2.7.0-home-songselect-ui-test-1 — A-4 橫向魔法音樂舞台
-   範圍：只作用於首頁 #s-title.rv-ui、選歌頁 #s-songlist.rv-ui 與直向提示 #rv-rotate-mask
+   v2.7.0-home-songselect-ui-test-2 — 正式美術整合＋動態演出
+   範圍：首頁 #s-title.rv-ui、選歌頁 #s-songlist.rv-ui、直向提示 #rv-rotate-mask
    遊戲畫面、HUD、結算、排行榜、角色設定的樣式完全不動
    ========================================================== */
 :root {
-  --rv-pink: #ff6fa8; --rv-pink-dk: #d6457f; --rv-pink-shadow: #b8336b;
-  --rv-purple: #9a5ae6; --rv-purple-dk: #6d34b8;
-  --rv-yellow: #ffd23f; --rv-yellow-dk: #e3a400;
-  --rv-gold: #f6bd46; --rv-gold-dk: #9a5a12;
-  --rv-ink: #4a2a6a; --rv-ink-soft: #7d6496;
+  --rv-ink: #4a2a6a; --rv-ink-soft: #7d6496; --rv-pink-dk: #d6457f; --rv-purple-dk: #6d34b8;
+  --rv-panel: rgba(255, 250, 247, .86); --rv-panel-line: rgba(255, 214, 236, .95);
   --rv-safe-t: env(safe-area-inset-top, 0px); --rv-safe-r: env(safe-area-inset-right, 0px);
   --rv-safe-b: env(safe-area-inset-bottom, 0px); --rv-safe-l: env(safe-area-inset-left, 0px);
 }
 
-/* 原本未被搬進新版面的首頁／選歌頁元素（舊裝飾、舊提示文字、空的按鈕列）不顯示 */
+/* 原本未被搬進新版面的元素（舊文字標題裝飾、舊提示、空按鈕列）不顯示 */
 #s-title.rv-ui > :not(.rv-home),
 #s-songlist.rv-ui > :not(.rv-select) { display: none !important; }
+#s-title.rv-ui, #s-songlist.rv-ui { padding: 0 !important; overflow: hidden !important; background: #6a3fd0 !important; }
 
-#s-title.rv-ui, #s-songlist.rv-ui {
-  padding: 0 !important; overflow: hidden !important;
-  background: linear-gradient(160deg, #ffe3f1 0%, #f3e3ff 55%, #fff4d6 100%) !important;
+/* 首頁／選歌頁不可見時（.screen.off 只是透明）：暫停所有本版動畫 */
+#s-title.off .rv-home, #s-title.off .rv-home *, #s-title.off .rv-home *::before, #s-title.off .rv-home *::after,
+#s-songlist.off .rv-select, #s-songlist.off .rv-select *, #s-songlist.off .rv-select *::before, #s-songlist.off .rv-select *::after {
+  animation-play-state: paused !important;
 }
-
-/* ---------- 共用：立體圓角按鈕 ---------- */
-.rv-ui .rv-btn-main, .rv-ui .rv-btn-purple, .rv-ui .rv-btn-yellow, .rv-ui .rv-btn-back {
-  position: relative; border-radius: 999px; font-weight: 900; letter-spacing: .04em;
-  min-height: 46px; padding: 10px 22px; transition: transform .12s, box-shadow .12s, filter .12s;
-  font-family: 'Fredoka One', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
-  text-shadow: 0 2px 0 rgba(0,0,0,.18);
-}
-.rv-ui .rv-btn-main {
-  width: 100%; min-height: clamp(50px, 13vh, 66px); font-size: clamp(19px, 4.6vh, 26px); color: #fff;
-  background: linear-gradient(180deg, #ff9cc6 0%, var(--rv-pink) 45%, var(--rv-pink-dk) 100%);
-  border: 3px solid #ffe08a;
-  box-shadow: 0 6px 0 var(--rv-pink-shadow), 0 10px 22px rgba(214,69,127,.45), inset 0 3px 0 rgba(255,255,255,.55);
-}
-.rv-ui .rv-btn-purple {
-  color: #fff; font-size: clamp(14px, 3.6vh, 17px);
-  background: linear-gradient(180deg, #c08cff 0%, var(--rv-purple) 50%, var(--rv-purple-dk) 100%);
-  border: 3px solid var(--rv-gold);
-  box-shadow: 0 5px 0 var(--rv-gold-dk), 0 8px 16px rgba(109,52,184,.35), inset 0 3px 0 rgba(255,255,255,.4);
-}
-.rv-ui .rv-btn-yellow {
-  color: #6b3d00 !important; text-shadow: 0 1px 0 rgba(255,255,255,.6); font-size: clamp(14px, 3.6vh, 17px);
-  background: linear-gradient(180deg, #fff1a6 0%, var(--rv-yellow) 50%, var(--rv-yellow-dk) 100%);
-  border: 3px solid var(--rv-gold);
-  box-shadow: 0 5px 0 var(--rv-gold-dk), 0 8px 16px rgba(227,164,0,.35), inset 0 3px 0 rgba(255,255,255,.6);
-}
-.rv-ui .rv-btn-back {
-  color: var(--rv-purple-dk); text-shadow: none; font-size: 14px; background: #fff;
-  border: 3px solid #e6d3ff; box-shadow: 0 4px 0 #cdb3f2;
-}
-.rv-ui .rv-btn-main:hover, .rv-ui .rv-btn-purple:hover, .rv-ui .rv-btn-yellow:hover, .rv-ui .rv-btn-back:hover { filter: brightness(1.05); transform: translateY(-1px); }
-.rv-ui .rv-btn-main:active, .rv-ui .rv-btn-purple:active, .rv-ui .rv-btn-yellow:active, .rv-ui .rv-btn-back:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,.25); }
-.rv-ui button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
 
 /* ==========================================================
-   首頁：左 48% 舞台／右 52% 玩家與按鈕
+   遊戲按鈕美術（U-12 紫／U-13 黃／U-14 藍）：九宮格畫在 ::before，文字由 HTML 呈現
+   裁切後按鈕圖約 610×200，左右端各保留 150px（含圓角、金色耳飾與左上高光）不拉伸
    ========================================================== */
-.rv-home {
-  position: absolute; inset: 0; display: flex;
-  padding: var(--rv-safe-t) var(--rv-safe-r) var(--rv-safe-b) var(--rv-safe-l);
+.rv-ui .rv-art-btn {
+  --bh: 48px;
+  position: relative; isolation: isolate; height: var(--bh); min-height: 0; margin: 0;
+  padding: 0 calc(var(--bh) * .55); border: 0 !important; border-radius: 999px;
+  background: transparent !important; box-shadow: none !important; overflow: visible;
+  display: inline-flex; align-items: center; justify-content: center; white-space: nowrap;
+  font-family: 'Fredoka One', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  font-weight: 900; letter-spacing: .03em; line-height: 1; color: #fff;
+  text-shadow: 0 2px 0 rgba(60, 10, 90, .55), 0 0 2px rgba(60, 10, 90, .6);
+  transform: translateZ(0) scale(1);
+  transition: transform .15s cubic-bezier(.34, 1.56, .64, 1), filter .15s;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
 }
-.rv-stage { position: relative; flex: 0 0 48%; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
-.rv-stage-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.rv-heading { position: relative; z-index: 3; text-align: center; margin-top: clamp(30px, 12vh, 84px); padding: 0 14%; }
-.rv-heading .logo { font-size: clamp(22px, 7vh, 46px) !important; cursor: default; }
-.rv-heading .logo small { font-size: .32em; }
-.rv-subtitle {
-  display: inline-block; margin-top: 4px; padding: 3px 14px; border-radius: 999px;
-  background: rgba(255,255,255,.85); color: var(--rv-purple-dk); font-weight: 900;
-  font-size: clamp(11px, 2.8vh, 15px); letter-spacing: .12em; box-shadow: 0 3px 10px rgba(154,90,230,.25);
+.rv-ui .rv-art-btn::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  border-style: solid; border-width: 0 calc(var(--bh) * .75);
+  border-image-slice: 0 150 fill; border-image-repeat: stretch;
+  filter: drop-shadow(0 3px 4px rgba(70, 20, 90, .3));
 }
-.rv-hero { position: absolute; z-index: 2; left: 50%; bottom: 7%; transform: translateX(-50%);
-  height: min(64%, calc(48vw * 0.95)); aspect-ratio: 378 / 469; }
-.rv-hero { max-height: 560px; }
-.rv-hero-img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: contain; display: block;
-  filter: drop-shadow(0 8px 10px rgba(110,40,120,.28)); animation: rvFloat 3.6s ease-in-out infinite; }
-.rv-hero-glow { position: absolute; inset: 8% -18% 0; border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(255,250,210,.85), rgba(255,250,210,0)); }
-.rv-balloons { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
-.rv-balloon { position: absolute; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,.15)); }
-.rv-balloon-red { width: clamp(42px, 14vh, 82px); left: 15%; top: 30%; animation: rvSway 5s ease-in-out infinite; }
-.rv-balloon-blue { width: clamp(50px, 17vh, 100px); right: 13%; top: 24%; transform: rotate(-18deg); animation: rvSway 6s ease-in-out infinite reverse; }
-.rv-img-failed { display: none !important; }
+.rv-ui .rv-art-yellow::before { border-image-source: url("assets/ui/buttons/ui_button_yellow.webp"); }
+.rv-ui .rv-art-purple::before { border-image-source: url("assets/ui/buttons/ui_button_purple.webp"); }
+.rv-ui .rv-art-blue::before   { border-image-source: url("assets/ui/buttons/ui_button_blue.webp"); }
+.rv-ui .rv-art-yellow { color: #6b3300 !important; text-shadow: 0 1px 0 rgba(255, 246, 200, .9); }
+.rv-ui .rv-art-purple, .rv-ui .rv-art-blue { color: #fff !important; }   /* 蓋過正式換殼樣式的按鈕文字色 */
+/* 尺寸：開始遊戲／開始歌曲最大，其次排行榜等，再次角色設定／MV */
+.rv-ui .rv-size-main  { --bh: clamp(56px, 15vh, 78px); font-size: clamp(20px, 5vh, 28px); width: 100%; }
+.rv-ui .rv-size-mid   { --bh: clamp(44px, 11.5vh, 56px); font-size: clamp(14px, 3.6vh, 18px); }
+.rv-ui .rv-size-small { --bh: clamp(38px, 9.5vh, 46px); font-size: clamp(12px, 3vh, 15px); }
+/* 按壓回饋：按下 0.95、放開快速回彈；不延後原 click 事件 */
+.rv-ui .rv-art-btn:active, .rv-ui .rv-press:active { transform: scale(.95); transition-duration: .07s; }
+.rv-ui .rv-art-btn:hover { filter: brightness(1.06); }
+.rv-ui .rv-art-btn:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+.rv-ui .rv-art-btn:disabled { filter: grayscale(.7) brightness(.9); opacity: .55; }
+/* 主按鈕高光掃過（只在待機狀態、每 4.8 秒一次） */
+.rv-ui .rv-sheen::after {
+  content: ""; position: absolute; z-index: 0; pointer-events: none; top: 18%; bottom: 18%;
+  left: calc(var(--bh) * .35); right: calc(var(--bh) * .35); border-radius: 999px;
+  background: linear-gradient(105deg, transparent 0 38%, rgba(255, 255, 255, .7) 48%, transparent 58% 100%);
+  background-size: 260% 100%; background-position: 130% 0; opacity: 0;
+}
+.rv-home.rv-idle .rv-sheen::after, .rv-select.rv-active .rv-sheen::after { animation: rvSheen 4.8s ease-in-out 1.2s infinite; }
+@keyframes rvSheen { 0% { background-position: 130% 0; opacity: 0; } 2% { opacity: 1; } 16% { background-position: -30% 0; opacity: 1; } 18%, 100% { background-position: -30% 0; opacity: 0; } }
+
+/* ==========================================================
+   首頁：正式背景覆蓋全畫面；左側 Logo＋小V、右側半透明面板
+   ========================================================== */
+.rv-home { position: absolute; inset: 0; overflow: hidden;
+  padding: var(--rv-safe-t) var(--rv-safe-r) var(--rv-safe-b) var(--rv-safe-l); }
+.rv-scene { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }   /* 由 JS 設為背景座標框 */
+.rv-scene-bg-pic, .rv-scene-bg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.rv-scene-bg { object-fit: fill; }   /* 座標框比例與原圖相同，實際不會變形 */
+.rv-light { position: absolute; border-radius: 50%; pointer-events: none; opacity: .45;
+  background: radial-gradient(closest-side, rgba(255, 244, 200, .55), rgba(255, 244, 200, 0)); }
+.rv-light-a { left: 8%; top: 10%; width: 26%; height: 52%; }
+.rv-light-b { left: 34%; top: 6%; width: 22%; height: 46%; }
+.rv-spark { position: absolute; width: .9%; aspect-ratio: 1; min-width: 5px; transform: translate(-50%, -50%); pointer-events: none; opacity: 0;
+  background: radial-gradient(circle, #fff 0 30%, rgba(255, 246, 190, .8) 45%, rgba(255, 246, 190, 0) 70%); border-radius: 50%; }
+
+.rv-hero, .rv-logo-box { position: absolute; z-index: 2; }
+.rv-hero-move, .rv-hero-img { width: 100%; height: 100%; display: block; }
+.rv-hero-img { object-fit: contain; transform-origin: 49% 99%; filter: drop-shadow(0 6px 6px rgba(90, 20, 110, .32)); }
+.rv-logo-box { z-index: 3; }
+.rv-ui .rv-logo { all: unset; display: block; width: 100%; height: 100%; cursor: default; user-select: none; -webkit-user-select: none; }
+.rv-logo-img-pic, .rv-logo-img { display: block; width: 100%; height: 100%; }
+.rv-logo-img { object-fit: contain; transform-origin: 50% 55%; filter: drop-shadow(0 6px 10px rgba(60, 10, 90, .35)); }
 
 .rv-panel {
-  position: relative; flex: 1 1 52%; min-width: 0; display: flex; flex-direction: column; justify-content: center;
-  gap: clamp(6px, 2vh, 14px); padding: clamp(8px, 3vh, 22px) clamp(14px, 4vw, 44px);
-  background: radial-gradient(120% 90% at 100% 0%, rgba(255,255,255,.7), rgba(255,255,255,.25));
+  position: absolute; z-index: 4; top: 0; right: 0; bottom: 0; width: 52%;
+  display: flex; flex-direction: column; justify-content: center; gap: clamp(5px, 1.8vh, 13px);
+  padding: calc(var(--rv-safe-t) + clamp(6px, 2.4vh, 20px)) calc(var(--rv-safe-r) + clamp(12px, 3.6vw, 44px)) calc(var(--rv-safe-b) + clamp(6px, 2.4vh, 20px)) clamp(10px, 2.4vw, 28px);
+  background: linear-gradient(90deg, rgba(70, 30, 140, 0) 0%, rgba(70, 30, 140, .14) 18%, rgba(70, 30, 140, .2) 100%);
 }
-.rv-meta { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.rv-meta #game-version { margin: 0 !important; color: rgba(109,52,184,.55) !important; }
-.rv-meta .bv-title-meta { gap: 2px; }
-.rv-ui .bv-player-chip { display: none !important; }          /* 玩家改由資料卡顯示 */
-/* 首頁右側已有「測試版／資料隔離」標示與版本號，浮動測試橫條改在其他畫面顯示，避免蓋住標題 */
-body.rv27-ui:has(#s-title.rv-ui:not(.off)) #bv-test-banner { display: none; }
+.rv-meta { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.rv-meta #game-version { margin: 0 !important; font-size: 10px !important; color: rgba(255, 255, 255, .78) !important; text-shadow: 0 1px 2px rgba(40, 0, 70, .6); }
+.rv-meta .bv-title-meta { flex-direction: row; gap: 6px; }
+.rv-meta .bv-status-mark { font-size: 11px; padding: 2px 9px; }
+.rv-ui .bv-player-chip { display: none !important; }
+/* 首頁右上、選歌頁左下已顯示測試標記：浮動橫條不重複顯示（避免蓋住內容） */
+body.rv27-ui:has(#s-title.rv-ui:not(.off)) #bv-test-banner,
+body.rv27-ui:has(#s-songlist.rv-ui:not(.off)) #bv-test-banner { display: none; }
+.rv-test-tag { padding: 2px 10px; border-radius: 999px; background: rgba(214, 51, 108, .88); color: #fff; font-size: 10px; font-weight: 800; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 
 .rv-player-card {
-  display: flex; align-items: center; gap: clamp(8px, 2vw, 16px); padding: 6px 16px 6px 6px;
-  border-radius: 26px; background: linear-gradient(135deg, #fff, #fff2fa);
-  border: 3px solid #ffc6e1; box-shadow: 0 6px 18px rgba(214,69,127,.18);
+  display: flex; align-items: center; gap: clamp(8px, 1.8vw, 14px); padding: 5px 16px 5px 5px;
+  border-radius: 24px; background: var(--rv-panel); border: 3px solid var(--rv-panel-line);
+  box-shadow: 0 6px 18px rgba(60, 10, 100, .22);
 }
-.rv-avatar-box { position: relative; flex: 0 0 auto; width: clamp(56px, 17vh, 88px); aspect-ratio: 1; }
-/* U-06 頭像框（1254×1254，內圈直徑約 50%，圓心約 49.7%／48.8%） */
-.rv-player-avatar { position: absolute; z-index: 3; width: 48%; height: 48%; left: 25.7%; top: 24.8%;
-  border-radius: 50%; object-fit: cover; background: #fff8ee; }
-.rv-frame { position: absolute; z-index: 2; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
-.rv-avatar-box:has(.rv-frame.rv-img-failed) .rv-player-avatar { width: 92%; height: 92%; left: 4%; top: 4%; border: 4px solid var(--rv-pink); }
+.rv-avatar-box { position: relative; flex: 0 0 auto; width: clamp(52px, 16vh, 84px); aspect-ratio: 1; }
+.rv-frame { position: absolute; z-index: 1; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+/* U-06 內圈直徑約 50%，圓心約 (49.7%, 48.8%)；頭像疊在奶油色內圈之上 */
+.rv-player-avatar { position: absolute; z-index: 2; width: 48%; height: 48%; left: 25.7%; top: 24.8%; border-radius: 50%; object-fit: cover; background: #fff8ee; }
+.rv-avatar-box:has(.rv-frame.rv-img-failed) .rv-player-avatar { width: 92%; height: 92%; left: 4%; top: 4%; border: 4px solid #ff6fa8; }
 .rv-player-text { min-width: 0; }
 .rv-player-label { font-size: 11px; font-weight: 800; color: var(--rv-ink-soft); letter-spacing: .1em; }
 .rv-player-name { font-size: clamp(16px, 4.4vh, 22px); font-weight: 900; color: var(--rv-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rv-player-title { margin-top: 2px; font-size: clamp(11px, 2.8vh, 13px); font-weight: 800; color: #c4537f; }
 .rv-player-title.is-empty { color: var(--rv-ink-soft); font-weight: 700; }
-.rv-panel .bv-identity-card { margin-top: 2px; }
-
-.rv-panel .rhythm-daily-hint-card { width: 100% !important; margin: 0 !important; padding: 7px 12px !important; }
-.rv-btn-row { display: flex; gap: clamp(8px, 1.6vw, 14px); }
-.rv-btn-row > .btn { flex: 1 1 0; margin: 0; }
-.rv-btn-row-minor > .btn { min-height: 38px; padding: 6px 12px; font-size: 13px; }
-.rv-tutorial-slot {
-  align-self: center; padding: 4px 14px; border-radius: 999px; border: 2px dashed rgba(154,90,230,.35);
-  color: rgba(109,52,184,.55); font-size: 12px; font-weight: 800; pointer-events: none; user-select: none;
+.rv-panel .bv-identity-card { margin: 0; }
+.rv-panel .rhythm-daily-hint-card, .rv-info-side .rhythm-daily-hint-card {
+  width: 100% !important; margin: 0 !important; padding: 6px 12px !important;
+  background: var(--rv-panel) !important; border-color: var(--rv-panel-line) !important; box-shadow: 0 4px 12px rgba(60, 10, 100, .18) !important;
 }
+.rv-btn-row { display: flex; gap: clamp(8px, 1.4vw, 14px); }
+.rv-btn-row > .rv-art-btn { flex: 1 1 0; min-width: 0; }
+.rv-tutorial-slot {   /* 預留 U-14 藍色風格；不是按鈕 */
+  align-self: center; padding: 3px 14px; border-radius: 999px; border: 2px dashed rgba(120, 200, 255, .75);
+  background: rgba(30, 120, 220, .18); color: rgba(255, 255, 255, .9); font-size: 11px; font-weight: 800;
+  text-shadow: 0 1px 2px rgba(20, 30, 90, .5); pointer-events: none; user-select: none;
+}
+
+/* ---------- 首頁登場（約 1.4 秒）---------- */
+.rv-home.rv-pre .rv-scene, .rv-home.rv-pre .rv-hero, .rv-home.rv-pre .rv-logo-box, .rv-home.rv-pre .rv-in, .rv-home.rv-pre .rv-meta { opacity: 0; }
+.rv-home.rv-intro .rv-scene { animation: rvFadeIn .3s ease-out both; }
+.rv-home.rv-intro .rv-meta { animation: rvFadeIn .3s ease-out .2s both; }
+.rv-home.rv-intro .rv-logo { animation: rvLogoPop .7s cubic-bezier(.2, .9, .3, 1) .15s both; }
+.rv-home.rv-intro .rv-hero-move { animation: rvHeroIn .55s cubic-bezier(.2, .8, .2, 1) .4s both; }
+.rv-home.rv-intro .rv-in-card  { animation: rvSlideR .45s cubic-bezier(.2, .8, .2, 1) .65s both; }
+.rv-home.rv-intro .rv-in-daily { animation: rvSlideR .45s cubic-bezier(.2, .8, .2, 1) .72s both; }
+.rv-home.rv-intro .rv-in-b1 { animation: rvBtnPop .32s cubic-bezier(.3, 1.5, .5, 1) .85s both; }
+.rv-home.rv-intro .rv-in-b2 { animation: rvBtnPop .3s cubic-bezier(.3, 1.5, .5, 1) .93s both; }
+.rv-home.rv-intro .rv-in-b3 { animation: rvBtnPop .3s cubic-bezier(.3, 1.5, .5, 1) 1.01s both; }
+.rv-home.rv-intro .rv-in-b4 { animation: rvBtnPop .28s cubic-bezier(.3, 1.5, .5, 1) 1.08s both; }
+.rv-home.rv-intro .rv-in-b5 { animation: rvBtnPop .28s cubic-bezier(.3, 1.5, .5, 1) 1.14s both; }
+.rv-home.rv-intro .rv-tutorial-slot { animation: rvFadeIn .3s ease-out 1.15s both; }
+@keyframes rvFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rvLogoPop { 0% { opacity: 0; transform: scale(.2); } 45% { opacity: 1; } 60% { transform: scale(1.1); } 80% { transform: scale(.96); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes rvHeroIn { from { opacity: 0; transform: translateX(-14%); } to { opacity: 1; transform: translateX(0); } }
+@keyframes rvSlideR { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes rvBtnPop { 0% { opacity: 0; transform: scale(.6); } 70% { opacity: 1; transform: scale(1.06); } 100% { opacity: 1; transform: scale(1); } }
+/* 返回首頁：只短暫淡入 */
+.rv-home.rv-return { animation: rvFadeIn .28s ease-out both; }
+
+/* ---------- 首頁待機（錯開週期，不同時晃動）---------- */
+.rv-home.rv-idle .rv-logo-img { animation: rvLogoPulse 6.5s ease-in-out 1s infinite; }
+.rv-home.rv-idle .rv-hero-img { animation: rvBreath 3.8s ease-in-out infinite; }
+.rv-home.rv-idle .rv-light { animation: rvGlow 7s ease-in-out infinite alternate; }
+.rv-home.rv-idle .rv-light-b { animation-duration: 9s; animation-delay: -3s; }
+.rv-home.rv-idle .rv-spark { animation: rvSpark 3.4s ease-in-out infinite; }
+.rv-home.rv-idle .rv-s2 { animation-duration: 4.1s; animation-delay: .9s; }
+.rv-home.rv-idle .rv-s3 { animation-duration: 3.7s; animation-delay: 1.8s; }
+.rv-home.rv-idle .rv-s4 { animation-duration: 4.6s; animation-delay: 2.6s; }
+.rv-home.rv-idle .rv-s5 { animation-duration: 3.9s; animation-delay: 3.3s; }
+@keyframes rvLogoPulse { 0%, 86%, 100% { transform: scale(1); } 92% { transform: scale(1.03); } }
+@keyframes rvBreath { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.006, 1.014); } }
+@keyframes rvGlow { from { opacity: .3; } to { opacity: .62; } }
+@keyframes rvSpark { 0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(.6); } 45% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); } 60% { opacity: .2; } }
 
 /* ==========================================================
-   選歌頁：左 45% 封面／右 55% 資訊
+   選歌頁：正式背景；左封面＋箭頭、右半透明資訊面板
    ========================================================== */
-.rv-select {
-  position: absolute; inset: 0; display: flex;
-  padding: var(--rv-safe-t) var(--rv-safe-r) var(--rv-safe-b) var(--rv-safe-l);
-}
+.rv-select { position: absolute; inset: 0; display: flex; overflow: hidden;
+  padding: var(--rv-safe-t) var(--rv-safe-r) var(--rv-safe-b) var(--rv-safe-l); }
+.rv-select-bg-pic, .rv-select-bg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+.rv-select-bg { object-fit: cover; object-position: 50% 100%; }
+.rv-cover-side, .rv-info-side { position: relative; z-index: 1; }
 .rv-cover-side {
-  position: relative; flex: 0 0 45%; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: clamp(4px, 1.6vh, 10px); padding: clamp(6px, 2vh, 16px) 8px;
-  background: radial-gradient(ellipse at 50% 60%, rgba(255,255,255,.85), rgba(255,226,244,0) 70%);
+  flex: 0 0 45%; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: clamp(4px, 1.4vh, 10px); padding: clamp(8px, 3vh, 22px) 6px clamp(10px, 6vh, 46px) clamp(8px, 2vw, 22px);
 }
-.rv-cover-side h2 { font-size: clamp(16px, 4.4vh, 22px) !important; color: var(--rv-pink-dk) !important; margin: 0; }
+.rv-cover-side h2 { font-size: clamp(16px, 4.4vh, 22px) !important; color: #fff !important; margin: 0; text-shadow: 0 2px 0 rgba(90, 20, 120, .6), 0 0 8px rgba(90, 20, 120, .5); }
 .rv-ui #song-cards.rv-cards { width: 100%; gap: clamp(4px, 1vw, 10px); }
-.rv-ui #song-card-wrap { flex: 1 1 auto; min-width: 0; display: flex; justify-content: center; }
+.rv-ui #song-card-wrap { position: relative; flex: 1 1 auto; min-width: 0; display: flex; justify-content: center; overflow: hidden; padding: 6px; }
 .rv-ui .song-card {
-  width: 100% !important; max-width: min(100%, calc(56vh * 4 / 3)); border: 4px solid #fff !important; border-radius: 22px !important;
-  box-shadow: 0 0 0 4px #ffb3d6, 0 10px 26px rgba(154,90,230,.35) !important; background: #fff;
+  width: 100% !important; max-width: min(100%, calc(52vh * 4 / 3)); border: 4px solid #fff !important; border-radius: 22px !important;
+  box-shadow: 0 0 0 4px #ffb3d6, 0 10px 26px rgba(40, 10, 90, .45) !important; background: #fff; will-change: transform, opacity;
 }
+.rv-ui .rv-card-ghost { position: absolute !important; pointer-events: none; z-index: 2; }
 .rv-ui .song-card-thumb { height: auto !important; aspect-ratio: 4 / 3; background: linear-gradient(135deg, #2d1846, #5a2d7a) !important; }
 .rv-ui .song-card-thumb img { object-fit: contain !important; }   /* 保留既有封面完整比例 */
-.rv-ui .song-card-body { display: none !important; }                /* 歌曲資訊改在右側顯示 */
+.rv-ui .song-card-body { display: none !important; }
 .rv-ui .song-nav {
-  position: relative; flex: 0 0 auto; width: clamp(44px, 13vh, 64px); height: clamp(44px, 13vh, 64px);
-  padding: 0; display: flex; align-items: center; justify-content: center; font-size: 26px; color: var(--rv-pink-dk);
+  position: relative; flex: 0 0 auto; width: clamp(46px, 14vh, 68px); height: clamp(46px, 14vh, 68px); padding: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 26px; color: #fff;
+  background: transparent !important; border: 0 !important; box-shadow: none !important;
+  transition: transform .15s cubic-bezier(.34, 1.56, .64, 1), opacity .15s; -webkit-tap-highlight-color: transparent;
 }
-.rv-ui .song-nav .rv-arrow-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; }
+.rv-ui .song-nav .rv-arrow-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; filter: drop-shadow(0 3px 4px rgba(40, 10, 90, .4)); }
 .rv-ui .song-nav.rv-arrow-ready .rv-arrow-img { opacity: 1; }
 .rv-ui .song-nav.rv-arrow-ready .rv-arrow-fallback { visibility: hidden; }
-.rv-ui .song-nav:disabled { opacity: .3; }
-.rv-ui .song-counter { font-size: 13px !important; color: var(--rv-purple-dk) !important; padding: 2px 12px; border-radius: 999px; background: rgba(255,255,255,.8); }
+.rv-ui .song-nav:disabled { opacity: .35; filter: grayscale(1); cursor: default; }
+.rv-ui .song-nav:disabled:active { transform: none; }
+.rv-ui .song-counter { font-size: 13px !important; color: var(--rv-purple-dk) !important; padding: 2px 12px; border-radius: 999px; background: var(--rv-panel); }
 
 .rv-info-side {
-  position: relative; flex: 1 1 55%; min-width: 0; display: flex; flex-direction: column; justify-content: center;
-  gap: clamp(5px, 1.7vh, 12px); padding: clamp(8px, 2.6vh, 20px) clamp(14px, 3.5vw, 40px) clamp(8px, 2.6vh, 20px) clamp(8px, 1.6vw, 18px);
+  flex: 1 1 55%; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: clamp(5px, 1.6vh, 12px);
+  padding: clamp(8px, 2.6vh, 20px) calc(clamp(14px, 3.6vw, 44px)) clamp(8px, 2.6vh, 20px) clamp(8px, 1.6vw, 18px);
 }
-.rv-song-info { padding: clamp(8px, 2vh, 14px) 16px; border-radius: 22px; background: rgba(255,255,255,.88); border: 3px solid #f0d9ff; box-shadow: 0 6px 16px rgba(154,90,230,.15); }
+.rv-song-info { padding: clamp(7px, 2vh, 14px) 16px; border-radius: 22px; background: var(--rv-panel); border: 3px solid var(--rv-panel-line); box-shadow: 0 6px 16px rgba(60, 10, 100, .22); }
 .rv-song-title { font-size: clamp(18px, 5vh, 26px); font-weight: 900; color: var(--rv-ink); line-height: 1.2; }
 .rv-song-artist { font-size: clamp(11px, 2.8vh, 13px); font-weight: 700; color: var(--rv-ink-soft); }
 .rv-song-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
 .rv-song-chips:empty { display: none; }
 .rv-chip { padding: 2px 10px; border-radius: 999px; background: #f3e6ff; color: var(--rv-purple-dk); font-size: 12px; font-weight: 800; }
-.rv-best { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; margin-top: 6px; }
+.rv-best { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; margin-top: 5px; }
 .rv-best-label { font-size: 12px; font-weight: 800; color: var(--rv-ink-soft); }
 .rv-best-value { font-size: clamp(14px, 3.6vh, 17px); font-weight: 900; color: var(--rv-pink-dk); }
 .rv-best-value.is-empty { font-size: 13px; color: var(--rv-ink-soft); font-weight: 700; }
-.rv-info-side .rhythm-daily-hint-card { width: 100% !important; margin: 0 !important; padding: 7px 12px !important; }
 
 .rv-ui #diff-wrap { width: 100% !important; gap: 4px !important; align-items: stretch !important; }
-.rv-ui #diff-wrap label { color: var(--rv-ink-soft) !important; }
+.rv-ui #diff-wrap label { color: #fff !important; text-shadow: 0 1px 2px rgba(60, 10, 90, .7); }
 .rv-ui .drow { gap: clamp(6px, 1.4vw, 12px) !important; }
 .rv-ui .db {
-  position: relative; min-height: 46px; border-radius: 18px !important; font-size: 15px !important; font-weight: 900;
-  color: var(--rv-ink) !important; border: 3px solid transparent !important; box-shadow: 0 4px 0 rgba(0,0,0,.12) !important;
-  align-items: center; justify-content: center; transition: transform .12s, box-shadow .12s;
+  position: relative; min-height: clamp(42px, 11vh, 50px); border-radius: 18px !important; font-size: 15px !important; font-weight: 900;
+  color: var(--rv-ink) !important; border: 3px solid transparent !important;
+  box-shadow: 0 4px 0 rgba(60, 20, 90, .28), inset 0 3px 0 rgba(255, 255, 255, .6) !important;
+  align-items: center; justify-content: center; transition: transform .15s cubic-bezier(.34, 1.56, .64, 1), box-shadow .12s;
+  -webkit-tap-highlight-color: transparent;
 }
-.rv-ui .db[data-d="easy"]   { background: linear-gradient(180deg, #d8fbe9, #8fe6be) !important; border-color: #8fe6be !important; }
-.rv-ui .db[data-d="normal"] { background: linear-gradient(180deg, #fff6c2, #ffd94f) !important; border-color: #ffd94f !important; }
-.rv-ui .db[data-d="hard"]   { background: linear-gradient(180deg, #f1e2ff, #c99cf5) !important; border-color: #c99cf5 !important; }
-/* 選中：白色粗外框＋外圈＋放大＋勾號（不只靠顏色） */
+.rv-ui .db[data-d="easy"]   { background: linear-gradient(180deg, #e3fdf0, #8fe6be) !important; border-color: #6fd3a6 !important; }
+.rv-ui .db[data-d="normal"] { background: linear-gradient(180deg, #fff8cf, #ffd94f) !important; border-color: #f2c13a !important; }
+.rv-ui .db[data-d="hard"]   { background: linear-gradient(180deg, #f5e9ff, #c99cf5) !important; border-color: #b583ec !important; }
+/* 選中：白色粗外框＋深色外圈＋放大＋勾號（不只靠顏色） */
 .rv-ui .db.on { transform: translateY(-2px) scale(1.06); border-color: #fff !important; z-index: 1;
-  box-shadow: 0 0 0 3px var(--rv-ink), 0 6px 14px rgba(74,42,106,.35) !important; }
+  box-shadow: 0 0 0 3px var(--rv-ink), 0 6px 14px rgba(40, 10, 70, .45), inset 0 3px 0 rgba(255, 255, 255, .7) !important; }
 .rv-ui .db.on::before { content: "✓ "; }
-.rv-ui .db:not(.on) { opacity: .82; }
+.rv-ui .db:not(.on) { opacity: .86; }
+.rv-ui .db:active { transform: scale(.95); transition-duration: .07s; }
+.rv-ui .db.rv-bounce { animation: rvDiffBounce .24s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes rvDiffBounce { 0% { transform: translateY(-2px) scale(.94); } 60% { transform: translateY(-2px) scale(1.12); } 100% { transform: translateY(-2px) scale(1.06); } }
 
-.rv-select-actions { display: flex; align-items: stretch; gap: 10px; }
-.rv-select-actions .rv-btn-back { flex: 0 0 auto; margin: 0; }
-.rv-select-actions .rv-btn-start { flex: 1 1 auto; width: auto; margin: 0; }
+.rv-select-actions { display: flex; align-items: center; gap: 10px; }
+.rv-select-actions .rv-size-mid { flex: 0 0 auto; }
+.rv-select-actions .rv-size-main { flex: 1 1 auto; width: auto; }
 
-/* ---------- 矮螢幕：先縮裝飾與留白，按鈕維持可按大小 ---------- */
+/* ---------- 大螢幕（平板、桌機）：右側內容限制寬度並放大文字 ---------- */
+@media (min-height: 600px) {
+  .rv-panel { align-items: center; }
+  .rv-panel > * { width: 100%; max-width: 600px; }
+  .rv-meta #game-version { font-size: 12px !important; }
+  .rv-meta .bv-status-mark { font-size: 13px; padding: 3px 12px; }
+  .rv-avatar-box { width: 96px; }
+  .rv-player-label { font-size: 13px; }
+  .rv-player-name { font-size: 26px; }
+  .rv-player-title { font-size: 15px; }
+  .rv-panel .rhythm-daily-hint-card, .rv-info-side .rhythm-daily-hint-card { padding: 10px 16px !important; font-size: 15px; }
+  .rv-panel .rhythm-daily-hint-title, .rv-info-side .rhythm-daily-hint-title { font-size: 16px !important; }
+  .rv-panel .rhythm-daily-hint-reward, .rv-info-side .rhythm-daily-hint-reward { font-size: 14px !important; }
+  .rv-panel .rhythm-daily-hint-status, .rv-info-side .rhythm-daily-hint-status { font-size: 14px !important; }
+  .rv-ui .rv-size-main  { --bh: 80px; font-size: 30px; }
+  .rv-ui .rv-size-mid   { --bh: 60px; font-size: 20px; }
+  .rv-ui .rv-size-small { --bh: 50px; font-size: 17px; }
+  .rv-tutorial-slot { font-size: 13px; width: auto !important; }
+  .rv-info-side { align-items: center; }
+  .rv-info-side > * { width: 100%; max-width: 640px; }
+  .rv-song-title { font-size: 32px; } .rv-song-artist { font-size: 15px; } .rv-chip { font-size: 14px; }
+  .rv-best-label { font-size: 14px; } .rv-best-value { font-size: 20px; } .rv-best-value.is-empty { font-size: 15px; }
+  .rv-ui .db { min-height: 58px; font-size: 18px !important; }
+  .rv-test-tag { font-size: 12px; }
+}
+
+/* ---------- 矮螢幕：先縮裝飾、留白、資訊卡、Logo／小V、間距；所有功能按鈕保留 ---------- */
 @media (max-height: 430px) {
-  .rv-tutorial-slot { display: none; }
-  .rv-heading { margin-top: 34px; }
-  .rv-panel { gap: 6px; padding-top: 6px; padding-bottom: 6px; }
-  .rv-panel .rhythm-daily-hint-card, .rv-info-side .rhythm-daily-hint-card { padding: 4px 10px !important; }
-  .rv-player-card { padding: 4px 12px 4px 4px; }
+  .rv-tutorial-slot { display: none; }      /* 純裝飾預留位置 */
+  .rv-panel { gap: 6px; }
+  .rv-panel .rhythm-daily-hint-card, .rv-info-side .rhythm-daily-hint-card { padding: 3px 10px !important; }
+  .rv-player-card { padding: 3px 12px 3px 3px; }
   .rv-ui #diff-wrap label { display: none; }
   .rv-cover-side h2 { display: none; }
 }
 @media (max-height: 360px) {
-  .rv-btn-row-minor { display: none; }   /* 角色設定／觀看MV 為次要入口；極矮螢幕暫時收起 */
-  .rv-meta #game-version { display: none; }
+  .rv-meta #game-version { display: none; }   /* 「測試版／資料隔離」標記仍顯示 */
   .rv-song-artist { display: none; }
+  .rv-ui .rv-size-main  { --bh: 50px; font-size: 19px; }
+  .rv-ui .rv-size-mid   { --bh: 42px; font-size: 14px; }
+  .rv-ui .rv-size-small { --bh: 36px; font-size: 12px; }
+  .rv-avatar-box { width: 46px; }
+  .rv-player-name { font-size: 15px; }
+  .rv-player-label { display: none; }
+  .rv-panel { gap: 5px; }
+  .rv-btn-row { gap: 6px; }
 }
-/* 窄而高（平板直向、桌機窄視窗）：仍保持左右配置，舞台縮窄 */
-@media (max-aspect-ratio: 1/1) and (pointer: fine) {
-  .rv-stage { flex-basis: 44%; }
-  .rv-cover-side { flex-basis: 42%; }
+@media (max-height: 330px) {
+  .rv-panel .rhythm-daily-hint-card .rhythm-daily-hint-reward { display: none; }
+  .rv-ui .rv-size-main  { --bh: 46px; font-size: 18px; }
+  .rv-ui .rv-size-mid   { --bh: 40px; }
+  .rv-ui .rv-size-small { --bh: 34px; }
+  .rv-meta .bv-status-mark { font-size: 10px; padding: 1px 7px; }
 }
 
-/* ---------- 動畫（輕量；支援減少動態） ---------- */
-@keyframes rvFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-@keyframes rvSway { 0%, 100% { translate: 0 0; } 50% { translate: 0 -8px; } }
-@keyframes rvTwinkle { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
-.rv-twinkle { animation: rvTwinkle 2.8s ease-in-out infinite; }
-.rv-note { animation: rvTwinkle 3.4s ease-in-out infinite; }
-.rv-d2 { animation-delay: .9s; } .rv-d3 { animation-delay: 1.7s; }
+/* ---------- 減少動態 ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .rv-hero-img, .rv-balloon, .rv-twinkle, .rv-note, .rv-rotate-phone { animation: none !important; }
-  .rv-ui .rv-btn-main, .rv-ui .db { transition: none !important; }
+  .rv-home *, .rv-home *::before, .rv-home *::after, .rv-select *, .rv-select *::before, .rv-select *::after, .rv-home, .rv-rotate-phone {
+    animation: none !important; transition: none !important;
+  }
+  .rv-home.rv-pre .rv-scene, .rv-home.rv-pre .rv-hero, .rv-home.rv-pre .rv-logo-box, .rv-home.rv-pre .rv-in, .rv-home.rv-pre .rv-meta { opacity: 1; }
 }
 
 /* ==========================================================
@@ -232,12 +318,12 @@ body.rv27-ui:has(#s-title.rv-ui:not(.off)) #bv-test-banner { display: none; }
 .rv-rotate-mask {
   position: fixed; inset: 0; z-index: 2147483400; display: flex; align-items: center; justify-content: center;
   padding: calc(16px + var(--rv-safe-t)) calc(16px + var(--rv-safe-r)) calc(16px + var(--rv-safe-b)) calc(16px + var(--rv-safe-l));
-  background: linear-gradient(160deg, #ff9cc6 0%, #c79bff 60%, #ffe08a 100%); color: #fff; text-align: center;
+  background: linear-gradient(160deg, #ff9cc6 0%, #9a6bff 60%, #ffd56b 100%); color: #fff; text-align: center;
   font-family: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
 }
 .rv-rotate-mask[hidden] { display: none !important; }
 .rv-rotate-card { max-width: 340px; }
-.rv-rotate-card h2 { font-size: 24px; font-weight: 900; margin: 12px 0 8px; text-shadow: 0 2px 0 rgba(120,40,120,.35); }
+.rv-rotate-card h2 { font-size: 24px; font-weight: 900; margin: 12px 0 8px; text-shadow: 0 2px 0 rgba(120, 40, 120, .35); }
 .rv-rotate-card p { font-size: 16px; font-weight: 800; line-height: 1.55; }
 .rv-rotate-card .rv-rotate-sub { margin-top: 12px; font-size: 13px; font-weight: 700; opacity: .92; }
 .rv-rotate-phone { font-size: 64px; display: inline-block; animation: rvTurn 2.4s ease-in-out infinite; }

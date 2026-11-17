@@ -1,5 +1,5 @@
 /* ==========================================================
-   氣球小V節奏遊戲 — v2.7.0-home-songselect-ui-test-1（以 v2.7.0-universe-foundation-test-1 為基準）
+   氣球小V節奏遊戲 — v2.7.0-home-songselect-ui-test-2（以 v2.7.0-universe-foundation-test-1 為基準）
    測試專用換殼層（取代 universe/rhythm/universe-shell.js，只在 test/rhythm-v2.7/ 使用）
 
    以正式宇宙版 universe/rhythm/universe-shell.js 為基準，對外介面（window.UniverseRhythm）完全相同，
@@ -17,7 +17,7 @@
 (function () {
   "use strict";
 
-  var TEST_VERSION = "v2.7.0-home-songselect-ui-test-1";
+  var TEST_VERSION = "v2.7.0-home-songselect-ui-test-2";
   var GAME_VERSION = "rhythm-" + TEST_VERSION;
   var NS = "vRhythmV270UniverseTest1::";
   var LOBBY_URL = "https://vashyang1120.github.io/balloon-v-universe/";
@@ -213,7 +213,7 @@
     card.innerHTML = '<div class="bv-identity-msg">⚠️ ' + esc(err && err.userMessage || "無法讀取玩家資料") + "</div>" +
       '<div class="bv-identity-actions">' +
       '<button type="button" class="bv-btn bv-btn-primary" id="bv-retry">🔄 重新讀取</button>' +
-      '<button type="button" class="bv-btn bv-btn-outline" id="bv-go-lobby">🏠 返回 V宇宙大廳</button></div>';
+      '<button type="button" class="bv-btn bv-btn-outline" id="bv-go-lobby">🏠 返回遊戲宇宙大廳</button></div>';
     $("bv-retry").addEventListener("click", start);
     $("bv-go-lobby").addEventListener("click", goLobby);
   }
@@ -229,7 +229,7 @@
       '<div class="bv-test-chooser__tag">🧪 測試版／資料隔離</div>' +
       "<h2>節奏遊戲 " + esc(TEST_VERSION) + "</h2>" +
       "<p>網址沒有遊戲宇宙玩家（bvPlayerId）。請選擇：</p>" +
-      '<button type="button" class="bv-btn bv-btn-primary" id="bv-chooser-lobby">🏠 返回 V宇宙大廳</button>' +
+      '<button type="button" class="bv-btn bv-btn-primary" id="bv-chooser-lobby">🏠 返回遊戲宇宙大廳</button>' +
       '<button type="button" class="bv-btn bv-btn-outline" id="bv-chooser-mock">🧸 使用純 UI 測試角色（Mock）</button>' +
       '<p class="bv-test-chooser__hint">Mock 角色不是正式玩家：不會建立玩家、不讀取上一位玩家、不送正式成績、不發 V幣、不改稱號或頭像。</p>' +
       "</div>";
@@ -328,7 +328,7 @@
     identityLocked: function () { U.ui.toast(FEATURE_TEXT.identity); return true; },
     adminDisabled: function () { return true; },
     explainNotReady: function () {
-      if (entry === "chooser") { U.ui.toast("請先選擇：返回 V宇宙大廳，或使用純 UI 測試角色（Mock）"); return; }
+      if (entry === "chooser") { U.ui.toast("請先選擇：返回遊戲宇宙大廳，或使用純 UI 測試角色（Mock）"); return; }
       var st = S.getStatus();
       U.ui.toast(st.status === "error" && st.error ? st.error.userMessage : "正在讀取玩家資料，請稍候…");
     },
