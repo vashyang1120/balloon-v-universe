@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: b57c5f9f9f0e536eab36f19aa682ad7f8cab210a
+          ref: e979a8ed705d9843e9e3067caecf5d767e1a8556
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -37,6 +37,11 @@ jobs:
           export BV_QUIZ_BANK=/tmp/bv-quiz/quiz_questions.json
           test -s "$BV_QUIZ_BANK"
           find tests universe -name '*.test.mjs' -print0 | xargs -0 node --test
+          node --test universe/tetris-ui-test/tests/balloon-assets.test.cjs
+          git clone --filter=blob:none --no-checkout https://github.com/vashyang1120/vparty-rhythm-game.git /tmp/bv-rhythm-generator
+          git -C /tmp/bv-rhythm-generator checkout 9caa7dcb669ccbe83feedcb85c6237d773ad9b31 -- index.html
+          python3 -I universe/rhythm/tools/build_prototype.py /tmp/bv-rhythm-generator/index.html /tmp/rhythm-generated.html
+          cmp /tmp/rhythm-generated.html universe/rhythm/index.html
       - name: Verify asset identity and release scope
         if: always()
         run: |
@@ -44,7 +49,7 @@ jobs:
           test -s assets/audio/universe_lobby_bgm.mp3
           for f in v_full_open_arms v_bust_congrats v_bust_happy v_bust_point v_bust_remind; do test -s "assets/rpg/$f.png" || exit 1; done
           test -s assets/ui/avatar_frame_pink_idle.png
-          git diff --name-only ad97eea582366ecc23ac714af56710781a71b471 HEAD | awk '!/^universe\/rhythm\// { bad=1; print } END { exit bad }'
+          git diff --name-only 64c698333226319bb42c39d725fd5dd6149f7626 HEAD | awk '!/^universe\/rhythm\// { bad=1; print } END { exit bad }'
 
   browser:
     runs-on: ubuntu-latest
@@ -52,7 +57,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: b57c5f9f9f0e536eab36f19aa682ad7f8cab210a
+          ref: e979a8ed705d9843e9e3067caecf5d767e1a8556
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -147,6 +152,8 @@ jobs:
            } else {
             assert(!w&&!H.db.get("scores")&&!H.db.get("leaderboards"),"fallback has no server score or reward");
            }
+           assert(await p.evaluate(()=>!document.getElementById("r-rec").classList.contains("hidden")),"first accepted or local personal record shown");
+           if(official) assert(Object.values(H.db.get("scores")||{}).some(r=>r.gameVersion==="rhythm-v2.6.5+universe-v0.3.1"),"new server version recorded");
            const balance=w?.balance||0;
            await click(p,"rv-btn-r-songs"); await screen(p,"s-songlist");
            await p.waitForFunction(()=>document.getElementById("rv-best-value").textContent.includes("分"),null,{timeout:15000});
