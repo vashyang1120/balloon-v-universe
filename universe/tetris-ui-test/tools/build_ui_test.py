@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""方塊派對 UI 測試版產生腳本（tetris-universe-ui-v0.2.2-test-1）
+"""方塊派對 UI 測試版產生腳本（tetris-universe-ui-v0.2.3-test-1）
 
 由「正式宇宙版」universe/tetris/ 產生 universe/tetris-ui-test/ 的 index.html 與 universe-shell.js。
 正式版檔案只讀不寫；正式建置流程 universe/tetris/tools/build_prototype.py 完全不動。
@@ -24,7 +24,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 TEST_DIR = os.path.dirname(HERE)
 ROOT = os.path.abspath(os.path.join(TEST_DIR, "..", ".."))
 PROD_DIR = os.path.join(ROOT, "universe", "tetris")
-VERSION = "tetris-universe-ui-v0.2.2-test-1"
+VERSION = "tetris-universe-ui-v0.2.3-test-1"
 TAG = "[UI 測試版]"
 
 
@@ -65,7 +65,7 @@ def build_html(src):
     # 5. UI 程式（在原版程式之後載入）
     s = replace_once(s, "</body>",
         f'<!-- {TAG} 手機版 UI：棋盤尺寸、半透明觸控按鍵、頂部 HUD -->\n<script src="ui-test.js"></script>\n'
-        f'<!-- {TAG} 第二階段品牌視覺：上下式首頁、結算角色、同難度再玩一次 -->\n<script src="ui-brand.js"></script>\n<script src="balloon-assets.js"></script>\n</body>',
+        f'<!-- {TAG} 第二階段品牌視覺：上下式首頁、結算角色、同難度再玩一次 -->\n<script src="ui-brand.js"></script>\n<script src="balloon-assets.js"></script>\n<script src="creation-story.js"></script>\n<link rel="stylesheet" href="creation-story.css">\n</body>',
         "</body>")
     return s
 

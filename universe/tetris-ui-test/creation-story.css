@@ -1,0 +1,20 @@
+/* v0.2.3-test-1: isolated homepage story and modal styles. */
+.uit-z2 .bv-story-tagline { margin: 3px 0 0; color: #513773; font-size: 13px; font-weight: 700; text-align: center; }
+.uit-z2 .bv-story-open { min-height: 44px; margin: 0; font-size: 13px; }
+#bv-creation-story { box-sizing: border-box; width: min(560px, calc(100% - 24px)); max-height: calc(100dvh - 32px); padding: 0; border: 2px solid #b999df; border-radius: 22px; color: #352249; background: #fff9ef; overflow: auto; overscroll-behavior: contain; }
+#bv-creation-story::backdrop { background: rgba(31, 17, 49, .76); }
+#bv-creation-story .bv-story-content { padding: 16px 22px max(24px, env(safe-area-inset-bottom)); line-height: 1.85; }
+#bv-creation-story h2 { clear: both; text-align: center; font-size: 23px; }
+#bv-creation-story .bv-story-close { display: block; margin-left: auto; min-height: 44px; }
+#bv-creation-story .bv-story-lead { text-align: center; font-weight: 700; color: #704299; }
+#bv-creation-story .bv-story-original { text-align: center; margin: 20px 0; padding: 14px; border-radius: 16px; background: #f0e5fb; }
+#bv-creation-story .bv-story-original img { display: block; object-fit: contain; margin: 0 auto 10px; }
+#bv-creation-story figcaption { font-size: 13px; }
+#bv-creation-story .bv-story-back { display: block; width: 100%; min-height: 48px; margin-top: 20px; }
+
+#bv-creation-story .bv-story-classroom h3 { text-align: center; font-size: 18px; }
+#bv-creation-story .bv-story-gallery { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 0 12px; }
+#bv-creation-story .bv-story-gallery figure { flex: 0 0 82%; margin: 0; scroll-snap-align: center; }
+#bv-creation-story .bv-story-gallery img { width: 100%; height: auto; display: block; border-radius: 12px; }
+#bv-creation-story .bv-story-gallery figcaption { padding-top: 8px; text-align: center; }
+#bv-creation-story .bv-story-privacy { font-size: 12px; text-align: center; color: #6f5c7d; }
