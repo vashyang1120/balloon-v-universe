@@ -1,5 +1,5 @@
 /* ==========================================================
-   氣球小V節奏遊戲 — v2.7.0-home-songselect-ui-test-2（以 v2.7.0-universe-foundation-test-1 為基準）
+   氣球小V節奏遊戲 — v2.7.0-audio-result-test-1（以 v2.7.0-universe-foundation-test-1 為基準）
    測試專用換殼層（取代 universe/rhythm/universe-shell.js，只在 test/rhythm-v2.7/ 使用）
 
    以正式宇宙版 universe/rhythm/universe-shell.js 為基準，對外介面（window.UniverseRhythm）完全相同，
@@ -17,7 +17,7 @@
 (function () {
   "use strict";
 
-  var TEST_VERSION = "v2.7.0-home-songselect-ui-test-2";
+  var TEST_VERSION = "v2.7.0-audio-result-test-1";
   var GAME_VERSION = "rhythm-" + TEST_VERSION;
   var NS = "vRhythmV270UniverseTest1::";
   var LOBBY_URL = "https://vashyang1120.github.io/balloon-v-universe/";
@@ -99,7 +99,7 @@
   S.bootOfficial = function () { return Promise.resolve(false); };
   S.startRun = function () { return Promise.resolve({ official: false, reason: "testIsolated" }); };
   S.finishRun = function () { return Promise.resolve({ official: false, reason: "testIsolated" }); };
-  S.goLobby = function () { location.assign(LOBBY_URL); return LOBBY_URL; };
+  S.goLobby = function () { if (window.RV27Audio) window.RV27Audio.stopAll(); location.assign(LOBBY_URL); return LOBBY_URL; };
   S.lobbyUrl = function () { return LOBBY_URL; };
 
   var player = null;
@@ -121,7 +121,7 @@
     identity: "👤 玩家 ID 與身份頭像由遊戲宇宙管理。要切換玩家，請回到遊戲宇宙大廳。"
   };
 
-  function goLobby() { location.assign(LOBBY_URL); }
+  function goLobby() { if (window.RV27Audio) window.RV27Audio.stopAll(); location.assign(LOBBY_URL); }   // 返回遊戲宇宙前停止所有選單音訊
 
   /* ---------- 頁面裝飾（沿用正式宇宙版，只把標示改為測試版／資料隔離） ---------- */
   function decorate() {
@@ -269,6 +269,7 @@
     var wrapped = function () {
       round.startedAt = new Date().toISOString();
       round.submissionId = null;
+      if (window.RV27Audio) window.RV27Audio.onGameStart();   // 開始歌曲／再玩一次：先停止選單 BGM（不延後原本流程）
       return orig.apply(this, arguments);   // 測試版：不呼叫 S.startRun（不建立正式場次）
     };
     wrapped.__bvWrapped = true;
