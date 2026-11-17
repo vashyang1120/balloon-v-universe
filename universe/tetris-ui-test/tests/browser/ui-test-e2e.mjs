@@ -25,9 +25,12 @@ function watchRequests(page) {
   return log;
 }
 async function startGame(page, how = "click") {
+  // 正式版：開始 → 難度視窗 → 普通；v0.2.0 測試版：首頁已預選「普通」，開始後直接開局
   if (how === "tap") await page.tap("#btn-start"); else await page.click("#btn-start");
-  await page.waitForSelector("#ov-btns button");
-  if (how === "tap") await page.tap("#ov-btns button:nth-child(2)"); else await page.click("#ov-btns button:nth-child(2)");
+  await page.waitForFunction(() => running === true || !!document.querySelector("#g-overlay:not(.off) #ov-btns button"));
+  if (!(await page.evaluate(() => running === true))) {
+    if (how === "tap") await page.tap("#ov-btns button:nth-child(2)"); else await page.click("#ov-btns button:nth-child(2)");
+  }
   await page.waitForFunction(() => running === true && !document.getElementById("s-game").classList.contains("off"));
   await sleep(400);
 }
