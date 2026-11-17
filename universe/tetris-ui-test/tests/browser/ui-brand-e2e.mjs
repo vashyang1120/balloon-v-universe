@@ -78,8 +78,9 @@ async function pngInfo(page, scope) {
     const r = btns.map((b) => [b.id || b.dataset.diff, b.getBoundingClientRect()]);
     const overlap = [];
     for (let i = 0; i < r.length; i++) for (let j = i + 1; j < r.length; j++) { const a = r[i][1], c = r[j][1]; if (a.left < c.right - 0.5 && c.left < a.right - 0.5 && a.top < c.bottom - 0.5 && c.top < a.bottom - 0.5) overlap.push(r[i][0] + "×" + r[j][0]); }
-    const cs = getComputedStyle(sc);
-    return { map, ok, clipped, overlap, bg: cs.backgroundImage, bgSize: cs.backgroundSize };
+    const cs = scope === "#s-title" ? getComputedStyle(sc, "::before") : getComputedStyle(sc);
+    return { map, ok, clipped, overlap, bg: cs.backgroundImage, bgSize: cs.backgroundSize, filter: cs.filter, pos: cs.position,
+      fgFilter: [...sc.querySelectorAll(".uit-pngbtn, #uit-hero, .uit-home")].map((e) => getComputedStyle(e).filter).filter((f) => /blur|saturate|opacity/.test(f)) };
   }, scope);
 }
 
@@ -113,6 +114,7 @@ for (const s of SIZES) {
   check("RWD", `${g}：次要功能可以捲動到並操作（最後一顆「回遊戲宇宙」可完整露出）`, scrolled);
   const art = await pngInfo(page, "#s-title");
   check("美術", `${g}：首頁背景是 E-01（universe_map_bg.png，cover 等比例、不拉伸）`, /universe_map_bg\.png/.test(art.bg) && /cover/.test(art.bgSize), art.bg.slice(0, 120) + " / " + art.bgSize);
+  check("美術", `${g}：首頁 E-01 是遠景（只有背景層模糊＋降飽和、固定不隨捲動；前景按鈕／小V 無濾鏡）`, /blur\(\d/.test(art.filter) && /saturate/.test(art.filter) && art.pos === "fixed" && art.fgFilter.length === 0, art.filter + " / " + art.pos + " / fg=" + art.fgFilter.join(","));
   check("美術", `${g}：難度未選＝藍色 PNG、已選＝黃色 PNG＋勾選；開始遊戲＝紫色 PNG；次要功能＝藍色 PNG`, art.ok, JSON.stringify(art.map));
   check("美術", `${g}：所有金框按鈕文字都在按鈕內（沒有被裁切或壓到金框）`, art.clipped.length === 0, art.clipped.join(","));
   check("美術", `${g}：按鈕觸控範圍＝可見按鈕，彼此不重疊`, art.overlap.length === 0, art.overlap.join(","));
