@@ -1,0 +1,8 @@
+const test=require('node:test'),assert=require('node:assert/strict');
+const E=require('../tutorial-engine.js');
+test('move requires both directions and target position',()=>{const s=E.create(0);E.act(s,'right');E.act(s,'right');assert.equal(s.passed,false);E.act(s,'left');E.act(s,'right');assert.equal(s.passed,true);const x=s.x;E.act(s,'left');assert.equal(s.x,x);});
+test('movement cannot leave the board and other actions cannot skip a step',()=>{const s=E.create(0);for(let i=0;i<20;i++)E.act(s,'left');assert.equal(s.x,0);for(const a of ['rotate','down','drop'])assert.equal(E.act(s,a),false);assert.equal(s.passed,false);});
+test('rotation uses clockwise transform and fits in bounds',()=>{const s=E.create(1);assert.equal(E.act(s,'drop'),false);E.act(s,'rotate');assert.equal(s.passed,true);assert.ok(s.cells.every(c=>c[0]===0));assert.equal(new Set(s.cells.map(c=>c[1])).size,4);assert.ok(E.valid(s,s.cells,s.x,s.y));});
+test('gradual descent requires three actual moves',()=>{const s=E.create(2);E.act(s,'down');E.act(s,'down');assert.equal(s.y,2);assert.equal(s.passed,false);E.act(s,'down');assert.equal(s.y,3);assert.equal(s.passed,true);});
+test('hard drop fills exactly one line; no score or session fields',()=>{const s=E.create(3);assert.equal(E.act(s,'down'),false);E.act(s,'drop');assert.equal(s.y,8);assert.equal(s.cleared,1);assert.equal(s.passed,true);assert.equal(s.board.length,E.height);assert.equal(s.board.flat().filter(Boolean).length,2);for(const k of ['score','submissionId','playerId','reward'])assert.equal(k in s,false);});
+test('restarting returns fresh independent state',()=>{const a=E.create(3),b=E.create(3);E.act(a,'drop');assert.equal(b.passed,false);assert.equal(b.board[9][3],0);assert.notEqual(a.board,b.board);});

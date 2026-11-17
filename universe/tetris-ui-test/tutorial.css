@@ -1,0 +1,31 @@
+/* v0.3.0-test-1, isolated optional practice dialog. */
+#bv-tutorial { position: fixed; inset: 0; margin: auto; box-sizing: border-box; width: min(520px,calc(100% - 24px)); max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); padding: 0; border: 2px solid #b999df; border-radius: 22px; background: #fff9ef; color: #352249; overflow: auto; overscroll-behavior: contain; }
+#bv-tutorial::backdrop { background: #251541d9; }
+#bv-tutorial .bvt-wrap { padding: 16px 18px max(20px,env(safe-area-inset-bottom)); }
+#bv-tutorial header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+#bv-tutorial h2 { font-size: 20px; }
+#bv-tutorial h3 { text-align: center; font-size: 21px; margin: 6px 0; }
+#bv-tutorial p { line-height: 1.65; margin: 8px 0; }
+#bv-tutorial button { font-family: inherit; font-size: 14px; min-height: 44px; padding: 8px 12px; border: 1px solid #af8cd6; border-radius: 14px; background: #eee3fa; color: #4a286b; cursor: pointer; touch-action: manipulation; }
+#bv-tutorial button:focus-visible, #bv-tutorial canvas:focus-visible { outline: 3px solid #8050af; outline-offset: 3px; }
+#bv-tutorial button:disabled { opacity: .4; cursor: default; }
+#bv-tutorial .bvt-note, #bv-tutorial .bvt-input-hint, #bv-tutorial .bvt-text-help { font-size: 12px; text-align: center; color: #735b87; }
+#bv-tutorial .bvt-content { text-align: center; }
+#bv-tutorial .bvt-lead { font-weight: 700; color: #704299; }
+#bv-tutorial .bvt-choices { display: grid; gap: 12px; margin-top: 24px; }
+#bv-tutorial .bvt-progress { font-size: 13px; color: #704299; }
+#bv-tutorial .bvt-instruction { min-height: 3.3em; }
+#bv-tutorial .bvt-board { display: block; height: min(320px,36dvh); width: auto; max-width: 100%; margin: 10px auto; border: 2px solid #b999df; border-radius: 10px; }
+#bv-tutorial .bvt-controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+#bv-tutorial .bvt-controls button { flex: 1 0 28%; user-select: none; -webkit-user-select: none; }
+#bv-tutorial .bvt-bottom { display: flex; justify-content: center; gap: 10px; margin-top: 14px; }
+#bv-tutorial [data-tut="next"], #bv-tutorial [data-tut="play"], #bv-tutorial [data-tut="intro"] { background: #8050af; color: white; }
+#bv-tutorial .bvt-intro { position: relative; width: 160px; height: 220px; margin: 25px auto; }
+#bv-tutorial .bvt-cube { position: absolute; width: 64px; height: 64px; object-fit: contain; animation: bvt-assemble 1.7s ease both; }
+#bv-tutorial .bvt-cube-0 { left: 16px; top: 4px; --from-x: -70px; --from-y: -20px; }
+#bv-tutorial .bvt-cube-1 { left: 16px; top: 68px; --from-x: 95px; --from-y: -40px; animation-delay: .15s; }
+#bv-tutorial .bvt-cube-2 { left: 16px; top: 132px; --from-x: -60px; --from-y: 50px; animation-delay: .3s; }
+#bv-tutorial .bvt-cube-3 { left: 80px; top: 132px; --from-x: 60px; --from-y: 50px; animation-delay: .45s; }
+@keyframes bvt-assemble { from { transform: translate(var(--from-x),var(--from-y)) scale(.65); opacity: 0; } to { transform: translate(0,0) scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { #bv-tutorial .bvt-cube { animation: none; } }
+@media (max-height: 500px) and (min-width: 600px) { #bv-tutorial { width: min(700px,calc(100% - 24px)); } #bv-tutorial .bvt-board { height: 180px; } }
