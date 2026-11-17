@@ -16,7 +16,36 @@ import { inlineScripts, extractFunctions, sha256, styleBlock, bodyMarkup, residu
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DIR = path.resolve(HERE, "..");
-const html = fs.readFileSync(path.join(DIR, "index.html"), "utf8");
+const releaseHtml = fs.readFileSync(path.join(DIR, "index.html"), "utf8");
+// Reverse only the exact approved safety/presentation edits; retain all historical core checks.
+const RELEASE_EDITS = [
+  [
+    "var isResumeCountingDown = false;\nvar resumeCountdownToken = 0; // [v2.6.5] 恢復倒數代號：轉直向時可安全中止該次倒數",
+    "var isResumeCountingDown = false;"
+  ],
+  [
+    "function resumeGameWithCountdown(shouldResumeMedia) {\n  if (!G.running || isResumeCountingDown) return;\n  isResumeCountingDown = true;\n  var myToken = ++resumeCountdownToken; // [v2.6.5] 被 cancelResumeCountdown() 取消後，舊倒數不再繼續\n  G.paused = true;\n  pauseAudio();\n  pauseVideoForProfile();\n  var ov = document.getElementById('pause-ov');\n  if (ov) ov.classList.add('off');\n  var el = document.getElementById('countdown');\n  var n = 3;\n  function done() {\n    if (myToken !== resumeCountdownToken) return; // [v2.6.5] 已取消：不啟動音訊／MV／計時\n    isResumeCountingDown = false;\n    if (!G.running) return;\n    G.paused = false;\n    if (shouldResumeMedia !== false) {\n      resumeAudio();\n      resumeVideoFromProfile();\n    }\n    G.lastRafTs = performance.now();\n    if (G.raf) cancelAnimationFrame(G.raf);\n    G.raf = requestAnimationFrame(loop);\n  }\n  function step() {\n    if (myToken !== resumeCountdownToken) return; // [v2.6.5] 已取消\n    if (!G.running) { isResumeCountingDown = false; return; }\n    if (n === 0) {\n      showCnt(el, 'GO!', '#06d6a0', done);\n      return;\n    }\n    showCnt(el, String(n), '#fff', function(){ n--; step(); });\n  }\n  step();\n}\n// [v2.6.5] 立即中止進行中的 3 秒恢復倒數，保持暫停並顯示原本暫停選單（倒數開始時已呼叫 pauseAudio／pauseVideoForProfile）\nfunction cancelResumeCountdown() {\n  if (!isResumeCountingDown) return false;\n  resumeCountdownToken++;\n  isResumeCountingDown = false;\n  G.paused = true;\n  var el = document.getElementById('countdown');\n  if (el) { el.classList.remove('pop'); el.textContent = ''; }\n  var ov = document.getElementById('pause-ov');\n  if (ov) ov.classList.remove('off');\n  return true;\n}",
+    "function resumeGameWithCountdown(shouldResumeMedia) {\n  if (!G.running || isResumeCountingDown) return;\n  isResumeCountingDown = true;\n  G.paused = true;\n  pauseAudio();\n  pauseVideoForProfile();\n  var ov = document.getElementById('pause-ov');\n  if (ov) ov.classList.add('off');\n  var el = document.getElementById('countdown');\n  var n = 3;\n  function done() {\n    isResumeCountingDown = false;\n    if (!G.running) return;\n    G.paused = false;\n    if (shouldResumeMedia !== false) {\n      resumeAudio();\n      resumeVideoFromProfile();\n    }\n    G.lastRafTs = performance.now();\n    if (G.raf) cancelAnimationFrame(G.raf);\n    G.raf = requestAnimationFrame(loop);\n  }\n  function step() {\n    if (!G.running) { isResumeCountingDown = false; return; }\n    if (n === 0) {\n      showCnt(el, 'GO!', '#06d6a0', done);\n      return;\n    }\n    showCnt(el, String(n), '#fff', function(){ n--; step(); });\n  }\n  step();\n}"
+  ],
+  [
+    "載入遊戲宇宙稱號中",
+    "載入 V宇宙稱號中"
+  ]
+];
+let html = releaseHtml;
+for (const [actual, previous] of RELEASE_EDITS) {
+  assert.equal(html.split(actual).length, 2, "Missing or duplicated approved v2.6.5 edit");
+  html = html.replace(actual, previous);
+}
+html = html.replace('<script src="universe-shell.js?v=2.6.5"></script>', '<script src="universe-shell.js"></script>');
+test("v2.6.5 release wiring keeps live shell and excludes isolation", () => {
+  assert.match(releaseHtml, /universe-shell\.js\?v=2\.6\.5/);
+  assert.doesNotMatch(releaseHtml, /BV_TEST_ISOLATION|universe-shell-test\.js|test-isolation\.css|bv-test-banner/);
+  for (const file of ["home-songselect-ui.css","home-songselect-ui.js","result-ui.css","result-ui.js","menu-audio.js"]) {
+    assert.ok(releaseHtml.includes(file + "?v=2.6.5"), file);
+    assert.ok(fs.existsSync(path.join(DIR,file)), file);
+  }
+});
 const baseline = JSON.parse(fs.readFileSync(path.join(DIR, "tools/original-functions.sha256.json"), "utf8"));
 const js = inlineScripts(html);
 const all = extractFunctions(js);

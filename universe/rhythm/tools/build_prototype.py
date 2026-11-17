@@ -4,7 +4,7 @@
 用法（repository 根目錄）：
   python3 -I universe/rhythm/tools/build_prototype.py <正式版 index.html> universe/rhythm/index.html
 
-本次只替換玩家資料層。以下一律不修改（tests/rhythm-core-integrity.test.mjs 以 SHA-256 驗證）：
+本次替換玩家資料層並套用 v2.6.5 已驗收介面與恢復倒數修正。以下一律不修改（tests/rhythm-core-integrity.test.mjs 以 SHA-256 驗證）：
   音符判定、音符速度、Hit Window（PERF_MS／GOOD_MS）、Perfect／Good／Miss、Hold Note、計分公式、Combo、
   歌曲資料、Beatmap、字幕、音訊播放、YouTube／MV、既有難度規則、手機操作、遊戲結算流程（endGame）、
   音樂編輯器（tools/beatmap-editor，本版不複製、不修改）。
@@ -141,4 +141,32 @@ b.rep("// 啟動時提前初始化 Firebase + 載入歌曲，減少等待\nensur
 header = (f"<!-- 遊戲宇宙版 universe-game-migration-v0.2.0-three-games-integration-test-1\n"
           f"     由 {SOURCE_REPO}@{SOURCE_COMMIT} index.html（SHA-256 {b.sha}）\n"
           f"     經 universe/rhythm/tools/build_prototype.py 產生。請勿直接修改正式遊戲 Repository。 -->\n")
+# v2.6.5 release overlay: exact approved replacements; fail closed if upstream changes.
+for previous, replacement in [
+  [
+    "<title>氣球小V魔法派對｜遊戲宇宙版（測試）</title>",
+    "<title>氣球小V魔法派對｜遊戲宇宙版 v2.6.5</title>"
+  ],
+  [
+    "<script src=\"universe-shell.js\"></script>",
+    "<script src=\"universe-shell.js?v=2.6.5\"></script>"
+  ],
+  [
+    "  <link rel=\"stylesheet\" href=\"universe-shell.css\">",
+    "  <link rel=\"stylesheet\" href=\"universe-shell.css\">\n  <link rel=\"stylesheet\" href=\"home-songselect-ui.css?v=2.6.5\">\n  <link rel=\"stylesheet\" href=\"result-ui.css?v=2.6.5\">\n  <script src=\"home-songselect-ui.js?v=2.6.5\"></script>\n  <script src=\"menu-audio.js?v=2.6.5\"></script>\n  <script src=\"result-ui.js?v=2.6.5\"></script>"
+  ],
+  [
+    "var isResumeCountingDown = false;",
+    "var isResumeCountingDown = false;\nvar resumeCountdownToken = 0; // [v2.6.5] 恢復倒數代號：轉直向時可安全中止該次倒數"
+  ],
+  [
+    "function resumeGameWithCountdown(shouldResumeMedia) {\n  if (!G.running || isResumeCountingDown) return;\n  isResumeCountingDown = true;\n  G.paused = true;\n  pauseAudio();\n  pauseVideoForProfile();\n  var ov = document.getElementById('pause-ov');\n  if (ov) ov.classList.add('off');\n  var el = document.getElementById('countdown');\n  var n = 3;\n  function done() {\n    isResumeCountingDown = false;\n    if (!G.running) return;\n    G.paused = false;\n    if (shouldResumeMedia !== false) {\n      resumeAudio();\n      resumeVideoFromProfile();\n    }\n    G.lastRafTs = performance.now();\n    if (G.raf) cancelAnimationFrame(G.raf);\n    G.raf = requestAnimationFrame(loop);\n  }\n  function step() {\n    if (!G.running) { isResumeCountingDown = false; return; }\n    if (n === 0) {\n      showCnt(el, 'GO!', '#06d6a0', done);\n      return;\n    }\n    showCnt(el, String(n), '#fff', function(){ n--; step(); });\n  }\n  step();\n}",
+    "function resumeGameWithCountdown(shouldResumeMedia) {\n  if (!G.running || isResumeCountingDown) return;\n  isResumeCountingDown = true;\n  var myToken = ++resumeCountdownToken; // [v2.6.5] 被 cancelResumeCountdown() 取消後，舊倒數不再繼續\n  G.paused = true;\n  pauseAudio();\n  pauseVideoForProfile();\n  var ov = document.getElementById('pause-ov');\n  if (ov) ov.classList.add('off');\n  var el = document.getElementById('countdown');\n  var n = 3;\n  function done() {\n    if (myToken !== resumeCountdownToken) return; // [v2.6.5] 已取消：不啟動音訊／MV／計時\n    isResumeCountingDown = false;\n    if (!G.running) return;\n    G.paused = false;\n    if (shouldResumeMedia !== false) {\n      resumeAudio();\n      resumeVideoFromProfile();\n    }\n    G.lastRafTs = performance.now();\n    if (G.raf) cancelAnimationFrame(G.raf);\n    G.raf = requestAnimationFrame(loop);\n  }\n  function step() {\n    if (myToken !== resumeCountdownToken) return; // [v2.6.5] 已取消\n    if (!G.running) { isResumeCountingDown = false; return; }\n    if (n === 0) {\n      showCnt(el, 'GO!', '#06d6a0', done);\n      return;\n    }\n    showCnt(el, String(n), '#fff', function(){ n--; step(); });\n  }\n  step();\n}\n// [v2.6.5] 立即中止進行中的 3 秒恢復倒數，保持暫停並顯示原本暫停選單（倒數開始時已呼叫 pauseAudio／pauseVideoForProfile）\nfunction cancelResumeCountdown() {\n  if (!isResumeCountingDown) return false;\n  resumeCountdownToken++;\n  isResumeCountingDown = false;\n  G.paused = true;\n  var el = document.getElementById('countdown');\n  if (el) { el.classList.remove('pop'); el.textContent = ''; }\n  var ov = document.getElementById('pause-ov');\n  if (ov) ov.classList.remove('off');\n  return true;\n}"
+  ],
+  [
+    "載入 V宇宙稱號中",
+    "載入遊戲宇宙稱號中"
+  ]
+]:
+    b.rep(previous, replacement, "v2.6.5 release overlay")
 b.write(out_path, header)

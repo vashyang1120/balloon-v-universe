@@ -1,0 +1,148 @@
+/* ==========================================================
+   v2.6.5 — 橫向結算頁＋結算動態
+   範圍：#s-result.rv-ui（遊戲 HUD、演奏畫面不受影響）
+   按鈕美術沿用 test-2 的 .rv-art-btn（九宮格 U-12／U-13／U-14）
+   ========================================================== */
+
+/* 修正：原本 #s-result 是置中的直向長列表，橫向手機高度不足時底部按鈕被推出畫面且無法捲動
+   → 改成左右兩欄、全部內容限制在一個畫面內 */
+#s-result.rv-ui { padding: 0 !important; overflow: hidden !important; background: #6a3fd0 !important; gap: 0 !important; }
+#s-result.rv-ui > :not(.rv-result) { display: none !important; }
+#s-result.off .rv-result, #s-result.off .rv-result *, #s-result.off .rv-result *::before, #s-result.off .rv-result *::after { animation-play-state: paused !important; }
+
+.rv-result { position: absolute; inset: 0; display: flex; overflow: hidden;
+  padding: var(--rv-safe-t) var(--rv-safe-r) var(--rv-safe-b) var(--rv-safe-l); }
+.rv-result-bg-pic, .rv-result-bg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+.rv-result-bg { object-fit: cover; object-position: 50% 100%; }
+.rv-res-left, .rv-res-right { position: relative; z-index: 1; min-width: 0; min-height: 0; }
+
+/* ---------- 左：評價、NEW RECORD、小V、鼓勵 ---------- */
+.rv-res-left {
+  flex: 0 0 40%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: clamp(2px, 1vh, 8px); padding: clamp(6px, 2.4vh, 18px) 8px calc(var(--rv-safe-b) + 74px) clamp(8px, 2vw, 24px);   /* 底部留給左下角全螢幕按鈕（46px＋20px） */
+}
+.rv-res-grade-wrap { position: relative; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+#s-result.rv-ui #r-grade { position: relative; z-index: 2; font-size: clamp(54px, 21vh, 128px) !important; line-height: 1; margin: 0;
+  -webkit-text-stroke: 0; paint-order: stroke fill; }
+.rv-res-burst { position: absolute; z-index: 1; width: 220%; aspect-ratio: 1; border-radius: 50%; opacity: 0; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(255, 240, 160, .95), rgba(255, 210, 63, .45) 40%, rgba(255, 210, 63, 0) 70%); }
+.rv-res-star { position: absolute; z-index: 3; font-style: normal; color: #ffe27a; opacity: 0; pointer-events: none;
+  text-shadow: 0 0 8px rgba(255, 220, 100, .9); font-size: clamp(14px, 5vh, 26px); }
+.rv-rs1 { left: -18%; top: 4%; } .rv-rs2 { right: -20%; top: 18%; font-size: clamp(12px, 4vh, 20px); } .rv-rs3 { left: 6%; bottom: -6%; color: #fff; }
+.rv-result[data-tier="high"] .rv-res-burst { opacity: .5; }
+.rv-result[data-tier="high"] .rv-res-star { opacity: 1; }
+
+#s-result.rv-ui .rv-res-rec {
+  margin: 0; padding: 3px 14px; border-radius: 999px; font-size: clamp(12px, 3.4vh, 16px); letter-spacing: .08em;
+  color: #fff !important; background: linear-gradient(90deg, #ff6fa8, #ffb13b); box-shadow: 0 3px 10px rgba(214, 51, 108, .45);
+  text-shadow: 0 1px 2px rgba(120, 20, 60, .5); animation: none;
+}
+.rv-res-hero { flex: 1 1 auto; min-height: 0; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.rv-res-hero-img { max-width: 92%; max-height: 100%; height: 100%; object-fit: contain; display: block; filter: drop-shadow(0 6px 8px rgba(60, 10, 90, .35)); }
+#s-result.rv-ui #r-grade-msg {
+  margin: 0 !important; padding: 4px 14px; border-radius: 999px; min-height: 0 !important; max-width: 100%; text-align: center;
+  font-size: clamp(12px, 3.4vh, 16px) !important; color: var(--rv-ink) !important; background: var(--rv-panel);
+  border: 2px solid var(--rv-panel-line); box-shadow: 0 3px 10px rgba(60, 10, 100, .2);
+}
+.rv-res-fx { position: absolute; inset: 0 0 30% 0; pointer-events: none; overflow: hidden; z-index: 4; }
+.rv-confetti { position: absolute; top: -6%; width: 8px; height: 12px; border-radius: 2px; font-style: normal; font-size: 16px; line-height: 1;
+  opacity: 0; animation: rvConfetti 1.4s cubic-bezier(.3, .6, .5, 1) both; }
+.rv-confetti.is-star { width: auto; height: auto; }
+@keyframes rvConfetti { 0% { opacity: 0; transform: translateY(0) rotate(0); } 10% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; transform: translateY(260%) rotate(var(--r, 180deg)); } }
+
+/* ---------- 右：六項成績、通知、操作 ---------- */
+.rv-res-right {
+  flex: 1 1 60%; display: flex; flex-direction: column; justify-content: center; gap: clamp(5px, 1.6vh, 12px);
+  padding: clamp(6px, 2.4vh, 18px) clamp(12px, 3.4vw, 40px) clamp(6px, 2.4vh, 18px) clamp(4px, 1vw, 12px);
+}
+.rv-res-head { display: flex; align-items: baseline; gap: 10px; min-width: 0; flex: 0 0 auto; }
+#s-result.rv-ui .rv-res-head h2 { margin: 0; font-size: clamp(14px, 4vh, 20px) !important; color: #fff !important; white-space: nowrap;
+  text-shadow: 0 2px 0 rgba(90, 20, 120, .6), 0 0 6px rgba(90, 20, 120, .5); }
+/* 結算頁：測試標示放在右上標題列，浮動橫條不重複顯示 */
+body.rv27-ui:has(#s-result.rv-ui:not(.off)) #bv-test-banner { display: none; }
+.rv-res-head .rv-test-tag { flex: 0 0 auto; }
+.rv-res-song { min-width: 0; flex: 1 1 auto; font-size: clamp(11px, 3vh, 14px); font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-shadow: 0 1px 2px rgba(60, 10, 90, .7); }
+#s-result.rv-ui .rv-res-stats { width: 100% !important; gap: clamp(5px, 1.2vh, 10px) !important; flex: 0 0 auto; }
+#s-result.rv-ui .rv-res-stats .stat {
+  position: relative; padding: clamp(4px, 1.3vh, 10px) 10px !important; border-radius: 16px !important; min-width: 0;
+  background: var(--rv-panel) !important; border: 2px solid var(--rv-panel-line) !important; box-shadow: 0 4px 12px rgba(60, 10, 100, .2) !important;
+}
+#s-result.rv-ui .stat-l { font-size: clamp(9px, 2.5vh, 12px) !important; margin-bottom: 0 !important; color: var(--rv-ink-soft) !important; }
+#s-result.rv-ui .stat-v { font-size: clamp(16px, 5.2vh, 28px) !important; color: var(--rv-ink) !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#s-result.rv-ui .rv-res-score-stat .stat-v#r-score { color: var(--rv-pink-dk) !important; }
+.rv-score-anim { position: absolute; left: 10px; right: 10px; bottom: clamp(4px, 1.3vh, 10px); color: var(--rv-pink-dk) !important; pointer-events: none; }
+.rv-result:not(.rv-res-counting) .rv-score-anim { display: none; }
+
+/* 通知區：多項通知時內部捲動，不會把按鈕推出畫面 */
+.rv-res-notes {
+  flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+  display: flex; flex-direction: column; gap: 4px; padding: 2px; scrollbar-width: thin;
+}
+.rv-res-notes:empty { display: none; }
+#s-result.rv-ui .rv-res-notes > * { margin: 0 !important; max-width: none !important; width: 100%; }
+#s-result.rv-ui #bv-result-note, #s-result.rv-ui #r-vcoin-msg, #s-result.rv-ui #r-title-unlock-msg {
+  padding: 4px 12px !important; border-radius: 12px !important; font-size: clamp(11px, 2.9vh, 13px) !important; line-height: 1.35; text-align: left !important;
+  background: var(--rv-panel) !important; border: 2px solid var(--rv-panel-line) !important; box-shadow: none !important; color: var(--rv-ink) !important;
+}
+#s-result.rv-ui #r-unlock-notify { padding: 6px 12px !important; border-radius: 12px !important; }
+
+.rv-res-actions { flex: 0 0 auto; display: flex; flex-direction: column; gap: clamp(5px, 1.4vh, 10px); }
+.rv-res-row { display: flex; gap: clamp(6px, 1.2vw, 12px); }
+.rv-res-row > .rv-art-btn { flex: 1 1 0; min-width: 0; }
+.rv-ui .rv-size-res { --bh: clamp(38px, 10.5vh, 54px); font-size: clamp(12px, 3.3vh, 17px); padding: 0 calc(var(--bh) * .42); }
+.rv-res-actions .rv-size-main { --bh: clamp(46px, 13vh, 72px); font-size: clamp(18px, 4.8vh, 26px); }
+.rv-result.rv-res-shown .rv-sheen::after { animation: rvSheen 4.8s ease-in-out 1s infinite; }
+
+/* ---------- 結算登場（約 1.5 秒；按鈕出現前即可操作） ---------- */
+.rv-res-intro .rv-result-bg-pic { animation: rvFadeIn .2s ease-out both; }
+.rv-res-intro #r-grade { animation: rvGradePop .55s cubic-bezier(.2, .9, .3, 1) .15s both; }
+.rv-res-intro .rv-res-hero-img { animation: rvResHero .5s cubic-bezier(.2, .8, .2, 1) .3s both; }
+.rv-res-intro #r-grade-msg { animation: rvFadeIn .35s ease-out .55s both; }
+.rv-res-intro .rv-res-head { animation: rvFadeIn .3s ease-out .1s both; }
+.rv-res-intro .rv-res-stats .stat { animation: rvStatIn .3s cubic-bezier(.3, 1.4, .5, 1) both; animation-delay: calc(.4s + var(--i, 0) * .08s); }
+.rv-res-intro .rv-res-notes { animation: rvFadeIn .4s ease-out .85s both; }
+.rv-res-intro .rv-res-actions > .rv-art-btn { animation: rvBtnPop .3s cubic-bezier(.3, 1.5, .5, 1) 1s both; }
+.rv-res-intro .rv-res-row > :nth-child(1) { animation: rvBtnPop .28s cubic-bezier(.3, 1.5, .5, 1) 1.08s both; }
+.rv-res-intro .rv-res-row > :nth-child(2) { animation: rvBtnPop .28s cubic-bezier(.3, 1.5, .5, 1) 1.15s both; }
+.rv-res-intro .rv-res-row > :nth-child(3) { animation: rvBtnPop .28s cubic-bezier(.3, 1.5, .5, 1) 1.22s both; }
+/* 高評價：光芒＋星星（只播一次） */
+.rv-res-intro[data-tier="high"] .rv-res-burst { animation: rvBurst .9s ease-out .2s both; }
+.rv-res-intro[data-tier="high"] .rv-rs1 { animation: rvStarPop .5s ease-out .45s both; }
+.rv-res-intro[data-tier="high"] .rv-rs2 { animation: rvStarPop .5s ease-out .55s both; }
+.rv-res-intro[data-tier="high"] .rv-rs3 { animation: rvStarPop .5s ease-out .65s both; }
+/* 較低評價：溫和的點頭鼓勵 */
+.rv-res-intro[data-tier="cheer"] .rv-res-hero-img { animation: rvResHero .5s cubic-bezier(.2, .8, .2, 1) .3s both, rvNod .6s ease-in-out .85s 1; }
+/* NEW RECORD（只有原本邏輯判定破紀錄時） */
+.rv-result:not(.rv-res-newrec) .rv-res-rec { visibility: hidden; }   /* endGame 判定後、時間軸 0.8 秒才出現 */
+.rv-res-newrec .rv-res-rec { animation: rvRecPop .45s cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes rvGradePop { 0% { opacity: 0; transform: scale(.3); } 55% { opacity: 1; transform: scale(1.15); } 78% { transform: scale(.95); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes rvResHero { from { opacity: 0; transform: translateX(-18%); } to { opacity: 1; transform: none; } }
+@keyframes rvStatIn { from { opacity: 0; transform: translateY(10px) scale(.92); } to { opacity: 1; transform: none; } }
+@keyframes rvBurst { 0% { opacity: 0; transform: scale(.4); } 35% { opacity: .9; } 100% { opacity: .5; transform: scale(1); } }
+@keyframes rvStarPop { 0% { opacity: 0; transform: scale(0) rotate(-40deg); } 70% { opacity: 1; transform: scale(1.3) rotate(10deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
+@keyframes rvNod { 0%, 100% { transform: none; } 50% { transform: translateY(-4px) rotate(-2deg); } }
+@keyframes rvRecPop { 0% { transform: scale(.4); opacity: 0; } 70% { transform: scale(1.12); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+
+/* ---------- 大螢幕 ---------- */
+@media (min-height: 600px) {
+  .rv-res-right { align-items: center; }
+  .rv-res-right > * { width: 100%; max-width: 680px; }
+  #s-result.rv-ui .stat-l { font-size: 13px !important; }
+  #s-result.rv-ui .stat-v { font-size: 32px !important; }
+  .rv-ui .rv-size-res { --bh: 58px; font-size: 18px; }
+  .rv-res-actions .rv-size-main { --bh: 78px; font-size: 28px; }
+}
+/* ---------- 矮螢幕：先縮角色、間距、裝飾與通知；四個按鈕保留 ---------- */
+@media (max-height: 360px) {
+  .rv-res-left { gap: 2px; }
+  #s-result.rv-ui .rv-res-head h2 { display: none; }
+  .rv-res-right { gap: 5px; padding-top: 6px; padding-bottom: 6px; }
+  .rv-res-notes { max-height: 30vh; }
+  .rv-res-star { display: none; }
+}
+
+/* ---------- 減少動態：直接顯示最終成績 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .rv-result, .rv-result *, .rv-result *::before, .rv-result *::after { animation: none !important; transition: none !important; }
+}
