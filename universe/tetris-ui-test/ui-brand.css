@@ -1,7 +1,8 @@
 /* ==========================================================
-   氣球小V方塊派對 UI 測試版 — 第二階段品牌視覺樣式（tetris-universe-ui-v0.2.0-test-1）
-   夢幻紫色派對：品牌紫、淺紫、深紫、HUD 紫、粉黃強調；背景全部 CSS，沒有新增圖片。
-   HUD 只換顏色、圓角、陰影（不改任何尺寸、邊框粗細、位置）。
+   氣球小V方塊派對 UI 測試版 — 第二階段品牌視覺樣式（v0.2.0-test-1 起，v0.2.1-test-1 美術強化）
+   v0.2.1：首頁、結算、排行榜改用遊戲宇宙既有美術——E-01 背景（../../assets/universe_map_bg.png）
+           與派對島原始金框按鈕 PNG（assets/btn_*.png，來源見 assets/SOURCES.md），按鈕以水平三段式（border-image）延展。
+   HUD 只換顏色、圓角、陰影（不改任何尺寸、邊框粗細、位置）；遊戲進行中不使用 E-01、不使用金框按鈕。
    ========================================================== */
 :root {
   --bv-purple: #8554BD;      /* 品牌紫 */
@@ -20,13 +21,18 @@
 html.uit-brand #s-title {
   display: block; overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
   padding: 0; gap: 0;
-  background:
-    radial-gradient(circle at 12% 18%, rgba(255, 215, 107, .22) 0 3px, transparent 4px),
-    radial-gradient(circle at 86% 26%, rgba(255, 143, 184, .22) 0 4px, transparent 5px),
-    radial-gradient(circle at 78% 62%, rgba(133, 84, 189, .14) 0 5px, transparent 6px),
-    radial-gradient(circle at 18% 74%, rgba(201, 169, 242, .30) 0 4px, transparent 5px),
-    radial-gradient(ellipse 90% 55% at 50% 36%, #ffffff 0%, var(--bv-lilac) 62%, #eadcff 100%);
+  /* E-01 遊戲宇宙背景：等比例 cover（不拉伸）；直式以左側「方塊工坊」為主，寬螢幕呈現更多場景。
+     上方與下方各一層輕微白色漸層讓標題與文字好讀，中段保留場景原色。 */
+  background-color: #cfe8ff;
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, .62) 0%, rgba(255, 255, 255, .18) 30%, rgba(255, 255, 255, 0) 46%, rgba(255, 255, 255, 0) 62%, rgba(255, 255, 255, .28) 100%),
+    url("../../assets/universe_map_bg.png");
+  background-size: 100% 100%, cover;
+  background-position: 0 0, 12% 46%;
+  background-repeat: no-repeat;
+  background-attachment: scroll, scroll;
 }
+@media (min-aspect-ratio: 1/1) { html.uit-brand #s-title { background-position: 0 0, 30% 50%; } }
 .uit-home {
   box-sizing: border-box; width: 100%; max-width: 440px; min-height: 100%; margin: 0 auto;
   display: flex; flex-direction: column; align-items: stretch; gap: 8px;
@@ -56,7 +62,9 @@ html.uit-brand #s-title {
 #top-player-card.uit-in-home #top-player-title { grid-column: 1; grid-row: 3; color: var(--bv-purple); font-size: 11.5px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 
 /* 第二區：標題 */
-.uit-z2 { gap: 4px; }
+.uit-z2 { gap: 4px; position: relative; }
+.uit-z2::before { content: ""; position: absolute; inset: -6px -10px -4px; z-index: -1; border-radius: 28px;
+  background: radial-gradient(ellipse 70% 70% at 50% 50%, rgba(255, 255, 255, .78) 0%, rgba(255, 255, 255, .45) 55%, rgba(255, 255, 255, 0) 100%); pointer-events: none; }
 html.uit-brand #logo-title {
   margin: 0; text-align: center; line-height: 1.08; color: var(--bv-purple);
   font-family: 'Noto Sans TC', 'Nunito', sans-serif; font-weight: 900; letter-spacing: .02em;
@@ -77,70 +85,114 @@ html.uit-brand .uit-meta .best-box {
   background: #fff6d6; color: #7a5200; border: 1px solid #f3dc8a;
 }
 html.uit-brand .uit-meta .best-box span { font-size: 13px; color: #8a5a00; }
-.uit-ver { font-size: 10px !important; margin: 0 !important; color: rgba(133, 84, 189, .45) !important; }
+.uit-ver { font-size: 10.5px !important; margin: 0 !important; color: #5c4a7c !important; letter-spacing: .04em !important; background: rgba(255, 255, 255, .8); border-radius: 999px; padding: 0 10px; }
 
 /* 第三區：V-03（只等比例縮放；寬度自動，不裁切、不變形） */
-.uit-z3 { gap: 2px; }
+.uit-z3 { gap: 2px; position: relative; }
+.uit-z3::before { content: ""; position: absolute; left: 50%; top: 0; width: min(78%, 300px); height: calc(var(--uit-hero-h) + 6px); transform: translateX(-50%); z-index: -1;
+  background: radial-gradient(ellipse 50% 50% at 50% 54%, rgba(255, 255, 255, .72) 0%, rgba(255, 255, 255, .38) 55%, rgba(255, 255, 255, 0) 100%); pointer-events: none; }
 .uit-hero { display: block; height: var(--uit-hero-h); width: auto; max-width: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; pointer-events: none; }
-html.uit-brand .uit-welcome { margin: 0; font-size: 12px; letter-spacing: .08em; color: #7b6a98; text-align: center; }
+html.uit-brand .uit-welcome { margin: 0; font-size: 12px; letter-spacing: .08em; color: #5c4a7c; text-align: center; background: rgba(255, 255, 255, .82); border-radius: 999px; padding: 1px 12px; }
 
 /* 第四區：難度＋開始遊戲 */
 .uit-z4 { gap: 8px; align-items: stretch; }
 html.uit-brand .uit-z4 .bv-identity-card { margin: 0; max-width: none; }
-.uit-diff-label { font-size: 12px; font-weight: 800; color: #7b6a98; text-align: center; letter-spacing: .1em; }
+.uit-diff-label { align-self: center; font-size: 12px; font-weight: 800; color: #5c4a7c; text-align: center; letter-spacing: .1em; background: rgba(255, 255, 255, .82); border-radius: 999px; padding: 1px 12px; }
 .uit-diff { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.uit-diff-btn {
-  min-height: 46px; padding: 6px 4px; border-radius: 16px; cursor: pointer; font: inherit; font-size: 15px; font-weight: 900;
-  color: var(--bv-purple); background: rgba(255, 255, 255, .9); border: 2px solid #dccbf6;
-  box-shadow: 0 2px 8px rgba(133, 84, 189, .10); transition: transform .08s ease, background-color .12s ease;
-  touch-action: manipulation; -webkit-tap-highlight-color: transparent; white-space: nowrap;
-}
-.uit-diff-btn.is-selected { color: #fff; background: var(--bv-purple); border-color: var(--bv-purple); box-shadow: 0 0 0 3px rgba(255, 215, 107, .9), 0 4px 12px rgba(133, 84, 189, .30); }
-.uit-diff-btn:active { transform: scale(.95); }
-.uit-diff-btn:focus-visible, .uit-start:focus-visible, .uit-sec:focus-visible { outline: 3px solid var(--bv-butter); outline-offset: 2px; }
-html.uit-brand #btn-start.uit-start {
-  width: 100%; min-height: 52px; margin: 0; padding: 10px 16px; border-radius: 18px; font-size: 19px; font-weight: 900; letter-spacing: .06em;
-  color: #fff; background: linear-gradient(180deg, #9a6ad1 0%, var(--bv-purple) 55%, #6f42a6 100%);
-  box-shadow: 0 5px 0 #5a3590, 0 10px 20px rgba(133, 84, 189, .30); border: 0; touch-action: manipulation;
-}
-html.uit-brand #btn-start.uit-start:active { transform: translateY(3px); box-shadow: 0 2px 0 #5a3590, 0 6px 12px rgba(133, 84, 189, .30); }
+/* v0.2.1：難度、開始遊戲、次要功能的外觀改用原始 PNG（見下方「原始金框按鈕」） */
 .uit-more { display: none; text-align: center; font-size: 11px; color: rgba(123, 106, 152, .85); margin-top: -2px; pointer-events: none; }
 .uit-more.is-on { display: block; }
 
 /* 第五區：次要功能（原有按鈕） */
 .uit-z5 { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px; padding-top: 4px; }
-html.uit-brand .uit-z5 .btn.uit-sec {
-  margin: 0; min-height: 44px; flex: 1 1 calc(50% - 8px); max-width: calc(50% - 4px); padding: 8px 10px; border-radius: 14px;
-  font-size: 14px; font-weight: 800; color: var(--bv-purple); background: rgba(255, 255, 255, .88); border: 1.5px solid #dccbf6; box-shadow: none;
-}
-html.uit-brand .uit-z5 .btn.uit-sec:active { transform: scale(.97); background: #efe4ff; }
-html.uit-brand .uit-z5 #bv-btn-lobby { flex-basis: 100%; max-width: 100%; }
+html.uit-brand .uit-z5 .btn.uit-sec { margin: 0; flex: 1 1 calc(50% - 8px); max-width: calc(50% - 4px); }
+html.uit-brand .uit-z5 #bv-btn-lobby { flex: 0 0 auto; width: min(72%, 300px); max-width: none; }
 
 /* 首頁時：原版固定在右上角的玩家卡已移進版面，其他畫面維持原樣 */
 html.uit-brand.uit-on-home #fs-btn { z-index: 60; }
 
-/* ========================= 結算（同一模板） ========================= */
+/* ========================= 結算（同一模板，E-01 背景） ========================= */
 html.uit-brand #s-result {
-  overflow-y: auto; justify-content: flex-start; padding: calc(env(safe-area-inset-top, 0px) + 72px) 12px calc(env(safe-area-inset-bottom, 0px) + 16px);
-  background: radial-gradient(ellipse 90% 60% at 50% 30%, #ffffff 0%, var(--bv-lilac) 65%, #eadcff 100%);
+  overflow-y: auto; overflow-x: hidden; justify-content: flex-start; padding: calc(env(safe-area-inset-top, 0px) + 72px) 12px calc(env(safe-area-inset-bottom, 0px) + 16px);
+  background-color: #cfe8ff;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .35) 0%, rgba(255, 255, 255, .12) 40%, rgba(255, 255, 255, .25) 100%), url("../../assets/universe_map_bg.png");
+  background-size: 100% 100%, cover; background-position: 0 0, 12% 46%; background-repeat: no-repeat;
 }
+@media (min-aspect-ratio: 1/1) { html.uit-brand #s-result { background-position: 0 0, 30% 50%; } }
 html.uit-brand #s-result .res-card {
-  width: min(420px, 100%); margin: 0 auto; padding: 16px 16px 18px; border-radius: 26px;
-  background: rgba(255, 255, 255, .96); border: 2px solid #e2d2fb; box-shadow: 0 10px 30px rgba(133, 84, 189, .16);
+  width: min(420px, 100%); margin: 0 auto; padding: 14px 14px 12px; border-radius: 26px;
+  background: rgba(255, 255, 255, .9); border: 2px solid #e2d2fb; box-shadow: 0 10px 30px rgba(37, 28, 61, .22);
+  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
 }
 html.uit-brand #s-result .res-title { color: var(--bv-purple); font-size: 30px; }
 html.uit-brand #res-emoji { display: none; }
-.uit-res-art { display: block; margin: 6px auto 2px; height: clamp(130px, 22vh, 190px); width: auto; max-width: 70%; object-fit: contain; pointer-events: none; }
+.uit-res-art { display: block; margin: 4px auto 0; height: clamp(120px, 20vh, 180px); width: auto; max-width: 70%; object-fit: contain; pointer-events: none; }
 html.uit-brand #new-best { display: none !important; }   /* 新紀錄改由標題與角色呈現（仍讀取原版判斷） */
-html.uit-brand #s-result .stat-box { background: var(--bv-lilac); }
-html.uit-brand #s-result .stat-val { color: var(--bv-purple); }
-html.uit-brand #s-result .stat-lbl { color: #7b6a98; }
-html.uit-brand #btn-replay { background: linear-gradient(180deg, #9a6ad1 0%, var(--bv-purple) 60%, #6f42a6 100%); box-shadow: 0 4px 14px rgba(133, 84, 189, .32); }
-html.uit-brand #s-result .btn-outline { border-color: #dccbf6; color: var(--bv-purple); }
-/* 新紀錄：粉黃強調（不新增動畫） */
-html.uit-brand #s-result.uit-record .res-card { border-color: var(--bv-butter); box-shadow: 0 0 0 4px rgba(255, 215, 107, .45), 0 10px 30px rgba(133, 84, 189, .18); background: linear-gradient(180deg, #fffaf0 0%, #ffffff 40%); }
+/* 成績：固定 2×2（分數｜關卡／消除行數｜最高連消），寬度一致、同列等高 */
+html.uit-brand #s-result .res-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 8px; margin: 10px 0; }
+html.uit-brand #s-result .stat-box { min-width: 0; padding: 8px 6px; border-radius: 14px; background: #f4ecff; border: 1.5px solid #e2d2fb; display: flex; flex-direction: column; justify-content: center; }
+html.uit-brand #s-result .stat-val { color: var(--bv-purple); font-size: min(28px, 7.4vw); line-height: 1.15; white-space: nowrap; font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: clip; }
+html.uit-brand #s-result .stat-lbl { color: #6b5a8a; font-size: 12px; }
+/* V幣、成績提示：原文字與判斷不變，只調整區塊排版 */
+html.uit-brand #s-result #res-vcoin-msg:not(.hidden) { margin: 6px 0 4px; font-size: 13px; line-height: 1.45; padding: 6px 10px; border-radius: 12px; }
+html.uit-brand #s-result .bv-note { margin: 4px 0 6px; font-size: 12.5px; line-height: 1.45; padding: 5px 10px; }
+/* 結算按鈕：再玩一次（紫，獨立一排）→ 排行榜（藍，獨立一排）→ 回方塊首頁＋角色設定（藍，並排） */
+html.uit-brand #s-result .btn-row { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 10px; justify-items: stretch; }
+html.uit-brand #s-result .btn-row + .btn-row { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 8px !important; }
+/* 新紀錄：粉黃／金色強調（不新增動畫） */
+html.uit-brand #s-result.uit-record .res-card { border-color: var(--bv-butter); box-shadow: 0 0 0 4px rgba(255, 215, 107, .6), 0 10px 30px rgba(37, 28, 61, .22); background: linear-gradient(180deg, rgba(255, 250, 236, .95) 0%, rgba(255, 255, 255, .92) 40%); }
 html.uit-brand #s-result.uit-record .res-title { color: #b07800; text-shadow: 0 2px 0 #fff3c4; }
-html.uit-brand #s-result.uit-record .stat-box:first-child { background: #fff3c4; }
+html.uit-brand #s-result.uit-record .stat-box:first-child { background: #fff3c4; border-color: #f3d27a; }
+html.uit-brand #s-result.uit-record .stat-box:first-child .stat-val { color: #a36a00; }
+
+/* ========================= 排行榜（只換背景與面板視覺；資料與功能不變） ========================= */
+html.uit-brand #s-lb {
+  background-color: #cfe8ff;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .45) 0%, rgba(255, 255, 255, .15) 45%, rgba(255, 255, 255, .3) 100%), url("../../assets/universe_map_bg.png");
+  background-size: 100% 100%, cover; background-position: 0 0, 12% 46%; background-repeat: no-repeat;
+}
+html.uit-brand #s-lb h2 { color: var(--bv-purple); background: rgba(255, 255, 255, .85); border-radius: 999px; padding: 2px 16px; }
+html.uit-brand #s-lb .lb-card { background: rgba(255, 255, 255, .92); box-shadow: 0 10px 30px rgba(37, 28, 61, .2); }
+
+/* ========================= 原始金框按鈕（派對島 PNG，水平三段式延展） =========================
+   素材：assets/btn_purple.png 960×305、btn_yellow.png 960×308、btn_blue.png 960×310（只裁透明留白、等比例縮小）
+   切片：左右各 250px（含左側高光與兩端金框圓弧）原比例縮放，只有中段水平延展；上下不切（整個高度等比例）。
+   端蓋寬度＝按鈕高度 × 250 ÷ 素材高度，所以任何寬度下圓弧、金框、高光都不變形。 */
+html.uit-brand .btn.uit-pngbtn, html.uit-brand .uit-diff-btn.uit-pngbtn {
+  --bh: 46px; --cap: 0.8065;
+  box-sizing: border-box; height: var(--bh); min-height: 0; margin: 0; padding: 0 calc(var(--bh) * .3);   /* 文字只在內側彩色區（金框內緣約為高度的 26%） */
+  border-style: solid; border-width: 0; border-radius: 0;
+  border-image-source: url("assets/btn_blue.png"); border-image-slice: 0 250 fill;
+  border-image-width: 0 calc(var(--bh) * var(--cap)); border-image-repeat: stretch;   /* 端蓋畫在按鈕兩端，不佔文字寬度 */
+  background: none; box-shadow: none; filter: drop-shadow(0 3px 3px rgba(60, 30, 10, .28));
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: calc(var(--bh) * var(--cap) * 2 + 24px);
+  font-family: 'Nunito', 'Noto Sans TC', sans-serif; font-size: 15px; font-weight: 900; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: clip;
+  color: #fff; text-shadow: 0 1px 0 rgba(20, 30, 80, .9), 0 0 3px rgba(20, 30, 80, .75), 0 2px 3px rgba(20, 30, 80, .5);
+  cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: transform .07s ease, filter .07s ease;
+}
+html.uit-brand .uit-pngbtn.uit-png-purple { --cap: 0.8197; border-image-source: url("assets/btn_purple.png"); text-shadow: 0 1px 0 rgba(50, 10, 90, .95), 0 0 3px rgba(50, 10, 90, .8), 0 2px 3px rgba(50, 10, 90, .5); }
+html.uit-brand .uit-pngbtn.uit-png-yellow { --cap: 0.8117; border-image-source: url("assets/btn_yellow.png"); color: #4a2600; text-shadow: 0 1px 0 rgba(255, 245, 200, .9); }
+html.uit-brand .uit-pngbtn.uit-png-blue { --cap: 0.8065; border-image-source: url("assets/btn_blue.png"); }
+html.uit-brand .uit-pngbtn:active { transform: translateY(2px) scale(.98); filter: drop-shadow(0 1px 1px rgba(60, 30, 10, .3)) brightness(.96); }
+html.uit-brand .uit-pngbtn:focus { outline: none; }
+html.uit-brand .uit-pngbtn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; box-shadow: 0 0 0 6px rgba(133, 84, 189, .85); }
+html.uit-brand .uit-pngbtn:disabled, html.uit-brand .uit-pngbtn[aria-disabled="true"] { filter: grayscale(.85) opacity(.6); cursor: not-allowed; transform: none; }
+/* 各按鈕高度（與 v0.2.0 相同的觸控高度） */
+html.uit-brand #btn-start.uit-pngbtn { --bh: 52px; width: 100%; font-size: 20px; letter-spacing: .06em; }
+html.uit-brand .uit-diff-btn.uit-pngbtn { --bh: 46px; width: 100%; font-size: 15px; gap: 3px; }
+@media (max-width: 360px) { html.uit-brand .uit-diff-btn.uit-pngbtn { font-size: 13.5px; gap: 2px; } .uit-diff-btn.is-selected::before { width: 15px; height: 15px; font-size: 11px; } }
+html.uit-brand .uit-z5 .btn.uit-pngbtn { --bh: 46px; font-size: 14.5px; }
+html.uit-brand #btn-replay.uit-pngbtn { --bh: 52px; width: 100%; font-size: 18px; }
+html.uit-brand #s-result .btn.uit-pngbtn:not(#btn-replay) { --bh: 46px; width: 100%; font-size: 14.5px; }
+html.uit-brand #btn-lb-back.uit-pngbtn { --bh: 46px; padding: 0 14px; }
+/* 已選難度：黃色 PNG＋勾選標記（不只靠顏色） */
+.uit-diff-btn.is-selected::before { content: "✓"; display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; border-radius: 50%; background: #4a2600; color: #ffe27a; font-size: 12px; font-weight: 900; text-shadow: none; flex: 0 0 auto; }
+.uit-diff { gap: 6px; }
+
+/* Sandbox 標示：首頁與結算時放進版面最下方 */
+.uit-badge-slot { display: flex; justify-content: center; }
+.uit-badge-slot:empty { display: none; }
+#uit-badge-page.uit-badge-inline { position: static; margin: 6px auto 0; }
 
 /* ========================= 遊戲中 HUD：只換顏色（尺寸、邊框粗細、位置都不變） ========================= */
 html.uit-brand #s-game { background: linear-gradient(160deg, var(--bv-deep) 0%, var(--bv-hud) 55%, var(--bv-deep) 100%); }
@@ -166,3 +218,7 @@ html.uit-brand #s-game .music-mini { background: rgba(64, 48, 93, .5); border-co
   #top-player-card.uit-in-home #top-player-title { grid-column: 1 / span 2; }
   #top-player-card.uit-in-home #top-vcoin-balance { grid-column: 1 / span 2; grid-row: 4; justify-self: start; margin-top: 2px; }
 }
+
+/* 排行榜：標題讓出右上角玩家卡的位置（只調整這一頁的上方留白） */
+html.uit-brand #s-lb { padding-top: calc(env(safe-area-inset-top, 0px) + 78px); }
+html.uit-brand #s-lb h2 { margin-top: 0; }

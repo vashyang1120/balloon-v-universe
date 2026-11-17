@@ -15,7 +15,8 @@
 (function () {
   "use strict";
 
-  var VERSION = "tetris-universe-ui-v0.2.0-test-1";
+  var VERSION = "tetris-universe-ui-v0.2.1-test-1";
+  var UI_LABEL = "UI v0.2.1-test-1";
   var DOC = document.documentElement;
   var $ = function (id) { return document.getElementById(id); };
 
@@ -65,7 +66,12 @@
   if (status) metaRow.appendChild(status);
   if (best) metaRow.appendChild(best);
   z2.appendChild(metaRow);
-  if (ver) { ver.classList.add("uit-ver"); z2.appendChild(ver); }
+  // 版本：遊戲核心版本（原版字樣，例如 v1.3.7，不改數字）與 UI 測試版本分開顯示
+  if (ver) {
+    var coreVer = (ver.textContent || "").trim();
+    if (/^v\d+\.\d+\.\d+$/.test(coreVer)) ver.textContent = "Game " + coreVer + "｜" + UI_LABEL;
+    ver.classList.add("uit-ver"); z2.appendChild(ver);
+  }
 
   // 第三區：V-03（等比例縮放、完整顯示）＋原版歡迎文案
   var hero = el("img", "uit-hero");
@@ -96,6 +102,10 @@
       var on = key === k;
       diffBtns[key].classList.toggle("is-selected", on);
       diffBtns[key].setAttribute("aria-checked", on ? "true" : "false");
+      if (diffBtns[key].classList.contains("uit-pngbtn")) {
+        diffBtns[key].classList.toggle("uit-png-yellow", on);
+        diffBtns[key].classList.toggle("uit-png-blue", !on);
+      }
     });
   }
   setDiff(DEFAULT_DIFF);
@@ -120,6 +130,24 @@
       else playerCardHome.appendChild(playerCard);
     }
   }
+
+  /* v0.2.1：原始金框按鈕 PNG（紫＝主要、黃＝已選難度、藍＝其他）。只加 class，按鈕元素與事件不變 */
+  function skin(b, color) {
+    if (!b) return;
+    b.classList.add("uit-pngbtn");
+    ["uit-png-purple", "uit-png-yellow", "uit-png-blue"].forEach(function (c) { b.classList.remove(c); });
+    b.classList.add("uit-png-" + color);
+  }
+  skin(btnStart, "purple");
+  [btnLb, btnProfile, btnHow, btnMusic, btnLobby].forEach(function (b) { skin(b, "blue"); });
+  skin($("btn-replay"), "purple");
+  ["btn-res-lb", "btn-res-home", "btn-res-profile", "btn-lb-back"].forEach(function (id) { skin($(id), "blue"); });
+  Object.keys(diffBtns).forEach(function (k) { skin(diffBtns[k], k === selectedDiff ? "yellow" : "blue"); });
+
+  /* 文案：玩家可見的「玩家設定」統一為「角色設定」（ID、函式、資料欄位都不改） */
+  var profH = document.querySelector("#s-profile h2");
+  if (profH && /玩家設定/.test(profH.textContent)) profH.textContent = profH.textContent.replace("玩家設定", "角色設定");
+  if (playerCard && /玩家設定/.test(playerCard.getAttribute("title") || "")) playerCard.setAttribute("title", playerCard.getAttribute("title").replace("玩家設定", "角色設定"));
 
   /* 開始遊戲：直接用首頁選好的難度開局
      原版：開始 → goProfile（檢查玩家、loadPlayer）→ 難度視窗 → startGame(diff)。
@@ -215,14 +243,28 @@
   }
 
   /* ========================= 畫面切換 ========================= */
+  /* Sandbox 標示：首頁、結算時放進版面最下方（不再固定在畫面底部遮住按鈕）；其他畫面維持原位 */
+  var badge = $("uit-badge-page"), badgeHome = badge ? badge.parentNode : null;
+  var badgeSlotHome = el("div", "uit-badge-slot"), badgeSlotResult = el("div", "uit-badge-slot");
+  home.appendChild(badgeSlotHome);
+  if (resCard) resCard.appendChild(badgeSlotResult);
+  function placeBadge() {
+    if (!badge) return;
+    var target = !title.classList.contains("off") ? badgeSlotHome : (!result.classList.contains("off") ? badgeSlotResult : badgeHome);
+    if (badge.parentNode !== target) target.appendChild(badge);
+    badge.classList.toggle("uit-badge-inline", target !== badgeHome);
+  }
+
   function onScreens() {
     DOC.classList.toggle("uit-on-home", !title.classList.contains("off"));
+    DOC.classList.toggle("uit-on-result", !result.classList.contains("off"));
     placePlayerCard();
+    placeBadge();
     if (!title.classList.contains("off")) { queueFit(); }
     if (!result.classList.contains("off")) applyResultMode();
   }
   var mo = new MutationObserver(onScreens);
-  [title, result].forEach(function (s) { mo.observe(s, { attributes: true, attributeFilter: ["class"] }); });
+  [title, result, $("s-lb")].forEach(function (s) { if (s) mo.observe(s, { attributes: true, attributeFilter: ["class"] }); });
   onScreens();
 
   window.BVUiBrand = {
