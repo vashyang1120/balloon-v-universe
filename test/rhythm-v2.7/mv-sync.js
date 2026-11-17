@@ -28,13 +28,15 @@
   }
   function start(s,sec){
     if(!current(s)||!s.want||!s.ready)return;
-    seek(s,sec,true);
+    // Keep a cued frame at the correct position; avoid an unnecessary network seek at GO.
+    var actual=s.video?s.video.currentTime:call(s.player,"getCurrentTime");
+    if(!Number.isFinite(actual)||Math.abs(target(s,sec)-actual)>0.15)seek(s,sec,true);
     if(s.video){s.video.muted=true;var p=s.video.play();if(p&&p.catch)p.catch(function(){s.status="blocked";});}
     else{call(s.player,"mute");call(s.player,"playVideo");}
   }
   function stop(){
     ++generation;var s=active;active=null;
-    if(s){clearTimeout(s.timeout);clearInterval(s.interval);if(s.resolve)s.resolve("cancelled");if(s.player)call(s.player,"destroy");}
+    if(s){clearTimeout(s.timeout);clearInterval(s.interval);if(s.resolve)s.resolve("cancelled");if(s.player)call(s.player,"destroy");if(s.video){s.video.oncanplay=null;s.video.onerror=null;s.video.onwaiting=null;s.video.onplaying=null;s.video.onended=null;}}
     var v=$("bg-video");if(v){v.pause();v.removeAttribute("src");v.load();v.style.display="none";}
     var wrap=$("yt-iframe-wrap");if(wrap){wrap.textContent="";var f=document.createElement("div");f.id="yt-player";wrap.appendChild(f);}
   }
@@ -49,7 +51,10 @@
     if(song.videoUrl){
       var v=$("bg-video");s.video=v;v.muted=true;v.preload="auto";v.loop=false;v.style.display="block";
       v.oncanplay=function(){if(!current(s))return;s.ready=true;settle(s,"ready");if(s.want)start(s,clock());};
-      v.onerror=function(){settle(s,"error");};v.src=song.videoUrl;v.load();
+      v.onwaiting=function(){if(current(s))s.buffering=true;};
+      v.onplaying=function(){if(!current(s))return;var was=s.buffering;s.buffering=false;if(!s.want)v.pause();else if(was)seek(s,clock(),false);};
+      v.onended=function(){if(current(s))s.want=false;};
+      v.onerror=function(){if(current(s)){s.ready=false;settle(s,"error");}};v.src=song.videoUrl;v.load();
       return promise;
     }
     var id=String(song.youtubeId||"").trim().replace(/.*shorts\//,"").replace(/.*v=/,"").replace(/[?&].*/,"");
@@ -60,12 +65,12 @@
         onReady:function(e){if(!current(s)){call(e.target,"destroy");return;}s.player=e.target;call(s.player,"mute");call(s.player,"cueVideoById",[{videoId:id,startSeconds:target(s,0)}]);},
         onStateChange:function(e){
           if(!current(s))return;
-          if(e.data===5){s.ready=true;settle(s,"ready");if(s.want)start(s,clock());}
+          if(e.data===5){var first=!s.ready;s.ready=true;settle(s,"ready");if(first&&s.want)start(s,clock());}
           if(e.data===3){s.buffering=true;}
           if(e.data===1){var was=s.buffering;s.buffering=false;if(!s.want){call(s.player,"pauseVideo");return;}if(was||Date.now()-s.lastSeek>500)seek(s,clock(),false);}
           if(e.data===0){s.want=false;}
         },
-        onError:function(){settle(s,"error");}
+        onError:function(){if(current(s)){s.ready=false;settle(s,"error");}}
       }});
     }).catch(function(){settle(s,"error");});
     return promise;

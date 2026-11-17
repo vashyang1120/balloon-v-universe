@@ -4586,12 +4586,14 @@ function initGame() {
 
   // Load audio then beatmap then lyrics, then start
   loadAudio(song.audioUrl || '').then(function(){
+    if (G !== thisRound) return;
     // Load beatmap
     var bmPromise;
     if (song.beatmapUrl) {
       bmPromise = fetch(song.beatmapUrl)
         .then(function(r){ return r.ok ? r.json() : null; })
         .then(function(data){
+          if (G !== thisRound) return;
           if (data && data.length) {
             // Beatmap JSON format: [{t, lane, hold}, ...]
             // Apply difficulty filter
@@ -4601,7 +4603,7 @@ function initGame() {
           }
           G.total = G.beatmap.length;
         })
-        .catch(function(){ G.beatmap = makeBeatmap(diff); G.total = G.beatmap.length; });
+        .catch(function(){ if(G === thisRound){ G.beatmap = makeBeatmap(diff); G.total = G.beatmap.length; } });
     } else {
       bmPromise = Promise.resolve();
       G.beatmap = makeBeatmap(diff);
@@ -4609,6 +4611,7 @@ function initGame() {
     }
     return bmPromise;
   }).then(function(){
+    if (G !== thisRound) return [];
     var lyrPromise = song.srtUrl ? loadSRT(song.srtUrl) : Promise.resolve(song.lyrics || []);
     return lyrPromise;
   }).then(function(lyrics){
