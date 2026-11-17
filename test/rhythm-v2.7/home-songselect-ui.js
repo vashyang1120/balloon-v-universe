@@ -221,6 +221,7 @@
       introPending = false;
       if (!visible("s-title") || maskShown()) return;          // 等待期間離開或轉成直向：下次再播
       layoutHome();
+      if (window.RV27Audio) window.RV27Audio.onHomeIntro();     // 配合 Logo 登場淡入選單 BGM（被瀏覽器擋就等第一次點擊）
       if (REDUCED) { introDone = true; setHomeAnim("idle"); return; }
       setHomeAnim("intro");
     });
@@ -234,6 +235,8 @@
       if (!introDone && home) home.classList.add("rv-pre");
     }
     if (id === "s-songlist") { selectAnimOn(true); updateSongInfo(); } else selectAnimOn(false);
+    if (window.RV27Result) window.RV27Result.onScreenChange(id);                    // 結算頁演出（離開即取消）
+    if (window.RV27Audio) window.RV27Audio.update(id === "s-game" ? "game" : id);   // 選單 BGM：演奏畫面停止、選單畫面延續
   }
 
   function refreshPlayerCard() {
@@ -415,6 +418,7 @@
     mask.hidden = !show;
     document.body.classList.toggle("rv-rotate-needed", show);
     if (show) pauseForRotate();
+    if (window.RV27Audio) window.RV27Audio.update("rotate");   // 直向提示期間暫停選單 BGM，轉回橫向依狀態恢復
     // 轉回橫向：保留暫停選單，由玩家按「繼續」→ 原本完整 3 秒倒數；不自動恢復
     if (visible("s-title")) layoutHome();
     if (was && !show) maybeIntro();
@@ -440,7 +444,7 @@
   }
 
   window.RV27UI = {
-    version: "v2.7.0-home-songselect-ui-test-2",
+    version: "v2.7.0-audio-result-test-1",
     assets: ASSETS,
     mount: function (api) {
       if (document.body.classList.contains("rv27-ui")) return;   // 防止重複掛載
@@ -451,6 +455,8 @@
       mountHome();
       mountSongSelect();
       mountRotateMask();
+      if (window.RV27Result) window.RV27Result.mount();
+      if (window.RV27Audio) window.RV27Audio.mount();
       var origGo = window.go;
       if (typeof origGo === "function" && !origGo.__rvWrapped) {
         var wrappedGo = function (id) { var r = origGo.apply(this, arguments); try { onScreenChange(id); } catch (e) { console.warn("[RV27UI]", e); } return r; };

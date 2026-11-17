@@ -1,4 +1,4 @@
-# 節奏遊戲 v2.7.0-home-songselect-ui-test-2（測試版／資料隔離）
+# 節奏遊戲 v2.7.0-audio-result-test-1（測試版／資料隔離）
 
 以 v2.7.0-universe-foundation-test-1 為基準。下方的資料隔離規則完全沿用，沒有更改。
 
@@ -76,3 +76,26 @@ Storage：傳給 SDK 的 localStorage／sessionStorage 都加上前綴 `vRhythmV
 - 新增 `cancelResumeCountdown()`。
 - 倒數中轉成直向：立即中止這次恢復，不啟動音訊、MV、計時，回到原本的暫停選單；轉回橫向後按「繼續」，重新完整倒數 3 秒。
 - 不使用輪詢。
+
+## v2.7.0-audio-result-test-1：選單 BGM、UI 按鈕音效、橫向結算頁
+
+### 選單 BGM（`menu-audio.js`）
+- 來源（唯讀引用，未複製、未改寫）：`../../assets/audio/universe_lobby_bgm.mp3`。這是正式大廳 `zones.js` 的 `MAP_CONFIG.audio.bgmSrc`，由 `audio.js` 播放。
+- 音量 0.22（大廳是 0.25）。淡入 0.45 秒、淡出 0.25 秒；進入演奏時 0.15 秒淡出。
+- 循環方式和大廳一樣：曲尾前 2.5 秒由第二個 `<audio>` 交叉淡化接上。管理器只有一個，整個頁面最多建立 2 個 `<audio>`，畫面切換只暫停或繼續，不會從頭播放。
+- 是否播放只看一個條件 `shouldPlay()`：不在演奏畫面、`G.running` 為 false（包含暫停、恢復倒數、遊戲中開角色設定時都不播）、沒有直向提示、分頁在前景、沒有離開頁面。
+- 自動播放：瀏覽器有回報使用者已互動（`navigator.userActivation.hasBeenActive`）才嘗試直接播放；否則等第一次有效點擊。點擊當下先靜音播放來解鎖，等原本的點擊事件跑完再決定要不要出聲；所以第一次點擊就是「開始歌曲」時不會出聲。
+- 返回遊戲宇宙、`pagehide`、分頁進入背景：停止或暫停。
+
+### UI 按鈕音效
+- 來源：派對島大作戰正式版（balloon-v-rush `rpg-continent1-universe/main.js` 的 `SFX_DEFS.uiClick`）使用的 `assets/audio/sfx/ui/ui_button_click.mp3`，原檔複製到 `assets/audio/ui_button_click.mp3`，內容未改。
+- 播放方式同派對島：Web Audio buffer、`pointerdown` 時播放（鍵盤 Enter／空白鍵用 `click` 且 `detail===0`）、同一顆按鈕 450ms 內只算一次、90ms 最小間隔、最多 2 個同時發聲、音量 0.55×0.85。
+- 不響的情況：停用的按鈕、`#lanes` 四軌、演奏進行中除了「暫停」以外的按鈕。
+
+### 橫向結算頁（`result-ui.js`／`result-ui.css`）
+- 原本按鈕看不到的原因：`#s-result` 是全螢幕、內容垂直置中、沒有捲動的直向長列表。844×390 時內容高 450px，按鈕落在 y=407～450，`html`、`body` 又不能捲動；568×320 時按鈕在 y=362 以下。按鈕和事件其實都在。
+- 新版面：左 40% 是評價、NEW RECORD、小V、鼓勵文字；右 60% 是六項成績（3 欄 2 列）、通知區（可內部捲動）、操作按鈕。只搬移原本的 DOM，原 id 與事件保留；新增「選擇歌曲」（`#rv-btn-r-songs`，使用原本的 `go('s-songlist')`）。
+- 評價對應小V（只影響美術）：S、A+ → `v_bust_congrats`（V-18）；A、B → `v_bust_happy`（V-06）；C → `v_bust_point`（V-12）；D、E → `v_bust_remind`（V-15）；NEW RECORD → `v_bust_congrats`。
+- SCORE 累加只是覆蓋在上面的顯示層，`#r-score` 原本的文字完全不改；動畫結束就顯示原文字。
+- NEW RECORD 只看 `endGame()` 判定後的 `#r-rec`。進入結算頁時先清掉上一場的顯示狀態，再用 MutationObserver 等這一場的判定結果。
+- 離開結算頁會取消 rAF、計時器、彩紙與觀察器。

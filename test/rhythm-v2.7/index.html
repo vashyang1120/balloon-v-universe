@@ -10,7 +10,7 @@
 <script>
 (function(){
   'use strict';
-  window.BV_TEST_ISOLATION = { version: 'v2.7.0-home-songselect-ui-test-2', namespace: 'vRhythmV270UniverseTest1::' };
+  window.BV_TEST_ISOLATION = { version: 'v2.7.0-audio-result-test-1', namespace: 'vRhythmV270UniverseTest1::' };
   var API = 'https://balloon-v-universe-api.vashyang1120.workers.dev';
   var API_READ = [/^\/v1\/players\/p_[a-z2-7]{20}$/, /^\/v1\/avatars\/base$/];
   var BLOCK_HOST = /firebaseio\.com|firebasedatabase\.app|identitytoolkit\.googleapis|securetoken\.googleapis|firebaseinstallations|firebase\.googleapis/i;
@@ -52,7 +52,7 @@
 </script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>【測試版／資料隔離】氣球小V魔法派對｜遊戲宇宙版 v2.7.0-home-songselect-ui-test-2</title>
+<title>【測試版／資料隔離】氣球小V魔法派對｜遊戲宇宙版 v2.7.0-audio-result-test-1</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;700;900&family=M+PLUS+Rounded+1c:wght@400;700;800;900&display=swap');
 
@@ -1925,6 +1925,10 @@ button,input,select,textarea{
   <!-- v2.7.0-home-songselect-ui-test-2：首頁＋選歌頁正式美術、動態演出、直向提示 -->
   <link rel="stylesheet" href="home-songselect-ui.css">
   <script src="home-songselect-ui.js"></script>
+  <!-- v2.7.0-audio-result-test-1：選單 BGM／UI 按鈕音效、橫向結算頁 -->
+  <link rel="stylesheet" href="result-ui.css">
+  <script src="menu-audio.js"></script>
+  <script src="result-ui.js"></script>
 </head>
 <body>
 <div id="root">
@@ -1934,7 +1938,7 @@ button,input,select,textarea{
   <div class="title-deco">🎈 ✨ 🌸</div>
   <div class="logo" onclick="handleLogoClick()" style="cursor:default;user-select:none">氣球小V魔法派對<small>BALLOON V MAGIC PARTY</small></div>
   <div class="title-hint">Suno AI × YouTube MV</div>
-  <div id="game-version" style="font-size:9px;color:rgba(155,93,229,.35);letter-spacing:.12em;margin-top:3px;">v2.7.0-home-songselect-ui-test-2</div>
+  <div id="game-version" style="font-size:9px;color:rgba(155,93,229,.35);letter-spacing:.12em;margin-top:3px;">v2.7.0-audio-result-test-1</div>
   <div id="home-daily-challenge-hint" class="rhythm-daily-hint-card need-profile">
     <div class="rhythm-daily-hint-top">
       <div>
@@ -2300,7 +2304,7 @@ button,input,select,textarea{
 </div>
 
 
-<div class="bv-test-banner" id="bv-test-banner">🧪 測試版／資料隔離 · v2.7.0-home-songselect-ui-test-2</div>
+<div class="bv-test-banner" id="bv-test-banner">🧪 測試版／資料隔離 · v2.7.0-audio-result-test-1</div>
 <button id="fs-btn" onclick="toggleFullscreen()" title="全螢幕">🔲</button>
 </div><!-- #root -->
 <script>
