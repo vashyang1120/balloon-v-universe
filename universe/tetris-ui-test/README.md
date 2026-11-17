@@ -1,4 +1,4 @@
-# 方塊派對 — 手機 UI 測試版（tetris-universe-ui-v0.2.1-test-1）
+# 方塊派對 — 手機 UI 測試版（tetris-universe-ui-v0.2.2-test-1）
 
 **這是永久 Sandbox 的 UI 測試版**：不讀、不寫任何正式資料（成績、排行榜、V幣、稱號、頭像、玩家資料）。
 正式宇宙版 `universe/tetris/`、大廳入口 `zones.js`、共用 SDK、後端 Worker 都**沒有修改**；大廳也**沒有**連到這個測試版。
@@ -12,6 +12,9 @@ https://vashyang1120.github.io/balloon-v-universe/universe/tetris-ui-test/
 （只有從同一分頁的沙盒大廳 `index.html?sandbox=1` 建立的模擬玩家可以沿用）。
 
 ## 版本紀錄
+
+- **v0.2.2-test-1**：以 v0.2.1-test-1 為基準，新增 `balloon-assets.js` 與原始 `assets/balloon_base.png` 本地副本。開始前等待 PNG 成功載入；載入失敗或逾時顯示重試，不產生普通方格快取。原玩法、已驗收介面與 Sandbox 隔離維持。首頁故事規劃 v0.2.3，品牌開場與互動教學規劃 v0.3.0。
+
 
 - **v0.2.1-test-1**（Universe Art Enhancement，方案 B 遊戲宇宙延伸風格）：
   - 首頁、結算（一般／新紀錄）、排行榜背景改用遊戲宇宙既有 E-01 地圖（`../../assets/universe_map_bg.png`，原檔不複製、不修改）；遊戲中棋盤與 HUD 不使用。

@@ -15,8 +15,7 @@
 (function () {
   "use strict";
 
-  // Preserve backend gameVersion contract; UI release version is independent.
-  var GAME_VERSION = "rhythm-v2.6.4+universe-v0.3.1-test-1";
+  var GAME_VERSION = "rhythm-v2.6.5+universe-v0.3.1";
   var UI_VERSION = "v2.6.5";
   var AV_BASE = "../../assets/avatars/base/";
   var BLANK = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
@@ -35,7 +34,7 @@
   var labels = {};
   var round = { startedAt: null, submissionId: null };
   var readyCallbacks = [];
-  var wallet = null, lastOfficial = null;
+  var wallet = null, lastOfficial = null, resultEpoch = 0;
   function officialOn() { return S.official.isEnabled(); }
   function onWallet(w) {
     wallet = w;
@@ -127,7 +126,7 @@
   function renderChip() {
     var chip = $("bv-player-chip");
     if (!chip) return;
-    if (!player) { chip.hidden = true; return; }
+    if (!player) { chip.hidden = true; if (window.RV27UI) window.RV27UI.refreshPlayer(); return; }
     $("bv-player-chip-av").src = S.avatars.imageUrl(player.baseAvatarKey) || BLANK;
     $("bv-player-chip-name").textContent = player.displayId;
     chip.title = "玩家：" + player.displayId + "（由遊戲宇宙大廳選擇）";
@@ -167,7 +166,7 @@
     return S.start().then(function (p) {
       player = p;
       showIdentityState("ready");
-      S.bootOfficial({ onWallet: onWallet });
+      S.bootOfficial({ onWallet: onWallet }).then(function () { if (player === p && window.RV27UI) window.RV27UI.refreshPlayer(); }, function () { if (player === p && window.RV27UI) window.RV27UI.refreshPlayer(); });
       readyCallbacks.forEach(function (fn) { try { fn(); } catch (e) { console.warn("[Universe] ready callback", e); } });
       return p;
     }, function (err) {
@@ -177,7 +176,7 @@
     });
   }
 
-  S.onReset(function () { player = null; wallet = null; round.startedAt = null; round.submissionId = null; });
+  S.onReset(function () { resultEpoch++; player = null; wallet = null; round.startedAt = null; round.submissionId = null; });
 
   /* 每一場開局時固定 submissionId（再玩一次＝新的一場），結算時用來防止重複提交 */
   function wrapInitGame() {
@@ -187,6 +186,7 @@
       round.startedAt = new Date().toISOString();
       round.submissionId = null;
       lastOfficial = null;
+      resultEpoch++;
       if (window.RV27Audio) window.RV27Audio.onGameStart();
       if (player) S.startRun();   // 正式成績開啟時向伺服器取得場次（沒開啟／沙盒不會寫入任何資料）
       return orig.apply(this, arguments);
@@ -195,7 +195,7 @@
     window.initGame = wrapped;
   }
 
-  function bestKey(songId) { return "best_" + songId; }
+  function bestKey(songId, difficulty) { return "best_v265_" + songId + "__" + difficulty; }
 
 
   /* 正式排行榜：每首歌×每個難度一個榜。「全部」頁籤分成三個難度各列前 5 名（不把不同難度混在同一個名次裡） */
@@ -347,17 +347,21 @@
         if (note) note.textContent = L.resultNote + "（沒有遊戲宇宙玩家，本場未記錄）";
         return false;
       }
-      var prevRaw = S.playerStore.get(bestKey(d.songId));
-      var prev = prevRaw == null ? null : Number(prevRaw);
-      var isNew = prev === null || d.score > prev;
-      if (isNew) S.playerStore.set(bestKey(d.songId), String(d.score));
+      var epoch = resultEpoch, pid = player.playerId;
+      var current = function () { return epoch === resultEpoch && player && player.playerId === pid; };
+      var isNew = false;
 
       var scoreData = { songId: d.songId, difficulty: d.difficulty, score: d.score, maxCombo: d.maxCombo,
         perfect: d.perfect, good: d.good, miss: d.miss, accuracy: d.accuracy, grade: d.grade };
       if (officialOn()) {
         if (note) note.textContent = L.sending;
         S.finishRun(scoreData).then(function (out) {
+          if (!current()) return;
           if (out.official && out.result) {
+            // Server CAS is authoritative across devices and separate difficulty boards.
+            var improved = out.result.status === "accepted" && (out.result.boards || []).some(function (b) { return b.boardId === d.songId + "--" + d.difficulty && b.improved === true; });
+            var rec = $("r-rec");
+            if (rec) rec.classList.toggle("hidden", !improved);
             lastOfficial = out.result;
             var msg = S.describeOfficialResult(out.result);
             if (note) note.textContent = msg;
@@ -371,6 +375,12 @@
         });
         return isNew;
       }
+      // Fallback records are local only, partitioned by song and difficulty; never reuse ambiguous legacy keys.
+      var key = bestKey(d.songId, d.difficulty);
+      var prevRaw = S.playerStore.get(key);
+      var prev = prevRaw == null ? null : Number(prevRaw);
+      isNew = prev === null || d.score > prev;
+      if (isNew) S.playerStore.set(key, String(d.score));
       S.finishRun(null);   // 未開啟正式成績：丟棄（不會送出）
       var now = new Date().toISOString();
       var sub;
@@ -389,9 +399,9 @@
       round.submissionId = sub.submissionId;
       round.songTitle = d.songTitle;
       S.services.scores.submit(sub).then(function () {
-        if (note) note.textContent = L.resultNote + "（已存為本分頁測試成績）";
+        if (current() && note) note.textContent = L.resultNote + "（已存為本分頁測試成績）";
       }, function (err) {
-        if (note) note.textContent = L.resultNote + "（本場未記錄：" + (err && err.userMessage || "未知錯誤") + "）";
+        if (current() && note) note.textContent = L.resultNote + "（本場未記錄：" + (err && err.userMessage || "未知錯誤") + "）";
         console.warn("[Universe] Mock 成績提交失敗：", err && err.userMessage);
       });
       return isNew;
