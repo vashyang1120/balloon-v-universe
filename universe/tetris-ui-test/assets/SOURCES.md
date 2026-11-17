@@ -18,3 +18,8 @@
 - 使用方式：`ui-brand.css` 以水平三段式（CSS border-image）延展：左右各 250px 端蓋（含左上高光與兩端金框圓弧）等比例縮放，只延展中段。
 
 E-01 背景沒有複製：直接以相對路徑引用同一 Repository 的 `assets/universe_map_bg.png`（1536×1024，原檔不變）。
+
+## 氣球方塊原圖（v0.2.2-test-1）
+
+來源：`vashyang1120/vparty-tetris/assets/balloon_base.png`，原檔直接複製，未重新繪製或修改。
+SHA-256：`454e21e87d64d46a95f41f4159bace15bbbb04f3e96f07790f9cf0b306c33ce4`。
