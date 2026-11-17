@@ -8,7 +8,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>氣球小V魔法派對｜遊戲宇宙版（測試）</title>
+<title>氣球小V魔法派對｜遊戲宇宙版 v2.6.5</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;700;900&family=M+PLUS+Rounded+1c:wght@400;700;800;900&display=swap');
 
@@ -1873,9 +1873,14 @@ button,input,select,textarea{
 </style>
   <!-- [Universe 換殼] 不再載入 Firebase SDK；改用遊戲宇宙共用 SDK（唯讀玩家資料；成績只進 Mock） -->
   <script src="../shared/universe-sdk.js"></script>
-  <script src="universe-shell.js"></script>
+  <script src="universe-shell.js?v=2.6.5"></script>
   <link rel="stylesheet" href="../shared/universe-ui.css">
   <link rel="stylesheet" href="universe-shell.css">
+  <link rel="stylesheet" href="home-songselect-ui.css?v=2.6.5">
+  <link rel="stylesheet" href="result-ui.css?v=2.6.5">
+  <script src="home-songselect-ui.js?v=2.6.5"></script>
+  <script src="menu-audio.js?v=2.6.5"></script>
+  <script src="result-ui.js?v=2.6.5"></script>
 </head>
 <body>
 <div id="root">
@@ -3612,7 +3617,7 @@ function renderSharedTitleCollection(filterGameId){
   var grid = document.getElementById('title-grid');
   var currentEl = document.getElementById('title-collection-current');
   if(!grid) return Promise.resolve();
-  grid.innerHTML = '<div class="title-empty-msg">🎈 載入 V宇宙稱號中...</div>';
+  grid.innerHTML = '<div class="title-empty-msg">🎈 載入遊戲宇宙稱號中...</div>';
   if(currentEl) currentEl.textContent = getEquippedTitleName();
   return Promise.all([loadSharedTitleCatalog(), loadSharedRhythmTitleCatalog(), loadUnlockedTitlesByGame(PLAYER && PLAYER.playerKey), loadEquippedTitleForCurrentPlayer()]).then(function(values){
     var catalog = values[0] || getSharedTitleCatalog();
@@ -4437,6 +4442,7 @@ var profileOpenedFromGame = false;
 var wasPausedBeforeProfile = false;
 var shouldResumeMediaFromProfile = false;
 var isResumeCountingDown = false;
+var resumeCountdownToken = 0; // [v2.6.5] 恢復倒數代號：轉直向時可安全中止該次倒數
 
 function getProfileText(id, fallback) {
   var el = document.getElementById(id);
@@ -4530,6 +4536,7 @@ function resumeGameFromProfile() {
 function resumeGameWithCountdown(shouldResumeMedia) {
   if (!G.running || isResumeCountingDown) return;
   isResumeCountingDown = true;
+  var myToken = ++resumeCountdownToken; // [v2.6.5] 被 cancelResumeCountdown() 取消後，舊倒數不再繼續
   G.paused = true;
   pauseAudio();
   pauseVideoForProfile();
@@ -4538,6 +4545,7 @@ function resumeGameWithCountdown(shouldResumeMedia) {
   var el = document.getElementById('countdown');
   var n = 3;
   function done() {
+    if (myToken !== resumeCountdownToken) return; // [v2.6.5] 已取消：不啟動音訊／MV／計時
     isResumeCountingDown = false;
     if (!G.running) return;
     G.paused = false;
@@ -4550,6 +4558,7 @@ function resumeGameWithCountdown(shouldResumeMedia) {
     G.raf = requestAnimationFrame(loop);
   }
   function step() {
+    if (myToken !== resumeCountdownToken) return; // [v2.6.5] 已取消
     if (!G.running) { isResumeCountingDown = false; return; }
     if (n === 0) {
       showCnt(el, 'GO!', '#06d6a0', done);
@@ -4558,6 +4567,18 @@ function resumeGameWithCountdown(shouldResumeMedia) {
     showCnt(el, String(n), '#fff', function(){ n--; step(); });
   }
   step();
+}
+// [v2.6.5] 立即中止進行中的 3 秒恢復倒數，保持暫停並顯示原本暫停選單（倒數開始時已呼叫 pauseAudio／pauseVideoForProfile）
+function cancelResumeCountdown() {
+  if (!isResumeCountingDown) return false;
+  resumeCountdownToken++;
+  isResumeCountingDown = false;
+  G.paused = true;
+  var el = document.getElementById('countdown');
+  if (el) { el.classList.remove('pop'); el.textContent = ''; }
+  var ov = document.getElementById('pause-ov');
+  if (ov) ov.classList.remove('off');
+  return true;
 }
 
 

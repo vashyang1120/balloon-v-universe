@@ -15,7 +15,9 @@
 (function () {
   "use strict";
 
+  // Preserve backend gameVersion contract; UI release version is independent.
   var GAME_VERSION = "rhythm-v2.6.4+universe-v0.3.1-test-1";
+  var UI_VERSION = "v2.6.5";
   var AV_BASE = "../../assets/avatars/base/";
   var BLANK = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
   var U = window.BVUniverse;
@@ -55,7 +57,7 @@
     identity: "👤 玩家 ID 與身份頭像由遊戲宇宙管理。要切換玩家，請回到遊戲宇宙大廳。"
   };
 
-  function goLobby() { S.goLobby(); }
+  function goLobby() { if (window.RV27Audio) window.RV27Audio.stopAll(); S.goLobby(); }
 
   /* ---------- 頁面裝飾：首頁一個狀態標示＋玩家小卡；角色設定唯讀；結算一行說明 ---------- */
   function decorate() {
@@ -64,6 +66,7 @@
 
     var ver = $("game-version");
     if (ver) {
+      ver.textContent = UI_VERSION;
       var wrap = document.createElement("div");
       wrap.className = "bv-title-meta";
       wrap.appendChild(U.ui.statusMark(S));
@@ -129,6 +132,7 @@
     $("bv-player-chip-name").textContent = player.displayId;
     chip.title = "玩家：" + player.displayId + "（由遊戲宇宙大廳選擇）";
     chip.hidden = false;
+    if (window.RV27UI) window.RV27UI.refreshPlayer();
   }
 
   function showIdentityState(kind, err) {
@@ -183,6 +187,7 @@
       round.startedAt = new Date().toISOString();
       round.submissionId = null;
       lastOfficial = null;
+      if (window.RV27Audio) window.RV27Audio.onGameStart();
       if (player) S.startRun();   // 正式成績開啟時向伺服器取得場次（沒開啟／沙盒不會寫入任何資料）
       return orig.apply(this, arguments);
     };
@@ -236,6 +241,7 @@
 
     boot: function (onReady) {
       decorate();
+      if (window.RV27UI) window.RV27UI.mount(window.UniverseRhythm);
       wrapInitGame();
       // 原版在載入時就把按鈕綁到 initGame；這裡改綁到包裝後的版本（行為完全相同，只多記錄開局時間）
       ["btn-start", "btn-retry"].forEach(function (id) { var el = $(id); if (el) el.onclick = window.initGame; });
@@ -292,6 +298,26 @@
     explainNotReady: function () {
       var st = S.getStatus();
       U.ui.toast(st.status === "error" && st.error ? st.error.userMessage : "正在讀取玩家資料，請稍候…");
+    },
+    playerCardData: function () {
+      if (!player) return null;
+      var disp = player.displayAvatarKey || player.baseAvatarKey;
+      return { displayId: player.displayId, avatarSrc: S.avatars.imageUrl(disp) || S.avatars.imageUrl(player.baseAvatarKey) || "", titleName: player.title && player.title.name || null, mock: false };
+    },
+    bestScoreFor: function (songId, difficulty) {
+      if (!player || !songId) return Promise.resolve(null);
+      var pid = player.playerId;
+      if (officialOn()) return S.official.getBoard(songId + "--" + difficulty, { limit: 15 }).then(function (board) {
+        if (!player || player.playerId !== pid) return null;
+        var mine = (board.rows || []).find(function (row) { return row.playerId === pid; });
+        if (!mine && board.me && board.me.score != null) mine = board.me;
+        return mine ? { score: mine.score, grade: mine.extra && mine.extra.grade } : null;
+      });
+      return S.services.leaderboard.getBoard({ gameId: "rhythm", songId: songId, difficulty: difficulty, limit: 500 }).then(function (board) {
+        if (!player || player.playerId !== pid) return null;
+        var mine = (board.rows || []).find(function (row) { return row.playerId === pid; });
+        return mine ? { score: mine.score, grade: mine.scoreData && mine.scoreData.grade } : null;
+      });
     },
     walletText: function () { return officialOn() && wallet ? Number(wallet.balance || 0).toLocaleString() + (S.official.isTrial() ? "（試營運）" : "") : (officialOn() ? "讀取中" : L.vcoinClosed); },
     titleText: function () { return S.isSandbox ? "準備中" : (player && player.title ? player.title.name : "未裝備"); },
