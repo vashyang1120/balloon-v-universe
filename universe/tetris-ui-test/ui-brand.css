@@ -23,10 +23,12 @@ html.uit-brand #s-title {
   padding: 0; gap: 0;
   background: #e6f1ff;
 }
-/* E-01 遊戲宇宙背景（v0.2.1 修正：遠景化）。
+/* E-01 遊戲宇宙背景（v0.2.1 修正：遠景化；首頁、結算、排行榜共用同一層設定）。
    背景放在獨立一層（固定在畫面上，捲動時不跟著動），只對這一層做模糊、降飽和、蓋一層白霧，
    讓背景退到遠方，前景的小V、標題與按鈕保持清楚。按鈕與文字本身不受濾鏡影響。 */
-html.uit-brand #s-title::before {
+html.uit-brand #s-title::before,
+html.uit-brand #s-result::before,
+html.uit-brand #s-lb::before {
   content: ""; position: fixed; inset: -24px; z-index: -1; pointer-events: none;
   background-color: #cfe8ff;
   background-image:
@@ -38,7 +40,7 @@ html.uit-brand #s-title::before {
   filter: blur(var(--uit-bg-blur)) saturate(.85);
 }
 html.uit-brand { --uit-bg-blur: 2px; --uit-haze: .26; --uit-haze-top: .58; --uit-haze-bottom: .4; }
-@media (min-aspect-ratio: 1/1) { html.uit-brand #s-title::before { background-position: 0 0, 30% 50%; } }
+@media (min-aspect-ratio: 1/1) { html.uit-brand #s-title::before, html.uit-brand #s-result::before, html.uit-brand #s-lb::before { background-position: 0 0, 30% 50%; } }
 .uit-home {
   box-sizing: border-box; width: 100%; max-width: 440px; min-height: 100%; margin: 0 auto;
   display: flex; flex-direction: column; align-items: stretch; gap: 8px;
@@ -120,11 +122,8 @@ html.uit-brand.uit-on-home #fs-btn { z-index: 60; }
 /* ========================= 結算（同一模板，E-01 背景） ========================= */
 html.uit-brand #s-result {
   overflow-y: auto; overflow-x: hidden; justify-content: flex-start; padding: calc(env(safe-area-inset-top, 0px) + 72px) 12px calc(env(safe-area-inset-bottom, 0px) + 16px);
-  background-color: #cfe8ff;
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, .35) 0%, rgba(255, 255, 255, .12) 40%, rgba(255, 255, 255, .25) 100%), url("../../assets/universe_map_bg.png");
-  background-size: 100% 100%, cover; background-position: 0 0, 12% 46%; background-repeat: no-repeat;
+  background: #e6f1ff;   /* E-01 遠景層與首頁共用（見首頁 ::before） */
 }
-@media (min-aspect-ratio: 1/1) { html.uit-brand #s-result { background-position: 0 0, 30% 50%; } }
 html.uit-brand #s-result .res-card {
   width: min(420px, 100%); margin: 0 auto; padding: 14px 14px 12px; border-radius: 26px;
   background: rgba(255, 255, 255, .9); border: 2px solid #e2d2fb; box-shadow: 0 10px 30px rgba(37, 28, 61, .22);
@@ -153,9 +152,7 @@ html.uit-brand #s-result.uit-record .stat-box:first-child .stat-val { color: #a3
 
 /* ========================= 排行榜（只換背景與面板視覺；資料與功能不變） ========================= */
 html.uit-brand #s-lb {
-  background-color: #cfe8ff;
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, .45) 0%, rgba(255, 255, 255, .15) 45%, rgba(255, 255, 255, .3) 100%), url("../../assets/universe_map_bg.png");
-  background-size: 100% 100%, cover; background-position: 0 0, 12% 46%; background-repeat: no-repeat;
+  background: #e6f1ff;   /* E-01 遠景層與首頁共用（見首頁 ::before） */
 }
 html.uit-brand #s-lb h2 { color: var(--bv-purple); background: rgba(255, 255, 255, .85); border-radius: 999px; padding: 2px 16px; }
 html.uit-brand #s-lb .lb-card { background: rgba(255, 255, 255, .92); box-shadow: 0 10px 30px rgba(37, 28, 61, .2); }

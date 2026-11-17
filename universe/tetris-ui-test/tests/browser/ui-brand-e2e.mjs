@@ -232,7 +232,8 @@ async function resultInfo(page) {
     const R = Object.fromEntries(rows.map(([id, r]) => [id, { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height) }]));
     return { grid2x2: boxes.length === 4 && Math.abs(boxes[0].y - boxes[1].y) < 1 && Math.abs(boxes[2].y - boxes[3].y) < 1 && boxes[2].y > boxes[0].y && new Set(boxes.map((b) => Math.round(b.width))).size === 1 && Math.abs(boxes[0].height - boxes[1].height) < 1 && Math.abs(boxes[2].height - boxes[3].height) < 1,
       order: [...document.querySelectorAll("#s-result .stat-lbl")].map((e) => e.textContent.replace(/\s/g, "")).join(","), R,
-      bg: getComputedStyle(document.getElementById("s-result")).backgroundImage, badge: document.getElementById("uit-badge-page").closest(".res-card") !== null };
+      bg: getComputedStyle(document.getElementById("s-result"), "::before").backgroundImage, filt: getComputedStyle(document.getElementById("s-result"), "::before").filter,
+      cardA: +((getComputedStyle(document.querySelector("#s-result .res-card")).backgroundColor.match(/[\d.]+\)$/) || ["1)"])[0].slice(0, -1)), badge: document.getElementById("uit-badge-page").closest(".res-card") !== null };
   });
   const rpng = await pngInfo(page, "#s-result");
   check("結算", "成績固定 2×2（分數｜關卡／消除｜最高連消），四張等寬、同列等高", lay.grid2x2 && lay.order === "⭐分數,🎯關卡,📦消除,🔥最高連消", lay.order);
@@ -241,10 +242,11 @@ async function resultInfo(page) {
     JSON.stringify({ map: rpng.map, R: lay.R }));
   check("結算", "結算按鈕文字沒有被裁切、觸控範圍不重疊", rpng.clipped.length === 0 && rpng.overlap.length === 0, rpng.clipped.concat(rpng.overlap).join(","));
   check("結算", "結算背景延續 E-01；Sandbox 標示放在結算卡片內最下方", /universe_map_bg\.png/.test(lay.bg) && lay.badge, lay.bg.slice(0, 100));
+  check("結算", "結算背景與首頁同樣是遠景（模糊＋降飽和）；成績卡片維持不透明度 ≥ 0.85 以保持可讀", /blur\(\d/.test(lay.filt) && /saturate/.test(lay.filt) && lay.cardA >= 0.85, lay.filt + " / card α=" + lay.cardA);
   await page.tap("#btn-res-lb"); await sleep(500);
-  const lb = await page.evaluate(() => ({ on: !document.getElementById("s-lb").classList.contains("off"), bg: getComputedStyle(document.getElementById("s-lb")).backgroundImage, rows: document.querySelectorAll("#lb-list .lb-row").length, back: (getComputedStyle(document.getElementById("btn-lb-back")).borderImageSource.match(/btn_(\w+)/) || [])[1] }));
+  const lb = await page.evaluate(() => ({ on: !document.getElementById("s-lb").classList.contains("off"), bg: getComputedStyle(document.getElementById("s-lb"), "::before").backgroundImage, filt: getComputedStyle(document.getElementById("s-lb"), "::before").filter, rows: document.querySelectorAll("#lb-list .lb-row").length, back: (getComputedStyle(document.getElementById("btn-lb-back")).borderImageSource.match(/btn_(\w+)/) || [])[1] }));
   await shot(page, "leaderboard-390x844");
-  check("排行榜", "排行榜延續 E-01 背景；資料照常顯示（本分頁測試排行榜）；返回鍵為藍色 PNG", lb.on && /universe_map_bg\.png/.test(lb.bg) && lb.rows >= 1 && lb.back === "blue", JSON.stringify(lb).slice(0, 200));
+  check("排行榜", "排行榜延續 E-01 背景；資料照常顯示（本分頁測試排行榜）；返回鍵為藍色 PNG", lb.on && /universe_map_bg\.png/.test(lb.bg) && /blur\(\d/.test(lb.filt) && lb.rows >= 1 && lb.back === "blue", JSON.stringify(lb).slice(0, 200));
   await page.tap("#btn-lb-back"); await sleep(300);
   await page.evaluate(() => showScreen("s-result")); await sleep(300);
   await page.tap("#btn-res-home"); await sleep(300);
@@ -346,7 +348,8 @@ async function hudGeom(page) {
     const r = (el) => { if (!el) return null; const b = el.getBoundingClientRect(); if (!b.width) return null; return [b.x, b.y, b.width, b.height].map((v) => Math.round(v * 10) / 10).join(","); };
     const o = { CELL, canvas: document.getElementById("board-canvas").width + "x" + document.getElementById("board-canvas").height, board: r(document.getElementById("board-wrap")),
       gameBg: getComputedStyle(document.getElementById("s-game")).backgroundImage, cardBg: getComputedStyle(document.getElementById("hud-score").closest(".hud-card")).backgroundColor,
-      pngInGame: document.querySelectorAll("#s-game .uit-pngbtn").length, e01InGame: /universe_map_bg/.test(getComputedStyle(document.getElementById("s-game")).backgroundImage) };
+      pngInGame: document.querySelectorAll("#s-game .uit-pngbtn").length, e01InGame: /universe_map_bg/.test(getComputedStyle(document.getElementById("s-game")).backgroundImage)
+        || ["s-title", "s-result", "s-lb"].some((id) => getComputedStyle(document.getElementById(id)).opacity !== "0") };
     for (const id of ["g-avatar", "g-name", "hud-score", "hud-combo", "hud-lines", "hud-level", "next-canvas", "pause-btn", "mc-play", "uit-fs", "fs-btn", "btn-quit"]) o["hud:" + id] = r(document.getElementById(id));
     for (const b of document.querySelectorAll(".uit-btn")) { o["btn:" + b.dataset.act] = r(b); o["bg:" + b.dataset.act] = getComputedStyle(b).backgroundColor; }
     const s = document.querySelector(".uit-hud-dummy"); return o;
