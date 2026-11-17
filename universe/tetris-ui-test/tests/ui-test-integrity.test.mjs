@@ -71,7 +71,8 @@ const INJECTED = [
   /^<!-- \[UI 測試版\] 第二階段品牌視覺（v0\.2\.0）：首頁、結算、HUD 配色 -->$/,
   /^<link rel="stylesheet" href="ui-brand\.css">$/,
   /^<!-- \[UI 測試版\] 第二階段品牌視覺：上下式首頁、結算角色、同難度再玩一次 -->$/,
-  /^<script src="ui-brand\.js"><\/script>$/
+  /^<script src="ui-brand\.js"><\/script>$/,
+  /^<script src="balloon-assets\.js"><\/script>$/
 ];
 
 test("C. <style>、頁面 HTML 結構與正式宇宙版相同；拿掉插入的標籤後整份 HTML 逐字相同（只多了標題文字）", () => {
@@ -137,7 +138,7 @@ test("D3. ui-brand.css 只引用已定案素材（E-01 背景、三張金框按�
 
 test("D4. Sandbox 衍生按鈕素材：只有三張，來源與處理紀錄完整，尺寸與紀錄一致", async () => {
   const dir = path.join(TEST_DIR, "assets");
-  const pngs = fs.readdirSync(dir).filter((f) => f.endsWith(".png")).sort();
+  const pngs = fs.readdirSync(dir).filter((f) => /^btn_.*\.png$/.test(f)).sort();
   assert.deepEqual(pngs, ["btn_blue.png", "btn_purple.png", "btn_yellow.png"]);
   const src = JSON.parse(read(path.join(dir, "button-sources.json")));
   const expect = { purple: "ui_button_purple.png", yellow: "ui_button_yellow.png.png", blue: "ui_button_blue.png.png" };
