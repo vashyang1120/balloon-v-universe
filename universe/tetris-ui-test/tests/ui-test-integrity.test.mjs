@@ -72,7 +72,9 @@ const INJECTED = [
   /^<link rel="stylesheet" href="ui-brand\.css">$/,
   /^<!-- \[UI 測試版\] 第二階段品牌視覺：上下式首頁、結算角色、同難度再玩一次 -->$/,
   /^<script src="ui-brand\.js"><\/script>$/,
-  /^<script src="balloon-assets\.js"><\/script>$/
+  /^<script src="balloon-assets\.js"><\/script>$/,
+  /^<script src="creation-story\.js"><\/script>$/,
+  /^<link rel="stylesheet" href="creation-story\.css">$/
 ];
 
 test("C. <style>、頁面 HTML 結構與正式宇宙版相同；拿掉插入的標籤後整份 HTML 逐字相同（只多了標題文字）", () => {
