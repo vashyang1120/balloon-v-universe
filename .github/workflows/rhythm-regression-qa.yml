@@ -93,7 +93,9 @@ jobs:
            assert(await p.evaluate(()=>document.getElementById("rv-player-avatar").naturalWidth>0),"avatar asset");
            assert(await p.evaluate(()=>!window.BV_TEST_ISOLATION&&!document.getElementById("bv-test-chooser")),"no test isolation");
            await p.screenshot({path:H.out+"/home.png"});
-           await p.waitForFunction(()=>RV27Audio.debug().playing,null,{timeout:15000});
+           console.log("BGM before gesture", JSON.stringify(await p.evaluate(()=>RV27Audio.debug())));
+           await p.locator("#rv-player-name").click(); // trusted gesture; does not navigate
+           await p.waitForFunction(()=>RV27Audio.debug().unlocked && RV27Audio.debug().playing && RV27Audio.debug().time>0,null,{timeout:15000}).catch(async e=>{console.log("BGM diagnostics",JSON.stringify(await p.evaluate(()=>({audio:RV27Audio.debug(),shouldPlay:RV27Audio.shouldPlay(),active:navigator.userActivation.hasBeenActive,hidden:document.hidden}))));throw e;});
            assert(await p.evaluate(()=>RV27Audio.debug().els<=2),"menu BGM active");
            await click(p,"btn-profile-go"); await screen(p,"s-profile");
            assert(await p.evaluate(()=>document.getElementById("player-id-input").readOnly&&PLAYER.playerKey===""),"locked identity");
