@@ -1,4 +1,4 @@
-name: Rhythm v2.6.5 regression (isolated QA)
+name: Rhythm v2.7 MV sync and production regression (isolated QA)
 on:
   push:
     branches: [qa/rhythm-v2.6.5-regression]
@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 03bba1daa315ff2e8329615330aa6fd576f1850a
+          ref: a8d7aeff872b797af9d58855163ffd57c4b09040
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -20,13 +20,16 @@ jobs:
         run: git rev-parse HEAD
       - name: JavaScript syntax
         run: |
-          for f in universe/rhythm/*.js; do node --check "$f" || exit 1; done
+          for f in universe/rhythm/*.js test/rhythm-v2.7/*.js; do node --check "$f" || exit 1; done
           node --input-type=module <<'JS'
           import fs from 'node:fs';
           import { inlineScripts } from './universe/shared/tools/js-functions.mjs';
           fs.writeFileSync('/tmp/rhythm-inline.js', inlineScripts(fs.readFileSync('universe/rhythm/index.html', 'utf8')));
+          fs.writeFileSync('/tmp/mv-inline.js', inlineScripts(fs.readFileSync('test/rhythm-v2.7/index.html', 'utf8')));
           JS
           node --check /tmp/rhythm-inline.js
+          node --check /tmp/mv-inline.js
+          node --test test/rhythm-v2.7/tests/*.test.mjs
       - name: Rhythm core and shared SDK tests
         if: always()
         run: node --test universe/rhythm/tests/*.test.mjs universe/shared/tests/*.test.mjs
@@ -49,7 +52,7 @@ jobs:
           test -s assets/audio/universe_lobby_bgm.mp3
           for f in v_full_open_arms v_bust_congrats v_bust_happy v_bust_point v_bust_remind; do test -s "assets/rpg/$f.png" || exit 1; done
           test -s assets/ui/avatar_frame_pink_idle.png
-          git diff --name-only 800d6d8f6a02c7c92ab2b1893b803f11161f844a HEAD | awk '!/^universe\/rhythm\// { bad=1; print } END { exit bad }'
+          git diff --name-only 150908b64fb9da37ab4a37caa5616df7bbbe5681 HEAD | awk '!/^test\/rhythm-v2\.7\// { bad=1; print } END { exit bad }'
 
   browser:
     runs-on: ubuntu-latest
@@ -57,7 +60,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 03bba1daa315ff2e8329615330aa6fd576f1850a
+          ref: a8d7aeff872b797af9d58855163ffd57c4b09040
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -185,6 +188,65 @@ jobs:
           JS
           export NODE_PATH="$(npm root -g)"
           node universe/tests/browser/rhythm-release-qa.mjs /tmp/bv-rhythm /tmp/bv-quiz /tmp/rhythm-qa
+      - name: Isolated MV browser E2E (stub provider and blocked provider)
+        run: |
+          export NODE_PATH="$(npm root -g)"
+          cat > universe/tests/browser/mv-qa.mjs <<'JS'
+          import {createHarness,sleep} from "./harness.mjs";
+          const [R,Q,OUT]=process.argv.slice(2);
+          const H=await createHarness({clones:{tetris:R,rhythm:R,quiz:Q},out:OUT,flags:{SCORES_ENABLED:"on",REWARDS_ENABLED:"on"}});
+          const assert=(ok,m)=>{if(!ok)throw Error(m);console.log("PASS",m)};
+          try {
+            for(const mode of ["ready","timeout"]){
+              const {ctx,page:p}=await H.newPage({mobile:true,viewport:{width:844,height:390}});
+              if(mode==="ready") await p.addInitScript(()=>{
+                window.mvTestPlayers=[];
+                window.YT={Player:class{
+                  constructor(id,o){this.o=o;this.t=0;this.plays=0;this.pauses=0;this.seeks=[];window.mvTestPlayers.push(this);setTimeout(()=>o.events.onReady({target:this}),10);}
+                  cueVideoById(o){this.t=o.startSeconds;setTimeout(()=>this.o.events.onStateChange({data:5,target:this}),50);}
+                  mute(){this.muted=true;}
+                  playVideo(){this.plays++;this.started=performance.now();this.o.events.onStateChange({data:1,target:this});}
+                  pauseVideo(){this.pauses++;}
+                  seekTo(t){this.t=t;this.seeks.push(t);}
+                  getCurrentTime(){return this.t;}
+                  getDuration(){return 180;}
+                  destroy(){this.destroyed=true;}
+                }};
+              });
+              await p.goto(H.ORIGIN+"/test/rhythm-v2.7/?bvTestMock=1");
+              await p.waitForFunction(()=>window.UniverseRhythm?.isReady()&&window.RVMV&&window.RV27UI,null,{timeout:15000});
+              assert(await p.evaluate(()=>BV_TEST_ISOLATION.version==="v2.7.0-mv-sync-test-1"&&!UniverseRhythm.session.official.isEnabled()),"isolated "+mode);
+              await p.locator("#btn-play").click();
+              await p.waitForFunction(()=>SONGS.length>=9);
+              await p.evaluate(()=>{songIdx=SONGS.findIndex(s=>s.id==="song005");renderSongCards();selectedSong.youtubeId="Ba_DPuAf0qU";selectedSong.videoUrl="";});
+              await p.locator("#btn-start").click();
+              if(mode==="ready"){
+                await p.waitForFunction(()=>RVMV.debug()?.ready);
+                assert(await p.evaluate(()=>mvTestPlayers[0].muted&&mvTestPlayers[0].plays===0&&!G.running),"muted and no play before countdown");
+              }
+              await p.waitForFunction(()=>G.running&&!!audioSource,null,{timeout:40000});
+              assert(await p.evaluate(()=>!!audioBuffer&&!RV27Audio.debug().playing),"MP3 and game started "+mode);
+              if(mode==="ready"){
+                assert(await p.evaluate(()=>mvTestPlayers.length===1&&mvTestPlayers[0].plays===1),"single player at GO");
+                await p.setViewportSize({width:390,height:844});
+                await p.waitForFunction(()=>G.paused&&!RVMV.debug().want);
+                await p.setViewportSize({width:844,height:390});
+                await p.locator("#btn-resume").click();
+                await p.waitForFunction(()=>!G.paused&&RVMV.debug().want,null,{timeout:10000});
+                assert(await p.evaluate(()=>mvTestPlayers.length===1&&mvTestPlayers[0].plays===2),"same player resume");
+              }else assert(await p.evaluate(()=>!RVMV.debug().ready),"provider blocked does not prevent game");
+              await p.evaluate(()=>{G.perf=20;G.good=10;G.miss=0;G.total=30;G.score=7500;G.maxCombo=30;endGame();});
+              await p.waitForSelector("#s-result:not(.off)");
+              assert(await p.evaluate(()=>RVMV.debug()===null),"stop at result");
+              await p.screenshot({path:H.out+"/"+mode+".png"});
+              assert(!p.errors.length,"no JS errors "+p.errors.join(" | "));
+              await ctx.close();
+            }
+            assert(!H.apiCalls.some(x=>!/^(GET|HEAD) /.test(x)),"no production API writes");
+            assert(!H.db.get("scores")&&!H.db.get("wallets"),"no formal scores or rewards");
+          }finally{await H.finish("mv-qa");}
+          JS
+          node universe/tests/browser/mv-qa.mjs /tmp/bv-rhythm /tmp/bv-quiz /tmp/rhythm-qa/mv
       - uses: actions/upload-artifact@v4
         if: always()
         with:
