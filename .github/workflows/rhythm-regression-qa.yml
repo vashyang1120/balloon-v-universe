@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: aff5c55ed95da2c4eda7f81a87e2c402f4b0f2bd
+          ref: b57c5f9f9f0e536eab36f19aa682ad7f8cab210a
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -32,7 +32,11 @@ jobs:
         run: node --test universe/rhythm/tests/*.test.mjs universe/shared/tests/*.test.mjs
       - name: All repository tests
         if: always()
-        run: find tests universe -name '*.test.mjs' -print0 | xargs -0 node --test
+        run: |
+          git clone --depth 1 https://github.com/vashyang1120/vparty-quiz-game.git /tmp/bv-quiz
+          export BV_QUIZ_BANK=/tmp/bv-quiz/quiz_questions.json
+          test -s "$BV_QUIZ_BANK"
+          find tests universe -name '*.test.mjs' -print0 | xargs -0 node --test
       - name: Verify asset identity and release scope
         if: always()
         run: |
@@ -40,4 +44,4 @@ jobs:
           test -s assets/audio/universe_lobby_bgm.mp3
           for f in v_full_open_arms v_bust_congrats v_bust_happy v_bust_point v_bust_remind; do test -s "assets/rpg/$f.png" || exit 1; done
           test -s assets/ui/avatar_frame_pink_idle.png
-          git diff --name-only HEAD^ HEAD | awk '!/^universe\/rhythm\// { bad=1; print } END { exit bad }'
+          git diff --name-only ad97eea582366ecc23ac714af56710781a71b471 HEAD | awk '!/^universe\/rhythm\// { bad=1; print } END { exit bad }'
