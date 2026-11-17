@@ -280,7 +280,7 @@
     });
     move($("song-counter"), left);
     if (cards) cards.classList.add("rv-cards");
-    var tag = el("div", "rv-test-tag", ""節奏遊戲 · " + esc(window.RV27UI ? window.RV27UI.version : ""));
+    var tag = el("div", "rv-test-tag", "節奏遊戲 · " + esc(window.RV27UI ? window.RV27UI.version : ""));
     left.appendChild(tag);
 
     var right = el("section", "rv-info-side");
