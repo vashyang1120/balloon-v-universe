@@ -11,3 +11,10 @@
 #bv-creation-story .bv-story-original img { display: block; object-fit: contain; margin: 0 auto 10px; }
 #bv-creation-story figcaption { font-size: 13px; }
 #bv-creation-story .bv-story-back { display: block; width: 100%; min-height: 48px; margin-top: 20px; }
+
+#bv-creation-story .bv-story-classroom h3 { text-align: center; font-size: 18px; }
+#bv-creation-story .bv-story-gallery { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 0 12px; }
+#bv-creation-story .bv-story-gallery figure { flex: 0 0 82%; margin: 0; scroll-snap-align: center; }
+#bv-creation-story .bv-story-gallery img { width: 100%; height: auto; display: block; border-radius: 12px; }
+#bv-creation-story .bv-story-gallery figcaption { padding-top: 8px; text-align: center; }
+#bv-creation-story .bv-story-privacy { font-size: 12px; text-align: center; color: #6f5c7d; }
