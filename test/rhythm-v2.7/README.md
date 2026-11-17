@@ -99,3 +99,9 @@ Storage：傳給 SDK 的 localStorage／sessionStorage 都加上前綴 `vRhythmV
 - SCORE 累加只是覆蓋在上面的顯示層，`#r-score` 原本的文字完全不改；動畫結束就顯示原文字。
 - NEW RECORD 只看 `endGame()` 判定後的 `#r-rec`。進入結算頁時先清掉上一場的顯示狀態，再用 MutationObserver 等這一場的判定結果。
 - 離開結算頁會取消 rAF、計時器、彩紙與觀察器。
+
+
+## v2.7.0-mv-sync-test-1
+- Base: v2.6.5 approved production gameplay; existing isolated test shell retained.
+- YouTube IFrame Player API / native video preparation parallel to original MP3 loading; bounded 6.5s wait, then original countdown. No reloading iframe on pause/resume. MP3 clock authoritative; seek on recovery and drift >0.65s, at most every 2.5s. Optional song.mvOffsetSec default 0. Muted background only. No changes to scoring, beatmap, visuals or production routes.
+- Real YouTube buffering, mobile autoplay and per-song matching require physical device validation; CUED is not a guarantee of full buffering.
