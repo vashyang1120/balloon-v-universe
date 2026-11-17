@@ -10,7 +10,7 @@
 <script>
 (function(){
   'use strict';
-  window.BV_TEST_ISOLATION = { version: 'v2.7.0-audio-result-test-1', namespace: 'vRhythmV270UniverseTest1::' };
+  window.BV_TEST_ISOLATION = { version: 'v2.7.0-mv-sync-test-1', namespace: 'vRhythmV270UniverseTest1::' };
   var API = 'https://balloon-v-universe-api.vashyang1120.workers.dev';
   var API_READ = [/^\/v1\/players\/p_[a-z2-7]{20}$/, /^\/v1\/avatars\/base$/];
   var BLOCK_HOST = /firebaseio\.com|firebasedatabase\.app|identitytoolkit\.googleapis|securetoken\.googleapis|firebaseinstallations|firebase\.googleapis/i;
@@ -52,7 +52,7 @@
 </script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>【測試版／資料隔離】氣球小V魔法派對｜遊戲宇宙版 v2.7.0-audio-result-test-1</title>
+<title>【測試版／資料隔離】氣球小V魔法派對｜遊戲宇宙版 v2.7.0-mv-sync-test-1</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;700;900&family=M+PLUS+Rounded+1c:wght@400;700;800;900&display=swap');
 
@@ -1918,14 +1918,15 @@ button,input,select,textarea{
   <!-- [Universe 換殼] 不再載入 Firebase SDK；改用遊戲宇宙共用 SDK（唯讀玩家資料；成績只進 Mock） -->
   <!-- v2.7.0-universe-foundation-test-1：正式 SDK 與正式換殼樣式唯讀引用；換殼層改用測試專用 universe-shell-test.js -->
   <script src="../../universe/shared/universe-sdk.js"></script>
-  <script src="universe-shell-test.js"></script>
+  <script src="universe-shell-test.js?v=mv-sync-test-1"></script>
+  <script src="mv-sync.js?v=mv-sync-test-1"></script>
   <link rel="stylesheet" href="../../universe/shared/universe-ui.css">
   <link rel="stylesheet" href="../../universe/rhythm/universe-shell.css">
   <link rel="stylesheet" href="test-isolation.css">
   <!-- v2.7.0-home-songselect-ui-test-2：首頁＋選歌頁正式美術、動態演出、直向提示 -->
   <link rel="stylesheet" href="home-songselect-ui.css">
   <script src="home-songselect-ui.js"></script>
-  <!-- v2.7.0-audio-result-test-1：選單 BGM／UI 按鈕音效、橫向結算頁 -->
+  <!-- v2.7.0-mv-sync-test-1：選單 BGM／UI 按鈕音效、橫向結算頁 -->
   <link rel="stylesheet" href="result-ui.css">
   <script src="menu-audio.js"></script>
   <script src="result-ui.js"></script>
@@ -1938,7 +1939,7 @@ button,input,select,textarea{
   <div class="title-deco">🎈 ✨ 🌸</div>
   <div class="logo" onclick="handleLogoClick()" style="cursor:default;user-select:none">氣球小V魔法派對<small>BALLOON V MAGIC PARTY</small></div>
   <div class="title-hint">Suno AI × YouTube MV</div>
-  <div id="game-version" style="font-size:9px;color:rgba(155,93,229,.35);letter-spacing:.12em;margin-top:3px;">v2.7.0-audio-result-test-1</div>
+  <div id="game-version" style="font-size:9px;color:rgba(155,93,229,.35);letter-spacing:.12em;margin-top:3px;">v2.7.0-mv-sync-test-1</div>
   <div id="home-daily-challenge-hint" class="rhythm-daily-hint-card need-profile">
     <div class="rhythm-daily-hint-top">
       <div>
@@ -2304,7 +2305,7 @@ button,input,select,textarea{
 </div>
 
 
-<div class="bv-test-banner" id="bv-test-banner">🧪 測試版／資料隔離 · v2.7.0-audio-result-test-1</div>
+<div class="bv-test-banner" id="bv-test-banner">🧪 測試版／資料隔離 · v2.7.0-mv-sync-test-1</div>
 <button id="fs-btn" onclick="toggleFullscreen()" title="全螢幕">🔲</button>
 </div><!-- #root -->
 <script>
@@ -4281,63 +4282,9 @@ function loadSRT(url) {
 //  2. If song.youtubeId → show "▶ MV" button; user taps to load YouTube
 //     (requires user gesture to unlock, works on GitHub Pages)
 // ═══════════════════════════════════════════════════════
-var mvLoaded = false;
-
-function ytGetVid(){var f=document.getElementById('yt-player');return f&&f.dataset&&f.dataset.vid||'';}
-function ytPlayFrom(s){var f=document.getElementById('yt-player'),v=ytGetVid();if(!f||!v)return;var t=Math.floor(Math.max(0,s||0));f.src='https://www.youtube.com/embed/'+v+'?autoplay=1&controls=0&mute=1&loop=1&playlist='+v+'&rel=0&modestbranding=1&playsinline=1&start='+t;f.style.display='block';}
-function ytPause(){var f=document.getElementById('yt-player'),v=ytGetVid();if(!f||!v)return;f.src='https://www.youtube.com/embed/'+v+'?autoplay=0&controls=0&mute=1&rel=0';}
-function ytStop(){var f=document.getElementById('yt-player');if(!f)return;f.src='';f.style.display='none';}
-function ytGetVid(){var f=document.getElementById('yt-player');return(f&&f.dataset&&f.dataset.vid)||'';}function ytPlayFrom(s){var f=document.getElementById('yt-player'),v=ytGetVid();if(!f||!v)return;var t=Math.floor(Math.max(0,s||0));f.src='https://www.youtube.com/embed/'+v+'?autoplay=1&controls=0&mute=1&loop=1&playlist='+v+'&rel=0&modestbranding=1&playsinline=1&start='+t;f.style.display='block';}function ytPause(){var f=document.getElementById('yt-player'),v=ytGetVid();if(!f||!v)return;f.src='https://www.youtube.com/embed/'+v+'?autoplay=0&controls=0&mute=1&rel=0';}function ytStop(){var f=document.getElementById('yt-player');if(!f)return;f.src='';f.style.display='none';}
-function setupBackground(song){
-  var bgVid=document.getElementById('bg-video'),ytFrame=document.getElementById('yt-player'),mvBtn=document.getElementById('mv-btn');
-  bgVid.src='';bgVid.style.display='none';ytFrame.src='';ytFrame.style.display='none';mvBtn.style.display='none';mvLoaded=false;
-  if(song.videoUrl){bgVid.src=song.videoUrl;bgVid.style.display='block';bgVid.load();bgVid.play().catch(function(){});}
-  else if(song.youtubeId){var vid=song.youtubeId.trim().replace(/.*shorts\//,'').replace(/.*v=/,'').replace(/[?&].*/,'').trim();ytFrame.dataset.vid=vid;}
-}
-
-function toggleMV() {
-  // 點擊後切換 YouTube iframe 的靜音狀態
-  // 用 postMessage 控制 YouTube iframe 音量
-  var ytFrame = document.getElementById('yt-player');
-  var mvBtn = document.getElementById('mv-btn');
-  if (!ytFrame || ytFrame.style.display === 'none') return;
-
-  if (mvBtn.textContent === '🔊') {
-    // 重新載入 iframe，這次不靜音（需要使用者手勢才有效）
-    var song = selectedSong;
-    if (!song || !song.youtubeId) return;
-    var vid = song.youtubeId.trim()
-      .replace(/.*shorts\//,'')
-      .replace(/.*v=/,'')
-      .replace(/[?&].*/,'')
-      .trim();
-    var params = [
-      'autoplay=1', 'controls=0', 'mute=0',
-      'loop=1', 'playlist=' + vid,
-      'rel=0', 'modestbranding=1', 'playsinline=1'
-    ].join('&');
-    ytFrame.src = 'https://www.youtube.com/embed/' + vid + '?' + params;
-    mvBtn.textContent = '🔇';
-    mvBtn.title = '靜音 MV';
-  } else {
-    // 靜音：重新載入靜音版
-    var song2 = selectedSong;
-    if (!song2 || !song2.youtubeId) return;
-    var vid2 = song2.youtubeId.trim()
-      .replace(/.*shorts\//,'')
-      .replace(/.*v=/,'')
-      .replace(/[?&].*/,'')
-      .trim();
-    var params2 = [
-      'autoplay=1', 'controls=0', 'mute=1',
-      'loop=1', 'playlist=' + vid2,
-      'rel=0', 'modestbranding=1', 'playsinline=1'
-    ].join('&');
-    ytFrame.src = 'https://www.youtube.com/embed/' + vid2 + '?' + params2;
-    mvBtn.textContent = '🔊';
-    mvBtn.title = '開啟 MV 聲音';
-  }
-}
+// MV is controlled exclusively by the isolated v2.7 controller.
+function setupBackground(song) { return RVMV.prepare(song); }
+function toggleMV() { /* background MV stays muted */ }
 
 // ═══════════════════════════════════════════════════════
 //  AUDIO ENGINE  (Web Audio API)
@@ -4382,60 +4329,14 @@ function startAudio(offset) {
   audioSource.connect(audioCtx.destination);
   audioSource.start(0, offset);
   audioStartTime = audioCtx.currentTime - offset;
-  // MV 已在倒數時開始，不需要重設
+  // Background video is controlled separately by RVMV.
 }
 
 
-// ── YouTube iframe 控制（postMessage API）──────────────
-function ytCmd(cmd) {
-  var ytFrame = document.getElementById('yt-player');
-  if (!ytFrame || ytFrame.style.display === 'none') return;
-  try {
-    ytFrame.contentWindow.postMessage(
-      JSON.stringify({ event: 'command', func: cmd, args: [] }),
-      '*'
-    );
-  } catch(e) {}
-}
-function ytPlay()  { ytCmd('playVideo'); }
-function ytPause() { ytCmd('pauseVideo'); }
-
-
-// ── YouTube MV 控制 helper ────────────────────────────
-function ytPause() {
-  var ytFrame = document.getElementById('yt-player');
-  if (!ytFrame || ytFrame.style.display === 'none') return;
-  var vid = ytFrame.dataset.vid;
-  if (!vid) return;
-  // 暫停：載入靜態版本（autoplay=0）
-  ytFrame.src = 'https://www.youtube.com/embed/' + vid +
-    '?autoplay=0&controls=0&mute=1&rel=0&modestbranding=1&playsinline=1';
-}
-
-function ytResume(offsetSec) {
-  var ytFrame = document.getElementById('yt-player');
-  if (!ytFrame || ytFrame.style.display === 'none') return;
-  var vid = ytFrame.dataset.vid;
-  if (!vid) return;
-  // 從指定秒數繼續播
-  var startSec = Math.floor(offsetSec || 0);
-  var params = [
-    'autoplay=1', 'controls=0', 'mute=1',
-    'loop=1', 'playlist=' + vid,
-    'rel=0', 'modestbranding=1', 'playsinline=1',
-    'start=' + startSec
-  ].join('&');
-  ytFrame.src = 'https://www.youtube.com/embed/' + vid + '?' + params;
-}
-
-function ytStop() {
-  var ytFrame = document.getElementById('yt-player');
-  if (!ytFrame) return;
-  var vid = ytFrame.dataset.vid;
-  if (!vid) return;
-  ytFrame.src = 'https://www.youtube.com/embed/' + vid +
-    '?autoplay=0&controls=0&mute=1&rel=0&modestbranding=1&playsinline=1';
-}
+function ytPause() { RVMV.pause(); }
+function ytResume(s) { RVMV.play(s); }
+function ytPlayFrom(s) { RVMV.play(s); }
+function ytStop() { RVMV.stop(); }
 
 function stopAudio() {
   if (audioSource) { try { audioSource.stop(); } catch(e){} audioSource = null; }
@@ -4450,7 +4351,7 @@ function resumeAudio() {
   if (!audioCtx) return;
   if (audioCtx.state === 'suspended') audioCtx.resume();
   startAudio(audioPauseOffset);
-  // startAudio 裡已有 syncYouTubeToAudio，所以不需再呼叫 ytResume
+  // resumeVideoFromProfile resumes the existing muted player.
 }
 // THE KEY FUNCTION: game time always = audio clock
 function getGameTimeSec() {
@@ -4527,22 +4428,8 @@ function setProfileOpenedFromGameUI(active) {
   if (idInput) idInput.disabled = profileOpenedFromGame;
   if (baseBtn) baseBtn.disabled = profileOpenedFromGame;
 }
-function pauseVideoForProfile() {
-  var bgVid = document.getElementById('bg-video');
-  if (bgVid && bgVid.style.display !== 'none') {
-    try { bgVid.pause(); } catch(e) {}
-  }
-  try { ytPause(); } catch(e2) {}
-}
-function resumeVideoFromProfile() {
-  var bgVid = document.getElementById('bg-video');
-  if (bgVid && bgVid.style.display !== 'none' && bgVid.src) {
-    try { bgVid.play().catch(function(){}); } catch(e) {}
-  }
-  try { ytResume(audioPauseOffset || (G.gt / 1000) || 0); } catch(e2) {
-    try { ytPlayFrom(audioPauseOffset || (G.gt / 1000) || 0); } catch(e3) {}
-  }
-}
+function pauseVideoForProfile() { RVMV.pause(); }
+function resumeVideoFromProfile() { RVMV.play(audioPauseOffset); }
 function pauseGameForProfile() {
   wasPausedBeforeProfile = !!G.paused;
   shouldResumeMediaFromProfile = !!(G.running && !G.paused);
@@ -4691,19 +4578,22 @@ function initGame() {
   document.getElementById('pause-ov').classList.add('off');
 
   go('s-game');
-  setupBackground(song);
+  var mvReady = setupBackground(song);
+  var thisRound = G;
 
   // Load beatmap from external JSON (or fall back to embedded)
   G.total = 0;
 
   // Load audio then beatmap then lyrics, then start
   loadAudio(song.audioUrl || '').then(function(){
+    if (G !== thisRound) return;
     // Load beatmap
     var bmPromise;
     if (song.beatmapUrl) {
       bmPromise = fetch(song.beatmapUrl)
         .then(function(r){ return r.ok ? r.json() : null; })
         .then(function(data){
+          if (G !== thisRound) return;
           if (data && data.length) {
             // Beatmap JSON format: [{t, lane, hold}, ...]
             // Apply difficulty filter
@@ -4713,7 +4603,7 @@ function initGame() {
           }
           G.total = G.beatmap.length;
         })
-        .catch(function(){ G.beatmap = makeBeatmap(diff); G.total = G.beatmap.length; });
+        .catch(function(){ if(G === thisRound){ G.beatmap = makeBeatmap(diff); G.total = G.beatmap.length; } });
     } else {
       bmPromise = Promise.resolve();
       G.beatmap = makeBeatmap(diff);
@@ -4721,11 +4611,15 @@ function initGame() {
     }
     return bmPromise;
   }).then(function(){
+    if (G !== thisRound) return [];
     var lyrPromise = song.srtUrl ? loadSRT(song.srtUrl) : Promise.resolve(song.lyrics || []);
     return lyrPromise;
   }).then(function(lyrics){
+    if (G !== thisRound) return;
     G.lyrics = lyrics;
-    countdown(3);
+    return mvReady.then(function(){
+      if (G === thisRound && !document.getElementById('s-game').classList.contains('off')) countdown(3);
+    });
   });
 }
 
@@ -4734,8 +4628,13 @@ function initGame() {
 // ═══════════════════════════════════════════════════════
 function countdown(n) {
   var el = document.getElementById('countdown');
-  if (n === 0) { showCnt(el,'GO!','#06d6a0',startLoop); return; }
-  showCnt(el, String(n), '#fff', function(){ countdown(n-1); });
+  var round = G;
+  function valid(){ return G === round && !document.getElementById('s-game').classList.contains('off'); }
+  function next(fn){ if (!valid()) return; var mask = document.getElementById('rv-rotate-mask'); if(mask && !mask.hidden){setTimeout(function(){next(fn);},120);return;} fn(); }
+  next(function(){
+    if (n === 0) { showCnt(el,'GO!','#06d6a0',function(){next(startLoop);}); return; }
+    showCnt(el,String(n),'#fff',function(){next(function(){countdown(n-1);});});
+  });
 }
 function showCnt(el,txt,c,cb) {
   el.textContent=txt; el.style.color=c;
@@ -5033,11 +4932,7 @@ function quitGame() {
   G.running = false;
   cancelAnimationFrame(G.raf);
   stopAudio();
-  // Stop video
-  var bgVid = document.getElementById('bg-video');
-  bgVid.pause(); bgVid.src = '';
-  var ytFrame = document.getElementById('yt-player');
-  ytFrame.src = ''; ytFrame.style.display = 'none';
+  RVMV.stop();
   go('s-title');
 }
 
@@ -5045,8 +4940,6 @@ function quitGame() {
 //  END GAME
 // ═══════════════════════════════════════════════════════
 function endGame() {
-  ytStop();
-  ytStop();
   G.running = false;
   cancelAnimationFrame(G.raf);
   stopAudio();
