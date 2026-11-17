@@ -124,11 +124,33 @@ test("D2. ui-brand.js（第二階段品牌視覺）不改寫遊戲狀態、規�
   for (const p of imgs) assert.ok(fs.existsSync(path.join(TEST_DIR, p)), p + " 不存在");
 });
 
-test("D3. ui-brand.css 不使用任何圖片（背景全部 CSS）；HUD 規則只改顏色／陰影，不改尺寸", () => {
+test("D3. ui-brand.css 只引用已定案素材（E-01 背景、三張金框按鈕）；遊戲中 HUD 規則不用圖片、只改顏色／陰影", () => {
   const css = read(path.join(TEST_DIR, "ui-brand.css")).replace(/\/\*[\s\S]*?\*\//g, "");
-  assert.doesNotMatch(css, /url\(/);
+  const urls = [...new Set([...css.matchAll(/url\("([^"]+)"\)/g)].map((m) => m[1]))].sort();
+  assert.deepEqual(urls, ["../../assets/universe_map_bg.png", "assets/btn_blue.png", "assets/btn_purple.png", "assets/btn_yellow.png"]);
+  for (const u of urls) assert.ok(fs.existsSync(path.join(TEST_DIR, u)), u + " 不存在");
+  assert.doesNotMatch(css, /item_round_balloon_bundle|item_star|sign_select_player|sign_my_pass|coin_gold/, "不得使用排除的素材");
   const hud = css.split("\n").filter((l) => /#s-game|#board-wrap|#next-canvas|#g-avatar/.test(l)).join("\n");
+  assert.doesNotMatch(hud, /url\(/, "遊戲中不得使用 E-01 或金框按鈕");
   assert.doesNotMatch(hud, /(^|[\s;{])(width|height|min-|max-|padding|margin|font-size|border-width|border:|top|left|right|bottom|inset|transform|grid|flex|gap|position)\s*:/m, hud);
+});
+
+test("D4. Sandbox 衍生按鈕素材：只有三張，來源與處理紀錄完整，尺寸與紀錄一致", async () => {
+  const dir = path.join(TEST_DIR, "assets");
+  const pngs = fs.readdirSync(dir).filter((f) => f.endsWith(".png")).sort();
+  assert.deepEqual(pngs, ["btn_blue.png", "btn_purple.png", "btn_yellow.png"]);
+  const src = JSON.parse(read(path.join(dir, "button-sources.json")));
+  const expect = { purple: "ui_button_purple.png", yellow: "ui_button_yellow.png.png", blue: "ui_button_blue.png.png" };
+  for (const [k, name] of Object.entries(expect)) {
+    const r = src[k];
+    assert.equal(r.source_repo, "vashyang1120/balloon-v-rush");
+    assert.equal(r.source_path, "assets/adventure/ui/components/" + name);
+    assert.match(r.source_sha256, /^[0-9a-f]{64}$/);
+    const buf = fs.readFileSync(path.join(dir, `btn_${k}.png`));
+    assert.equal(buf.readUInt32BE(16), r.output_size[0]); assert.equal(buf.readUInt32BE(20), r.output_size[1]);   // PNG IHDR 寬高
+    assert.ok(buf[25] === 6, "必須是含透明通道的 RGBA PNG");
+  }
+  assert.match(read(path.join(dir, "SOURCES.md")), /balloon-v-rush/);
 });
 
 test("E1. 頁面載入順序：sandbox-guard.js 在 SDK 之前；換殼層缺少防護就停止", () => {
