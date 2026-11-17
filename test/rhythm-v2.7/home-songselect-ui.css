@@ -1,0 +1,244 @@
+/* ==========================================================
+   v2.7.0-home-songselect-ui-test-1 — A-4 橫向魔法音樂舞台
+   範圍：只作用於首頁 #s-title.rv-ui、選歌頁 #s-songlist.rv-ui 與直向提示 #rv-rotate-mask
+   遊戲畫面、HUD、結算、排行榜、角色設定的樣式完全不動
+   ========================================================== */
+:root {
+  --rv-pink: #ff6fa8; --rv-pink-dk: #d6457f; --rv-pink-shadow: #b8336b;
+  --rv-purple: #9a5ae6; --rv-purple-dk: #6d34b8;
+  --rv-yellow: #ffd23f; --rv-yellow-dk: #e3a400;
+  --rv-gold: #f6bd46; --rv-gold-dk: #9a5a12;
+  --rv-ink: #4a2a6a; --rv-ink-soft: #7d6496;
+  --rv-safe-t: env(safe-area-inset-top, 0px); --rv-safe-r: env(safe-area-inset-right, 0px);
+  --rv-safe-b: env(safe-area-inset-bottom, 0px); --rv-safe-l: env(safe-area-inset-left, 0px);
+}
+
+/* 原本未被搬進新版面的首頁／選歌頁元素（舊裝飾、舊提示文字、空的按鈕列）不顯示 */
+#s-title.rv-ui > :not(.rv-home),
+#s-songlist.rv-ui > :not(.rv-select) { display: none !important; }
+
+#s-title.rv-ui, #s-songlist.rv-ui {
+  padding: 0 !important; overflow: hidden !important;
+  background: linear-gradient(160deg, #ffe3f1 0%, #f3e3ff 55%, #fff4d6 100%) !important;
+}
+
+/* ---------- 共用：立體圓角按鈕 ---------- */
+.rv-ui .rv-btn-main, .rv-ui .rv-btn-purple, .rv-ui .rv-btn-yellow, .rv-ui .rv-btn-back {
+  position: relative; border-radius: 999px; font-weight: 900; letter-spacing: .04em;
+  min-height: 46px; padding: 10px 22px; transition: transform .12s, box-shadow .12s, filter .12s;
+  font-family: 'Fredoka One', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  text-shadow: 0 2px 0 rgba(0,0,0,.18);
+}
+.rv-ui .rv-btn-main {
+  width: 100%; min-height: clamp(50px, 13vh, 66px); font-size: clamp(19px, 4.6vh, 26px); color: #fff;
+  background: linear-gradient(180deg, #ff9cc6 0%, var(--rv-pink) 45%, var(--rv-pink-dk) 100%);
+  border: 3px solid #ffe08a;
+  box-shadow: 0 6px 0 var(--rv-pink-shadow), 0 10px 22px rgba(214,69,127,.45), inset 0 3px 0 rgba(255,255,255,.55);
+}
+.rv-ui .rv-btn-purple {
+  color: #fff; font-size: clamp(14px, 3.6vh, 17px);
+  background: linear-gradient(180deg, #c08cff 0%, var(--rv-purple) 50%, var(--rv-purple-dk) 100%);
+  border: 3px solid var(--rv-gold);
+  box-shadow: 0 5px 0 var(--rv-gold-dk), 0 8px 16px rgba(109,52,184,.35), inset 0 3px 0 rgba(255,255,255,.4);
+}
+.rv-ui .rv-btn-yellow {
+  color: #6b3d00 !important; text-shadow: 0 1px 0 rgba(255,255,255,.6); font-size: clamp(14px, 3.6vh, 17px);
+  background: linear-gradient(180deg, #fff1a6 0%, var(--rv-yellow) 50%, var(--rv-yellow-dk) 100%);
+  border: 3px solid var(--rv-gold);
+  box-shadow: 0 5px 0 var(--rv-gold-dk), 0 8px 16px rgba(227,164,0,.35), inset 0 3px 0 rgba(255,255,255,.6);
+}
+.rv-ui .rv-btn-back {
+  color: var(--rv-purple-dk); text-shadow: none; font-size: 14px; background: #fff;
+  border: 3px solid #e6d3ff; box-shadow: 0 4px 0 #cdb3f2;
+}
+.rv-ui .rv-btn-main:hover, .rv-ui .rv-btn-purple:hover, .rv-ui .rv-btn-yellow:hover, .rv-ui .rv-btn-back:hover { filter: brightness(1.05); transform: translateY(-1px); }
+.rv-ui .rv-btn-main:active, .rv-ui .rv-btn-purple:active, .rv-ui .rv-btn-yellow:active, .rv-ui .rv-btn-back:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,.25); }
+.rv-ui button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+/* ==========================================================
+   首頁：左 48% 舞台／右 52% 玩家與按鈕
+   ========================================================== */
+.rv-home {
+  position: absolute; inset: 0; display: flex;
+  padding: var(--rv-safe-t) var(--rv-safe-r) var(--rv-safe-b) var(--rv-safe-l);
+}
+.rv-stage { position: relative; flex: 0 0 48%; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
+.rv-stage-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.rv-heading { position: relative; z-index: 3; text-align: center; margin-top: clamp(30px, 12vh, 84px); padding: 0 14%; }
+.rv-heading .logo { font-size: clamp(22px, 7vh, 46px) !important; cursor: default; }
+.rv-heading .logo small { font-size: .32em; }
+.rv-subtitle {
+  display: inline-block; margin-top: 4px; padding: 3px 14px; border-radius: 999px;
+  background: rgba(255,255,255,.85); color: var(--rv-purple-dk); font-weight: 900;
+  font-size: clamp(11px, 2.8vh, 15px); letter-spacing: .12em; box-shadow: 0 3px 10px rgba(154,90,230,.25);
+}
+.rv-hero { position: absolute; z-index: 2; left: 50%; bottom: 7%; transform: translateX(-50%);
+  height: min(64%, calc(48vw * 0.95)); aspect-ratio: 378 / 469; }
+.rv-hero { max-height: 560px; }
+.rv-hero-img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: contain; display: block;
+  filter: drop-shadow(0 8px 10px rgba(110,40,120,.28)); animation: rvFloat 3.6s ease-in-out infinite; }
+.rv-hero-glow { position: absolute; inset: 8% -18% 0; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255,250,210,.85), rgba(255,250,210,0)); }
+.rv-balloons { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.rv-balloon { position: absolute; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,.15)); }
+.rv-balloon-red { width: clamp(42px, 14vh, 82px); left: 15%; top: 30%; animation: rvSway 5s ease-in-out infinite; }
+.rv-balloon-blue { width: clamp(50px, 17vh, 100px); right: 13%; top: 24%; transform: rotate(-18deg); animation: rvSway 6s ease-in-out infinite reverse; }
+.rv-img-failed { display: none !important; }
+
+.rv-panel {
+  position: relative; flex: 1 1 52%; min-width: 0; display: flex; flex-direction: column; justify-content: center;
+  gap: clamp(6px, 2vh, 14px); padding: clamp(8px, 3vh, 22px) clamp(14px, 4vw, 44px);
+  background: radial-gradient(120% 90% at 100% 0%, rgba(255,255,255,.7), rgba(255,255,255,.25));
+}
+.rv-meta { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.rv-meta #game-version { margin: 0 !important; color: rgba(109,52,184,.55) !important; }
+.rv-meta .bv-title-meta { gap: 2px; }
+.rv-ui .bv-player-chip { display: none !important; }          /* 玩家改由資料卡顯示 */
+/* 首頁右側已有「測試版／資料隔離」標示與版本號，浮動測試橫條改在其他畫面顯示，避免蓋住標題 */
+body.rv27-ui:has(#s-title.rv-ui:not(.off)) #bv-test-banner { display: none; }
+
+.rv-player-card {
+  display: flex; align-items: center; gap: clamp(8px, 2vw, 16px); padding: 6px 16px 6px 6px;
+  border-radius: 26px; background: linear-gradient(135deg, #fff, #fff2fa);
+  border: 3px solid #ffc6e1; box-shadow: 0 6px 18px rgba(214,69,127,.18);
+}
+.rv-avatar-box { position: relative; flex: 0 0 auto; width: clamp(56px, 17vh, 88px); aspect-ratio: 1; }
+/* U-06 頭像框（1254×1254，內圈直徑約 50%，圓心約 49.7%／48.8%） */
+.rv-player-avatar { position: absolute; z-index: 3; width: 48%; height: 48%; left: 25.7%; top: 24.8%;
+  border-radius: 50%; object-fit: cover; background: #fff8ee; }
+.rv-frame { position: absolute; z-index: 2; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.rv-avatar-box:has(.rv-frame.rv-img-failed) .rv-player-avatar { width: 92%; height: 92%; left: 4%; top: 4%; border: 4px solid var(--rv-pink); }
+.rv-player-text { min-width: 0; }
+.rv-player-label { font-size: 11px; font-weight: 800; color: var(--rv-ink-soft); letter-spacing: .1em; }
+.rv-player-name { font-size: clamp(16px, 4.4vh, 22px); font-weight: 900; color: var(--rv-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rv-player-title { margin-top: 2px; font-size: clamp(11px, 2.8vh, 13px); font-weight: 800; color: #c4537f; }
+.rv-player-title.is-empty { color: var(--rv-ink-soft); font-weight: 700; }
+.rv-panel .bv-identity-card { margin-top: 2px; }
+
+.rv-panel .rhythm-daily-hint-card { width: 100% !important; margin: 0 !important; padding: 7px 12px !important; }
+.rv-btn-row { display: flex; gap: clamp(8px, 1.6vw, 14px); }
+.rv-btn-row > .btn { flex: 1 1 0; margin: 0; }
+.rv-btn-row-minor > .btn { min-height: 38px; padding: 6px 12px; font-size: 13px; }
+.rv-tutorial-slot {
+  align-self: center; padding: 4px 14px; border-radius: 999px; border: 2px dashed rgba(154,90,230,.35);
+  color: rgba(109,52,184,.55); font-size: 12px; font-weight: 800; pointer-events: none; user-select: none;
+}
+
+/* ==========================================================
+   選歌頁：左 45% 封面／右 55% 資訊
+   ========================================================== */
+.rv-select {
+  position: absolute; inset: 0; display: flex;
+  padding: var(--rv-safe-t) var(--rv-safe-r) var(--rv-safe-b) var(--rv-safe-l);
+}
+.rv-cover-side {
+  position: relative; flex: 0 0 45%; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: clamp(4px, 1.6vh, 10px); padding: clamp(6px, 2vh, 16px) 8px;
+  background: radial-gradient(ellipse at 50% 60%, rgba(255,255,255,.85), rgba(255,226,244,0) 70%);
+}
+.rv-cover-side h2 { font-size: clamp(16px, 4.4vh, 22px) !important; color: var(--rv-pink-dk) !important; margin: 0; }
+.rv-ui #song-cards.rv-cards { width: 100%; gap: clamp(4px, 1vw, 10px); }
+.rv-ui #song-card-wrap { flex: 1 1 auto; min-width: 0; display: flex; justify-content: center; }
+.rv-ui .song-card {
+  width: 100% !important; max-width: min(100%, calc(56vh * 4 / 3)); border: 4px solid #fff !important; border-radius: 22px !important;
+  box-shadow: 0 0 0 4px #ffb3d6, 0 10px 26px rgba(154,90,230,.35) !important; background: #fff;
+}
+.rv-ui .song-card-thumb { height: auto !important; aspect-ratio: 4 / 3; background: linear-gradient(135deg, #2d1846, #5a2d7a) !important; }
+.rv-ui .song-card-thumb img { object-fit: contain !important; }   /* 保留既有封面完整比例 */
+.rv-ui .song-card-body { display: none !important; }                /* 歌曲資訊改在右側顯示 */
+.rv-ui .song-nav {
+  position: relative; flex: 0 0 auto; width: clamp(44px, 13vh, 64px); height: clamp(44px, 13vh, 64px);
+  padding: 0; display: flex; align-items: center; justify-content: center; font-size: 26px; color: var(--rv-pink-dk);
+}
+.rv-ui .song-nav .rv-arrow-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; }
+.rv-ui .song-nav.rv-arrow-ready .rv-arrow-img { opacity: 1; }
+.rv-ui .song-nav.rv-arrow-ready .rv-arrow-fallback { visibility: hidden; }
+.rv-ui .song-nav:disabled { opacity: .3; }
+.rv-ui .song-counter { font-size: 13px !important; color: var(--rv-purple-dk) !important; padding: 2px 12px; border-radius: 999px; background: rgba(255,255,255,.8); }
+
+.rv-info-side {
+  position: relative; flex: 1 1 55%; min-width: 0; display: flex; flex-direction: column; justify-content: center;
+  gap: clamp(5px, 1.7vh, 12px); padding: clamp(8px, 2.6vh, 20px) clamp(14px, 3.5vw, 40px) clamp(8px, 2.6vh, 20px) clamp(8px, 1.6vw, 18px);
+}
+.rv-song-info { padding: clamp(8px, 2vh, 14px) 16px; border-radius: 22px; background: rgba(255,255,255,.88); border: 3px solid #f0d9ff; box-shadow: 0 6px 16px rgba(154,90,230,.15); }
+.rv-song-title { font-size: clamp(18px, 5vh, 26px); font-weight: 900; color: var(--rv-ink); line-height: 1.2; }
+.rv-song-artist { font-size: clamp(11px, 2.8vh, 13px); font-weight: 700; color: var(--rv-ink-soft); }
+.rv-song-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.rv-song-chips:empty { display: none; }
+.rv-chip { padding: 2px 10px; border-radius: 999px; background: #f3e6ff; color: var(--rv-purple-dk); font-size: 12px; font-weight: 800; }
+.rv-best { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; margin-top: 6px; }
+.rv-best-label { font-size: 12px; font-weight: 800; color: var(--rv-ink-soft); }
+.rv-best-value { font-size: clamp(14px, 3.6vh, 17px); font-weight: 900; color: var(--rv-pink-dk); }
+.rv-best-value.is-empty { font-size: 13px; color: var(--rv-ink-soft); font-weight: 700; }
+.rv-info-side .rhythm-daily-hint-card { width: 100% !important; margin: 0 !important; padding: 7px 12px !important; }
+
+.rv-ui #diff-wrap { width: 100% !important; gap: 4px !important; align-items: stretch !important; }
+.rv-ui #diff-wrap label { color: var(--rv-ink-soft) !important; }
+.rv-ui .drow { gap: clamp(6px, 1.4vw, 12px) !important; }
+.rv-ui .db {
+  position: relative; min-height: 46px; border-radius: 18px !important; font-size: 15px !important; font-weight: 900;
+  color: var(--rv-ink) !important; border: 3px solid transparent !important; box-shadow: 0 4px 0 rgba(0,0,0,.12) !important;
+  align-items: center; justify-content: center; transition: transform .12s, box-shadow .12s;
+}
+.rv-ui .db[data-d="easy"]   { background: linear-gradient(180deg, #d8fbe9, #8fe6be) !important; border-color: #8fe6be !important; }
+.rv-ui .db[data-d="normal"] { background: linear-gradient(180deg, #fff6c2, #ffd94f) !important; border-color: #ffd94f !important; }
+.rv-ui .db[data-d="hard"]   { background: linear-gradient(180deg, #f1e2ff, #c99cf5) !important; border-color: #c99cf5 !important; }
+/* 選中：白色粗外框＋外圈＋放大＋勾號（不只靠顏色） */
+.rv-ui .db.on { transform: translateY(-2px) scale(1.06); border-color: #fff !important; z-index: 1;
+  box-shadow: 0 0 0 3px var(--rv-ink), 0 6px 14px rgba(74,42,106,.35) !important; }
+.rv-ui .db.on::before { content: "✓ "; }
+.rv-ui .db:not(.on) { opacity: .82; }
+
+.rv-select-actions { display: flex; align-items: stretch; gap: 10px; }
+.rv-select-actions .rv-btn-back { flex: 0 0 auto; margin: 0; }
+.rv-select-actions .rv-btn-start { flex: 1 1 auto; width: auto; margin: 0; }
+
+/* ---------- 矮螢幕：先縮裝飾與留白，按鈕維持可按大小 ---------- */
+@media (max-height: 430px) {
+  .rv-tutorial-slot { display: none; }
+  .rv-heading { margin-top: 34px; }
+  .rv-panel { gap: 6px; padding-top: 6px; padding-bottom: 6px; }
+  .rv-panel .rhythm-daily-hint-card, .rv-info-side .rhythm-daily-hint-card { padding: 4px 10px !important; }
+  .rv-player-card { padding: 4px 12px 4px 4px; }
+  .rv-ui #diff-wrap label { display: none; }
+  .rv-cover-side h2 { display: none; }
+}
+@media (max-height: 360px) {
+  .rv-btn-row-minor { display: none; }   /* 角色設定／觀看MV 為次要入口；極矮螢幕暫時收起 */
+  .rv-meta #game-version { display: none; }
+  .rv-song-artist { display: none; }
+}
+/* 窄而高（平板直向、桌機窄視窗）：仍保持左右配置，舞台縮窄 */
+@media (max-aspect-ratio: 1/1) and (pointer: fine) {
+  .rv-stage { flex-basis: 44%; }
+  .rv-cover-side { flex-basis: 42%; }
+}
+
+/* ---------- 動畫（輕量；支援減少動態） ---------- */
+@keyframes rvFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes rvSway { 0%, 100% { translate: 0 0; } 50% { translate: 0 -8px; } }
+@keyframes rvTwinkle { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+.rv-twinkle { animation: rvTwinkle 2.8s ease-in-out infinite; }
+.rv-note { animation: rvTwinkle 3.4s ease-in-out infinite; }
+.rv-d2 { animation-delay: .9s; } .rv-d3 { animation-delay: 1.7s; }
+@media (prefers-reduced-motion: reduce) {
+  .rv-hero-img, .rv-balloon, .rv-twinkle, .rv-note, .rv-rotate-phone { animation: none !important; }
+  .rv-ui .rv-btn-main, .rv-ui .db { transition: none !important; }
+}
+
+/* ==========================================================
+   直向提示（全畫面；不使用強制鎖定 API）
+   ========================================================== */
+.rv-rotate-mask {
+  position: fixed; inset: 0; z-index: 2147483400; display: flex; align-items: center; justify-content: center;
+  padding: calc(16px + var(--rv-safe-t)) calc(16px + var(--rv-safe-r)) calc(16px + var(--rv-safe-b)) calc(16px + var(--rv-safe-l));
+  background: linear-gradient(160deg, #ff9cc6 0%, #c79bff 60%, #ffe08a 100%); color: #fff; text-align: center;
+  font-family: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+}
+.rv-rotate-mask[hidden] { display: none !important; }
+.rv-rotate-card { max-width: 340px; }
+.rv-rotate-card h2 { font-size: 24px; font-weight: 900; margin: 12px 0 8px; text-shadow: 0 2px 0 rgba(120,40,120,.35); }
+.rv-rotate-card p { font-size: 16px; font-weight: 800; line-height: 1.55; }
+.rv-rotate-card .rv-rotate-sub { margin-top: 12px; font-size: 13px; font-weight: 700; opacity: .92; }
+.rv-rotate-phone { font-size: 64px; display: inline-block; animation: rvTurn 2.4s ease-in-out infinite; }
+@keyframes rvTurn { 0%, 30% { transform: rotate(0); } 60%, 100% { transform: rotate(90deg); } }

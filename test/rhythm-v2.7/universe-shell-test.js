@@ -1,5 +1,5 @@
 /* ==========================================================
-   氣球小V節奏遊戲 — v2.7.0-universe-foundation-test-1
+   氣球小V節奏遊戲 — v2.7.0-home-songselect-ui-test-1（以 v2.7.0-universe-foundation-test-1 為基準）
    測試專用換殼層（取代 universe/rhythm/universe-shell.js，只在 test/rhythm-v2.7/ 使用）
 
    以正式宇宙版 universe/rhythm/universe-shell.js 為基準，對外介面（window.UniverseRhythm）完全相同，
@@ -17,7 +17,7 @@
 (function () {
   "use strict";
 
-  var TEST_VERSION = "v2.7.0-universe-foundation-test-1";
+  var TEST_VERSION = "v2.7.0-home-songselect-ui-test-1";
   var GAME_VERSION = "rhythm-" + TEST_VERSION;
   var NS = "vRhythmV270UniverseTest1::";
   var LOBBY_URL = "https://vashyang1120.github.io/balloon-v-universe/";
@@ -198,6 +198,7 @@
   }
 
   function showIdentityState(kind, err) {
+    try { if (window.RV27UI) window.RV27UI.refreshPlayer(); } catch (e) { console.warn("[UniverseTest] RV27UI", e); }
     var card = $("bv-identity-card");
     if (!card) return;
     if (kind === "ready") { card.hidden = true; card.innerHTML = ""; renderChip(); return; }
@@ -284,6 +285,7 @@
 
     boot: function (onReady) {
       decorate();
+      if (window.RV27UI) window.RV27UI.mount(window.UniverseRhythm);   // v2.7.0 首頁＋選歌頁新版面（只搬移原元素）
       wrapInitGame();
       ["btn-start", "btn-retry"].forEach(function (id) { var el = $(id); if (el) el.onclick = window.initGame; });
       if (onReady) readyCallbacks.push(onReady);
@@ -329,6 +331,26 @@
       if (entry === "chooser") { U.ui.toast("請先選擇：返回 V宇宙大廳，或使用純 UI 測試角色（Mock）"); return; }
       var st = S.getStatus();
       U.ui.toast(st.status === "error" && st.error ? st.error.userMessage : "正在讀取玩家資料，請稍候…");
+    },
+    /* v2.7.0 首頁玩家資料卡：只讀已載入的玩家資料（不寫入、不另外查詢） */
+    playerCardData: function () {
+      if (!player) return null;
+      var disp = player.displayAvatarKey || player.baseAvatarKey;
+      return {
+        displayId: player.displayId,
+        avatarSrc: S.avatars.imageUrl(disp) || S.avatars.imageUrl(player.baseAvatarKey) || "",
+        titleName: entry === "mock" ? null : (player.title && player.title.name ? player.title.name : null),
+        mock: entry === "mock"
+      };
+    },
+    /* v2.7.0 選歌頁「我的最佳（測試）」：只讀本測試命名空間的 Mock 成績（依歌曲＋難度），沒有就回傳 null */
+    bestScoreFor: function (songId, difficulty) {
+      if (!player || !songId) return Promise.resolve(null);
+      return S.services.leaderboard.getBoard({ gameId: "rhythm", songId: songId, difficulty: difficulty, limit: 500 }).then(function (board) {
+        var mine = null;
+        board.rows.forEach(function (r) { if (r.playerId === player.playerId) mine = r; });
+        return mine ? { score: mine.score, grade: mine.scoreData && mine.scoreData.grade } : null;
+      });
     },
     walletText: function () { return "測試版不發放"; },
     titleText: function () { return entry === "mock" ? "Mock" : (player && player.title ? player.title.name : "未裝備"); },
