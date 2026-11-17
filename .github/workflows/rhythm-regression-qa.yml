@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: e979a8ed705d9843e9e3067caecf5d767e1a8556
+          ref: 03bba1daa315ff2e8329615330aa6fd576f1850a
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -49,7 +49,7 @@ jobs:
           test -s assets/audio/universe_lobby_bgm.mp3
           for f in v_full_open_arms v_bust_congrats v_bust_happy v_bust_point v_bust_remind; do test -s "assets/rpg/$f.png" || exit 1; done
           test -s assets/ui/avatar_frame_pink_idle.png
-          git diff --name-only 64c698333226319bb42c39d725fd5dd6149f7626 HEAD | awk '!/^universe\/rhythm\// { bad=1; print } END { exit bad }'
+          git diff --name-only 800d6d8f6a02c7c92ab2b1893b803f11161f844a HEAD | awk '!/^universe\/rhythm\// { bad=1; print } END { exit bad }'
 
   browser:
     runs-on: ubuntu-latest
@@ -57,7 +57,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: e979a8ed705d9843e9e3067caecf5d767e1a8556
+          ref: 03bba1daa315ff2e8329615330aa6fd576f1850a
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
