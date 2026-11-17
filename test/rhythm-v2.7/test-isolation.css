@@ -1,4 +1,4 @@
-/* v2.7.0-universe-foundation-test-1：測試版專用標示（只新增 bv-test- 元素，不改遊戲畫面） */
+/* v2.7.0 測試版專用標示（只新增 bv-test- 元素，不改遊戲畫面）*/
 .bv-test-banner {
   position: fixed; top: 4px; left: 50%; transform: translateX(-50%); z-index: 2147483600; pointer-events: none;
   padding: 3px 10px; border-radius: 999px; background: rgba(214, 51, 108, .92); color: #fff;
