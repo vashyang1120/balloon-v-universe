@@ -1,0 +1,43 @@
+name: Rhythm v2.6.5 regression (isolated QA)
+on:
+  push:
+    branches: [qa/rhythm-v2.6.5-regression]
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: aff5c55ed95da2c4eda7f81a87e2c402f4b0f2bd
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify exact candidate
+        run: git rev-parse HEAD
+      - name: JavaScript syntax
+        run: |
+          for f in universe/rhythm/*.js; do node --check "$f" || exit 1; done
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import { inlineScripts } from './universe/shared/tools/js-functions.mjs';
+          fs.writeFileSync('/tmp/rhythm-inline.js', inlineScripts(fs.readFileSync('universe/rhythm/index.html', 'utf8')));
+          JS
+          node --check /tmp/rhythm-inline.js
+      - name: Rhythm core and shared SDK tests
+        if: always()
+        run: node --test universe/rhythm/tests/*.test.mjs universe/shared/tests/*.test.mjs
+      - name: All repository tests
+        if: always()
+        run: find tests universe -name '*.test.mjs' -print0 | xargs -0 node --test
+      - name: Verify asset identity and release scope
+        if: always()
+        run: |
+          diff -qr test/rhythm-v2.7/assets universe/rhythm/assets
+          test -s assets/audio/universe_lobby_bgm.mp3
+          for f in v_full_open_arms v_bust_congrats v_bust_happy v_bust_point v_bust_remind; do test -s "assets/rpg/$f.png" || exit 1; done
+          test -s assets/ui/avatar_frame_pink_idle.png
+          git diff --name-only HEAD^ HEAD | awk '!/^universe\/rhythm\// { bad=1; print } END { exit bad }'
