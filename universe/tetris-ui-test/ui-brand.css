@@ -35,9 +35,9 @@ html.uit-brand #s-title::before {
   background-size: 100% 100%, cover;
   background-position: 0 0, 12% 46%;
   background-repeat: no-repeat;
-  filter: blur(var(--uit-bg-blur)) saturate(.78);
+  filter: blur(var(--uit-bg-blur)) saturate(.85);
 }
-html.uit-brand { --uit-bg-blur: 5px; --uit-haze: .34; --uit-haze-top: .6; --uit-haze-bottom: .45; }
+html.uit-brand { --uit-bg-blur: 2px; --uit-haze: .26; --uit-haze-top: .58; --uit-haze-bottom: .4; }
 @media (min-aspect-ratio: 1/1) { html.uit-brand #s-title::before { background-position: 0 0, 30% 50%; } }
 .uit-home {
   box-sizing: border-box; width: 100%; max-width: 440px; min-height: 100%; margin: 0 auto;
