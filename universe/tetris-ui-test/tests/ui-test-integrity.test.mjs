@@ -27,6 +27,7 @@ const testHtml = read(path.join(TEST_DIR, "index.html"));
 const prodHtml = read(path.join(PROD_DIR, "index.html"));
 const baseline = JSON.parse(read(path.join(PROD_DIR, "tools/original-functions.sha256.json")));
 const uiJs = read(path.join(TEST_DIR, "ui-test.js"));
+const brandJs = read(path.join(TEST_DIR, "ui-brand.js"));
 const guardJs = read(path.join(TEST_DIR, "sandbox-guard.js"));
 const testShell = read(path.join(TEST_DIR, "universe-shell.js"));
 
@@ -59,14 +60,18 @@ test("B. 核心函式（方塊、旋轉、碰撞、消除、計分、連消、�
 });
 
 const INJECTED = [
-  /^<!-- \[UI 測試版\] tetris-universe-ui-v0\.1\.0-test-\d+：由 universe\/tetris\/index\.html 經 .*$/,
+  /^<!-- \[UI 測試版\] tetris-universe-ui-v\d+\.\d+\.\d+-test-\d+：由 universe\/tetris\/index\.html 經 .*$/,
   /^     永久 Sandbox（sandbox-guard\.js）；不讀寫任何正式資料。請勿手動修改本檔.*-->$/,
   /^<!-- \[UI 測試版\] Sandbox 強制隔離：必須在 SDK 之前載入 -->$/,
   /^<script src="sandbox-guard\.js"><\/script>$/,
   /^<!-- \[UI 測試版\] 手機版 UI 重新配置 -->$/,
   /^<link rel="stylesheet" href="ui-test\.css">$/,
   /^<!-- \[UI 測試版\] 手機版 UI：棋盤尺寸、半透明觸控按鍵、頂部 HUD -->$/,
-  /^<script src="ui-test\.js"><\/script>$/
+  /^<script src="ui-test\.js"><\/script>$/,
+  /^<!-- \[UI 測試版\] 第二階段品牌視覺（v0\.2\.0）：首頁、結算、HUD 配色 -->$/,
+  /^<link rel="stylesheet" href="ui-brand\.css">$/,
+  /^<!-- \[UI 測試版\] 第二階段品牌視覺：上下式首頁、結算角色、同難度再玩一次 -->$/,
+  /^<script src="ui-brand\.js"><\/script>$/
 ];
 
 test("C. <style>、頁面 HTML 結構與正式宇宙版相同；拿掉插入的標籤後整份 HTML 逐字相同（只多了標題文字）", () => {
@@ -96,6 +101,34 @@ test("D. ui-test.js 只包裝 initCanvas（格子大小），不改寫遊戲狀�
   assert.match(code, /run: function \(\) \{ tryRotate\(\); \}/);
   assert.match(code, /run: function \(\) \{ hardDrop\(\); \}/);
   assert.match(code, /return running === true && paused !== true;/);
+});
+
+test("D2. ui-brand.js（第二階段品牌視覺）不改寫遊戲狀態、規則或任何核心函式；只換按鈕事件、排版與文字", () => {
+  const code = brandJs.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+  const windowAssign = [...code.matchAll(/window\.([A-Za-z_$][\w$]*)\s*=(?!=)/g)].map((m) => m[1]);
+  assert.deepEqual([...new Set(windowAssign)].sort(), ["BVUiBrand"]);
+  const STATE = ["board", "cur", "nxt", "cx", "cy", "score", "lines", "level", "combo", "peakCombo", "running", "paused", "diff", "dropAcc", "lastT", "particles", "COLS", "ROWS", "DIFF", "PIECES", "PKEYS", "CELL"];
+  for (const v of STATE) assert.doesNotMatch(code, new RegExp("(^|[^.\\w$])" + v + "\\s*(=(?!=)|\\+=|-=|\\+\\+|--)", "m"), `ui-brand.js 不得改寫 ${v}`);
+  for (const fn of CORE) assert.doesNotMatch(code, new RegExp("(^|[^.\\w$])" + fn + "\\s*=(?!=)", "m"), `ui-brand.js 不得改寫 ${fn}`);
+  // 開局只透過原版函式：showScreen("s-game") → window.startGame（換殼層包好的版本）
+  assert.match(code, /showScreen\("s-game"\);\s*window\.startGame\(selectedDiff\);/);
+  assert.match(code, /showScreen\("s-game"\);\s*window\.startGame\(last\);/);
+  // 只換掉兩個原有事件：開始遊戲（goProfile）與再玩一次（showDiffSelect）
+  assert.deepEqual([...code.matchAll(/removeEventListener\("click", (\w+)\)/g)].map((m) => m[1]).sort(), ["goProfile", "showDiffSelect"]);
+  // 新紀錄只讀原版判斷（#new-best），不寫入任何紀錄
+  assert.match(code, /newBest\.style\.display === "block"/);
+  assert.doesNotMatch(code, /setLocalBest|localStorage|sessionStorage|indexedDB|fetch\(|XMLHttpRequest|sendBeacon/);
+  // 三張既有小V素材（不新增其他人物圖）
+  const imgs = [...new Set([...brandJs.matchAll(/"(\.\.\/\.\.\/assets\/[^"]+\.png)"/g)].map((m) => m[1]))].sort();
+  assert.deepEqual(imgs, ["../../assets/rpg/v_bust_congrats.png", "../../assets/rpg/v_bust_happy.png", "../../assets/rpg/v_full_open_arms.png"]);
+  for (const p of imgs) assert.ok(fs.existsSync(path.join(TEST_DIR, p)), p + " 不存在");
+});
+
+test("D3. ui-brand.css 不使用任何圖片（背景全部 CSS）；HUD 規則只改顏色／陰影，不改尺寸", () => {
+  const css = read(path.join(TEST_DIR, "ui-brand.css")).replace(/\/\*[\s\S]*?\*\//g, "");
+  assert.doesNotMatch(css, /url\(/);
+  const hud = css.split("\n").filter((l) => /#s-game|#board-wrap|#next-canvas|#g-avatar/.test(l)).join("\n");
+  assert.doesNotMatch(hud, /(^|[\s;{])(width|height|min-|max-|padding|margin|font-size|border-width|border:|top|left|right|bottom|inset|transform|grid|flex|gap|position)\s*:/m, hud);
 });
 
 test("E1. 頁面載入順序：sandbox-guard.js 在 SDK 之前；換殼層缺少防護就停止", () => {

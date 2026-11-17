@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- [UI 測試版] tetris-universe-ui-v0.1.0-test-2：由 universe/tetris/index.html 經 universe/tetris-ui-test/tools/build_ui_test.py 產生。
+<!-- [UI 測試版] tetris-universe-ui-v0.2.0-test-1：由 universe/tetris/index.html 經 universe/tetris-ui-test/tools/build_ui_test.py 產生。
      永久 Sandbox（sandbox-guard.js）；不讀寫任何正式資料。請勿手動修改本檔，修改 ui-test.css／ui-test.js 後重新產生。 -->
 <!-- 遊戲宇宙版 universe-game-migration-v0.2.0-three-games-integration-test-1（v0.1.0 原型起）
      由 vashyang1120/vparty-tetris@7f3388562c35ca24572b3fb8cd861f7302f81509 index.html（SHA-256 a2a50b0fa56c8210a7035a4808447d6c5743fa1d9692f80cd341bcaf6f1f9cb9）
@@ -670,6 +670,8 @@ body:not(.game-active) #mob-ctrl{display:none!important}
 <link rel="stylesheet" href="universe-shell.css">
 <!-- [UI 測試版] 手機版 UI 重新配置 -->
 <link rel="stylesheet" href="ui-test.css">
+<!-- [UI 測試版] 第二階段品牌視覺（v0.2.0）：首頁、結算、HUD 配色 -->
+<link rel="stylesheet" href="ui-brand.css">
 </head>
 <body>
 <div id="root">
@@ -3690,5 +3692,7 @@ window.addEventListener("orientationchange",function(){
 </script>
 <!-- [UI 測試版] 手機版 UI：棋盤尺寸、半透明觸控按鍵、頂部 HUD -->
 <script src="ui-test.js"></script>
+<!-- [UI 測試版] 第二階段品牌視覺：上下式首頁、結算角色、同難度再玩一次 -->
+<script src="ui-brand.js"></script>
 </body>
 </html>

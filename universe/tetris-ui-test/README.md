@@ -1,4 +1,4 @@
-# 方塊派對 — 手機 UI 測試版（tetris-universe-ui-v0.1.0-test-2）
+# 方塊派對 — 手機 UI 測試版（tetris-universe-ui-v0.2.0-test-1）
 
 **這是永久 Sandbox 的 UI 測試版**：不讀、不寫任何正式資料（成績、排行榜、V幣、稱號、頭像、玩家資料）。
 正式宇宙版 `universe/tetris/`、大廳入口 `zones.js`、共用 SDK、後端 Worker 都**沒有修改**；大廳也**沒有**連到這個測試版。
@@ -13,6 +13,15 @@ https://vashyang1120.github.io/balloon-v-universe/universe/tetris-ui-test/
 
 ## 版本紀錄
 
+- **v0.2.0-test-1**（第二階段品牌視覺，企劃規格 v0.2.0-spec-1）：
+  - 首頁改為上下式：玩家資訊（原版玩家卡）→ 標題「氣球小V方塊派對」→ 小V V-03（`assets/rpg/v_full_open_arms.png`）→ 難度＋開始遊戲 → 次要功能（原有按鈕）。
+    難度沿用原版三個選項，預設「普通」（原版 `startGame` 預設值）；開始遊戲直接以選好的難度開局。
+  - 結算：同一模板。一般「挑戰完成！」＋V-06（`v_bust_happy.png`）；新紀錄「新紀錄！」＋V-18（`v_bust_congrats.png`）＋粉黃強調。
+    新紀錄只沿用原版判斷（`gameOver()` 中 score > 本機個人最佳，即原本的「🏆 新紀錄！」）。
+  - 再玩一次：直接以上一局難度開新局。「回首頁」改名「回方塊首頁」（目的地不變）。
+  - 遊戲中 HUD 只換顏色（深紫／HUD 紫、邊框色、陰影）；與 v0.1.0-test-2 逐像素比對幾何完全相同。
+  - 新檔案：`ui-brand.css`、`ui-brand.js`；`ui-test.css`、`ui-test.js`、`sandbox-guard.js` 未修改。
+  - 瀏覽器測試：`tests/browser/ui-brand-e2e.mjs`（第四個參數可給 c170921 worktree 做 HUD 幾何比對）。
 - **test-2**：右側三顆按鍵改為由左至右「加速下降 → 直接落下 → 旋轉」（只用 CSS `order` 調整視覺順序，按鍵、事件、功能、尺寸、透明度、連發速度都不變）。
   極窄螢幕兩層配置：下層「加速下降、直接落下」，旋轉在上層、位於直接落下正上方。左側方向鍵、棋盤、HUD 與 test-1 相同。
 - **test-1**：第一版手機 UI（已部署，使用者實測：棋盤大小、透明按鍵、HUD 通過）。
@@ -41,6 +50,8 @@ https://vashyang1120.github.io/balloon-v-universe/universe/tetris-ui-test/
 | `sandbox-guard.js` | Sandbox 強制隔離（在 SDK 之前載入） |
 | `ui-test.css` | 手機版 UI 樣式（全部在 `html.uit-m` 底下，桌機不受影響） |
 | `ui-test.js` | 手機版 UI 程式：棋盤尺寸、觸控按鍵、HUD 標記 |
+| `ui-brand.css` | 第二階段品牌視覺樣式（夢幻紫首頁、結算、HUD 配色；不使用圖片） |
+| `ui-brand.js` | 第二階段：上下式首頁、首頁難度與開始、結算角色切換、同難度再玩一次 |
 | `tools/build_ui_test.py` | 測試版建置腳本（不修改正式建置流程） |
 | `tests/ui-test-integrity.test.mjs` | 核心完整性＋Sandbox 隔離單元測試 |
 | `tests/browser/ui-test-e2e.mjs` | 瀏覽器測試（Playwright 模擬手機；不是實機） |
