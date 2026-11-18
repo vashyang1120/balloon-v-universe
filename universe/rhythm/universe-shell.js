@@ -15,8 +15,8 @@
 (function () {
   "use strict";
 
-  var GAME_VERSION = "rhythm-v2.6.5+universe-v0.3.1";
-  var UI_VERSION = "v2.6.5";
+  var GAME_VERSION = "rhythm-v2.7.0+universe-v0.3.1";
+  var UI_VERSION = "v2.7.0";
   var AV_BASE = "../../assets/avatars/base/";
   var BLANK = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
   var U = window.BVUniverse;
@@ -183,6 +183,7 @@
     var orig = window.initGame;
     if (typeof orig !== "function" || orig.__bvWrapped) return;
     var wrapped = function () {
+      if (window.RVCoach && RVCoach.active()) return;
       round.startedAt = new Date().toISOString();
       round.submissionId = null;
       lastOfficial = null;
@@ -342,6 +343,7 @@
     /* 結算：本機最佳（依 playerId＋歌曲分開，給 NEW RECORD 用）＋ Mock 成績提交。
        回傳值與原版 saveScore 相同：本場是否為新紀錄（同步布林值） */
     recordSongResult: function (d) {
+      if (window.RVCoach && RVCoach.active()) return false;
       var note = $("bv-result-note");
       if (!player) {
         if (note) note.textContent = L.resultNote + "（沒有遊戲宇宙玩家，本場未記錄）";
