@@ -16,8 +16,8 @@
   "use strict";
   document.title = "氣球小V方塊派對 🎈｜遊戲宇宙";
 
-  var VERSION = "tetris-universe-ui-v0.3.2";
-  var UI_LABEL = "UI v0.3.2";
+  var VERSION = "tetris-universe-ui-v0.3.4";
+  var UI_LABEL = "UI v0.3.4";
   var DOC = document.documentElement;
   var $ = function (id) { return document.getElementById(id); };
 
@@ -267,6 +267,9 @@
   var mo = new MutationObserver(onScreens);
   [title, result, $("s-lb")].forEach(function (s) { if (s) mo.observe(s, { attributes: true, attributeFilter: ["class"] }); });
   onScreens();
+  // The server verdict can arrive after the result screen's 500ms transition.
+  if (newBest) new MutationObserver(function () { if (!result.classList.contains("off")) applyResultMode(); })
+    .observe(newBest, { attributes: true, attributeFilter: ["style"] });
 
   window.BVUiBrand = {
     version: VERSION,

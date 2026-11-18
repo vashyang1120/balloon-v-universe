@@ -7,8 +7,7 @@
  *   問答 6 個稱號  ← vparty-quiz-game QUIZ_BADGE_DEFS＋evaluateQuizBadgeDefs
  *   派對島 12 個稱號 ← balloon-v-rush C1U_TITLES
  *       ‧ 5 個「分項滿分」稱號：伺服器可以從已接受的第一大陸成績（五大分項）直接驗證 → 正式開放
- *       ‧ 善良冒險家／和平大使／超勤儉冒險家、4 個小遊戲稱號：規則已定，但判定資料（擊倒、傷害、購買、小遊戲比分）
- *         不在正式成績裡，伺服器無法驗證 → 「準備中」（不發放），待使用者決定
+ *       ‧ 三個特殊稱號依正式通關的追蹤計數判定；小遊戲稱號走獨立結算。
  *   展示頭像 ← vparty-tetris／vparty-rhythm-game UNLOCKABLE_AVATARS（圖片沿用節奏遊戲 assets/avatars 正式素材）
  *       ‧ 小V：完成任一遊戲 1 場；氣球哥哥 1：方塊 2,000 分；氣球哥哥 2：節奏任一首 A 以上 → 正式自動解鎖
  *       ‧ 氣球哥哥 3「冒險遊戲通過指定進度」：進度沒有定義 → 準備中
@@ -17,6 +16,7 @@
  *
  * 規則函式只讀「已接受的正式成績」（scoreData）與伺服器自己的問答進度，不讀前端傳來的解鎖結果。
  */
+import { adventureTitleKeys } from "./adventure-title-evidence.js";
 import { ADVENTURE_CONTINENTS } from "./game-rules.js";
 
 export const LEGACY_AVATAR_BASE = "https://vashyang1120.github.io/vparty-rhythm-game/assets/avatars/";
@@ -42,9 +42,9 @@ function attemptedSubjects(progress, grade) {
 }
 const QUIZ_SUBJECT_COUNT = 8;
 const partFull = (part) => (d) => Number(d.continentId) === 1 && Number((d.parts || {})[part]) === ADVENTURE_CONTINENTS[1].partMax[part];
-// Optional evidence from a completed official run. Missing legacy evidence is not zero.
-const adventureTrack = (d, key) => d.continentId === 1 && Number.isSafeInteger(d.achievementTrack?.[key]) && d.achievementTrack[key] === 0;
 
+const trackedTitle = (key) => (d) => d.continentId === 1 &&
+  (adventureTitleKeys({ kind: "continent", complete: d.complete, track: d.achievementTrack }) || []).includes(key);
 
 /* ---------- 稱號 ---------- */
 // rule(scoreData, ctx) → boolean；ctx = { quizProgress }（問答會帶伺服器更新後的進度）
@@ -76,13 +76,13 @@ export const TITLE_CATALOG = Object.freeze([
   T("adventure", "adventure_battle_master", "戰鬥大師", "第一大陸完整結算時「戰鬥」滿分", partFull("combat")),
   T("adventure", "adventure_unyielding_hero", "不屈勇者", "第一大陸完整結算時「生存」滿分", partFull("survival")),
   T("adventure", "adventure_swift_adventurer", "神速冒險家", "第一大陸完整結算時「效率」滿分", partFull("efficiency")),
-  T("adventure", "adventure_kind_adventurer", "善良冒險家", "整個第一大陸都沒有擊倒任何怪物（直接或間接都不行；橘子王決戰不計）", (d) => adventureTrack(d, "kills")),
-  T("adventure", "adventure_peace_ambassador", "和平大使", "整個第一大陸都沒有對任何怪物造成傷害（橘子王決戰不計）；同時獲得「善良冒險家」", (d) => adventureTrack(d, "kills") && adventureTrack(d, "damage")),
-  T("adventure", "adventure_super_thrifty", "超勤儉冒險家", "整個第一大陸都沒有在商店成功購買任何東西（打地鼠入場費不算）", (d) => adventureTrack(d, "purchases")),
-  T("adventure", "adventure_volleyball_rookie", "排球新星", "氣球排球 7：0 完封蠍子怪", null, { note: "小遊戲成績不是正式成績" }),
-  T("adventure", "adventure_volleyball_expert", "排球高手", "氣球排球 7：0 完封橘子怪", null, { note: "小遊戲成績不是正式成績" }),
-  T("adventure", "adventure_volleyball_king", "排球王者", "氣球排球 7：0 完封橘子王", null, { note: "小遊戲成績不是正式成績" }),
-  T("adventure", "adventure_whack_legend", "傳奇槌王", "氣球槌打地鼠分數達到 660 分", null, { note: "小遊戲成績不是正式成績" }),
+  T("adventure", "adventure_kind_adventurer", "善良冒險家", "整個第一大陸都沒有擊倒任何怪物（直接或間接都不行；橘子王決戰不計）", trackedTitle("adventure_kind_adventurer")),
+  T("adventure", "adventure_peace_ambassador", "和平大使", "整個第一大陸都沒有對任何怪物造成傷害（橘子王決戰不計）；同時獲得「善良冒險家」", trackedTitle("adventure_peace_ambassador")),
+  T("adventure", "adventure_super_thrifty", "超勤儉冒險家", "整個第一大陸都沒有在商店成功購買任何東西（打地鼠入場費不算）", trackedTitle("adventure_super_thrifty")),
+  T("adventure", "adventure_volleyball_rookie", "排球新星", "氣球排球 7：0 完封蠍子怪", null, { status: "active" }),
+  T("adventure", "adventure_volleyball_expert", "排球高手", "氣球排球 7：0 完封橘子怪", null, { status: "active" }),
+  T("adventure", "adventure_volleyball_king", "排球王者", "氣球排球 7：0 完封橘子王", null, { status: "active" }),
+  T("adventure", "adventure_whack_legend", "傳奇槌王", "氣球槌打地鼠分數達到 660 分", null, { status: "active" }),
 ]);
 export const TITLES_BY_KEY = Object.freeze(Object.fromEntries(TITLE_CATALOG.map((t) => [t.titleKey, t])));
 

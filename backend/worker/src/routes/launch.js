@@ -41,6 +41,7 @@ import { PATTERNS } from "../utils/validate.js";
 import { readJson } from "../middleware/body.js";
 import { enforceRateLimit } from "../middleware/rate-limit.js";
 import { taipeiDateKey } from "../utils/ids.js";
+import { createAdventureTitleService } from "../launch/adventure-title-service.js";
 import { createScoreService } from "../launch/score-service.js";
 import { boardCatalog, isValidBoard } from "../launch/leaderboard-service.js";
 import { OFFICIAL_GAME_IDS } from "../launch/game-rules.js";
@@ -82,6 +83,18 @@ async function profileOf(ctx, playerId) {
   const p = await ctx.firebase().get(`players/${playerId}/profile`);
   if (!p || p.playerId !== playerId || p.status === "deleted") throw new ApiError("PLAYER_NOT_FOUND");
   return p;
+}
+async function adventureTitleProfile(ctx, pid, body) {
+  requireScores(ctx, pid);
+  const profile = await profileOf(ctx, pid);
+  const id = normalizeDisplayId(body?.displayId);
+  if (!id.ok || id.value !== profile.displayId || body?.baseAvatarKey !== profile.baseAvatarKey || (profile.status && profile.status !== "active")) {
+    throw new ApiError("FORBIDDEN");
+  }
+  return profile;
+}
+function adventureTitleService(ctx) {
+  return createAdventureTitleService({ db: lazyDb(ctx), collections: svc(ctx).collections, now: ctx.now || Date.now });
 }
 function playerParam(ctx) {
   const id = ctx.params.playerId;
@@ -294,29 +307,36 @@ export function launchRoutes() {
       },
     },
 
-    // Historical local evidence requires explicit administrator review; never accept a public title list.
+    {
+      method: "POST", path: "/v1/players/:playerId/adventure-title-session", auth: "public", summary: "開始派對島小遊戲稱號場次",
+      handler: async (ctx) => {
+        await enforceRateLimit(ctx, "score");
+        const pid = playerParam(ctx);
+        const body = await readJson(ctx.request, 1024);
+        const profile = await adventureTitleProfile(ctx, pid, body);
+        return ok(ctx, await adventureTitleService(ctx).settle(profile, body.id, body.kind), 201);
+      },
+    },
+    {
+      method: "POST", path: "/v1/players/:playerId/adventure-title-result", auth: "public", summary: "派對島小遊戲稱號結算",
+      handler: async (ctx) => {
+        await enforceRateLimit(ctx, "score");
+        const pid = playerParam(ctx);
+        const body = await readJson(ctx.request, 2048);
+        const profile = await adventureTitleProfile(ctx, pid, body);
+        if (!body.evidence || typeof body.evidence !== "object") throw new ApiError("VALIDATION_FAILED");
+        return ok(ctx, await adventureTitleService(ctx).settle(profile, body.id, body.evidence.kind, body.evidence));
+      },
+    },
     {
       method: "POST", path: "/v1/admin/collections/:playerId/adventure-evidence", auth: "admin", summary: "派對島歷史成就人工補登",
       handler: async (ctx) => {
         const pid = playerParam(ctx);
-        const profile = await profileOf(ctx, pid);
-        const body = await readJson(ctx.request, 8192);
-        if (!body || !Array.isArray(body.evidence) || body.evidence.length > 60 || typeof body.note !== "string" || !body.note.trim()) throw new ApiError("VALIDATION_FAILED");
-        const keys = new Set();
-        const opponents = { scorpion: "adventure_volleyball_rookie", orange: "adventure_volleyball_expert", orangeKing: "adventure_volleyball_king" };
-        for (const e of body.evidence) {
-          if (!e || typeof e !== "object" || typeof e.id !== "string" || !e.id || e.id.length > 128) throw new ApiError("VALIDATION_FAILED");
-          if (e.kind === "volleyball" && Object.hasOwn(opponents, e.opponent) && e.playerScore === 7 && e.cpuScore === 0 && e.winner === "player") keys.add(opponents[e.opponent]);
-          else if (e.kind === "whack" && Number.isSafeInteger(e.score) && e.score >= 660) keys.add("adventure_whack_legend");
-          else if (e.kind === "continent" && e.complete === true && e.track && ["kills","damage","purchases"].every(k => Number.isSafeInteger(e.track[k]) && e.track[k] >= 0)) {
-            if (e.track.kills === 0) keys.add("adventure_kind_adventurer");
-            if (e.track.kills === 0 && e.track.damage === 0) keys.add("adventure_peace_ambassador");
-            if (e.track.purchases === 0) keys.add("adventure_super_thrifty");
-          } else throw new ApiError("VALIDATION_FAILED");
-        }
         requireScores(ctx, pid);
-        const fresh = await svc(ctx).collections.grantKeys(pid, profile, { titles: [...keys] }, { type: "adventure_evidence_admin", note: body.note.slice(0, 500) });
-        return ok(ctx, { fresh, collection: await svc(ctx).collections.get(pid, profile) });
+        const profile = await profileOf(ctx, pid);
+        if (profile.status && profile.status !== "active") throw new ApiError("FORBIDDEN");
+        const body = await readJson(ctx.request, MAX_BODY);
+        return ok(ctx, await adventureTitleService(ctx).review(profile, body, ctx.admin));
       },
     },
 

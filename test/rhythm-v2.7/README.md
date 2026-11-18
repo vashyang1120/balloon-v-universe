@@ -110,3 +110,11 @@ Storage：傳給 SDK 的 localStorage／sessionStorage 都加上前綴 `vRhythmV
 ## v2.7.0-tutorial-test-1
 - 真實四軌引擎教學，單音符、四軌連擊、長音符（早放重試）。最後使用 song009 原音訊/MV/字幕，207–226.7 秒，16 個原始音符含兩個 hold。教學不進正式結算或提交。觀看播放清單前立即暫停 BGM，返回或下一次操作恢復。
 - 只修改獨立測試版，正式 v2.6.5 不變。
+
+
+## v2.7.0-tutorial-test-2
+- One continuous song009 MV session 207–226.7s. Real lanes pause with audio/MV; checkpoint retry restores stats, note cursor and media time. Custom sparse lesson chart, no score submission. First prompt per player/device, skip or complete stored only in isolated browser namespace. V-13 full-body point, highlighted white lines. Preserve playlist BGM and formal v2.6.5.
+
+
+## v2.7.0-tutorial-test-3
+- V-13 stands immediately left of judgment line on line explanation; Space advances tutorial cards, Escape exits. Responsive checkpoints based on actual lane width and note speed, so first highlighted note is on screen before pausing; retry restores the same checkpoint. No production changes.

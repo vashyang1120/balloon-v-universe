@@ -1,5 +1,5 @@
 /* ==========================================================
-   氣球小V節奏遊戲 — v2.7.0-tutorial-test-1（以 v2.7.0-universe-foundation-test-1 為基準）
+   氣球小V節奏遊戲 — v2.7.0-tutorial-test-3（以 v2.7.0-universe-foundation-test-1 為基準）
    測試專用換殼層（取代 universe/rhythm/universe-shell.js，只在 test/rhythm-v2.7/ 使用）
 
    以正式宇宙版 universe/rhythm/universe-shell.js 為基準，對外介面（window.UniverseRhythm）完全相同，
@@ -17,7 +17,7 @@
 (function () {
   "use strict";
 
-  var TEST_VERSION = "v2.7.0-tutorial-test-1";
+  var TEST_VERSION = "v2.7.0-tutorial-test-3";
   var GAME_VERSION = "rhythm-" + TEST_VERSION;
   var NS = "vRhythmV270UniverseTest1::";
   var LOBBY_URL = "https://vashyang1120.github.io/balloon-v-universe/";

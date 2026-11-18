@@ -105,7 +105,7 @@ rep('<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.
     '<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>\n',
     '<!-- [Universe 換殼] 不再載入 Firebase SDK；改用遊戲宇宙共用 SDK（唯讀玩家資料；成績只進 Mock） -->\n'
     '<script src="../shared/universe-sdk.js"></script>\n'
-    '<script src="universe-shell.js"></script>\n',
+    '<script src="universe-shell.js?v=0.3.3"></script>\n',
     "Firebase SDK → Universe SDK")
 rep("</head>", '<link rel="stylesheet" href="universe-shell.css">\n</head>', "換殼層樣式")
 rep("<title>氣球小V方塊派對 🎈</title>", "<title>氣球小V方塊派對 🎈｜遊戲宇宙換殼測試版</title>", "標題")
@@ -202,11 +202,14 @@ replace_body("openVcoinHistory",
 replace_body("saveLB", "  return UniverseTetris.submitScore({ score: score, level: level, lines: lines, difficulty: diff, peakCombo: peakCombo || 0 });")
 replace_body("loadLB", "  return UniverseTetris.renderMockLeaderboard($(\"lb-list\"), getAvatarUrl);")
 replace_body("getLocalBestScore", "  return UniverseTetris.getLocalBest();", occurrences=2)
-replace_body("updateBestDisp", "  var b = UniverseTetris.getLocalBest();\n  renderBestScore(b);\n  return Promise.resolve(b);")
+replace_body("updateBestDisp", "  return UniverseTetris.refreshBestDisplay();")
 rep('  const prev=parseInt(localStorage.getItem("vtetris_best")||"0");\n  const isNew=score>prev;\n'
     '  if(isNew){ localStorage.setItem("vtetris_best",score); updateBestDisp(); }\n',
-    '  const prev=UniverseTetris.getLocalBest();  // [Universe 換殼] 最佳分數依 playerId 分開（原版為全裝置共用）\n  const isNew=score>prev;\n'
+    '  const prev=UniverseTetris.getLocalBest();  // [Universe 換殼] 最佳分數依 playerId 分開（原版為全裝置共用）\n  const isNew=UniverseTetris.isNewRecord(score);\n'
     '  if(isNew){ UniverseTetris.setLocalBest(score); updateBestDisp(); }\n', "gameOver 最佳分數")
+
+rep('    $("new-best").style.display=isNew?"block":"none";',
+    '    $("new-best").style.display=UniverseTetris.isNewRecord(score)?"block":"none";', "新紀錄以目前伺服器判定更新")
 
 # ---------- 8. 舊管理後台：停用 ----------
 rep('document.getElementById("logo-title").addEventListener("click",()=>{\n',

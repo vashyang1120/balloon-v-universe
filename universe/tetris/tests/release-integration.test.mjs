@@ -13,13 +13,13 @@ test('live lobby retains its existing entry and loads release UI without the san
  assert.match(read(path.resolve(DIR,'../../zones.js')),/tetris: "universe\/tetris\/"/);
  assert.doesNotMatch(html,/sandbox-guard|UI測試員|tetris-ui-test\//);
  const src=[...html.matchAll(/<script src="([^"]+)"/g)].map(m=>m[1]);
- assert.deepEqual(src.slice(-7),['ui-test.js','ui-brand.js','balloon-assets.js','creation-story.js','guided-practice.js','tutorial.js','menu-audio.js'].map(x=>x+'?v=0.3.2'));
+ assert.deepEqual(src.slice(-8),['ui-test.js','desktop-ui.js','ui-brand.js','balloon-assets.js','creation-story.js','guided-practice.js','tutorial.js','menu-audio.js'].map(x=>x+'?v=0.3.4'));
  for(const x of src)assert.ok(fs.existsSync(path.resolve(DIR,x.split('?')[0])),x);
  assert.equal(inlineScripts(html),inlineScripts(read(path.join(UI,'index.html'))));
- assert.match(read(path.join(DIR,'ui-brand.js')),/var UI_LABEL = "UI v0.3.2"/);
+ assert.match(read(path.join(DIR,'ui-brand.js')),/var UI_LABEL = "UI v0.3.4"/);
 });
 test('approved tutorial, story, audio, desktop/mobile CSS and assets are promoted byte-for-byte',()=>{
- for(const f of ['tutorial.js','guided-practice.js','creation-story.js','balloon-assets.js','menu-audio.js','ui-test.css','ui-brand.css','desktop-ui.css','tutorial.css','creation-story.css'])assert.deepEqual(fs.readFileSync(path.join(DIR,f)),fs.readFileSync(path.join(UI,f)),f);
+ for(const f of ['tutorial.js','guided-practice.js','creation-story.js','balloon-assets.js','menu-audio.js','desktop-ui.js','ui-test.css','ui-brand.css','desktop-ui.css','tutorial.css','creation-story.css'])assert.deepEqual(fs.readFileSync(path.join(DIR,f)),fs.readFileSync(path.join(UI,f)),f);
  function walk(p){return fs.readdirSync(p,{withFileTypes:true}).flatMap(d=>d.isDirectory()?walk(path.join(p,d.name)):[path.join(p,d.name)]);}
  for(const f of walk(path.join(DIR,'assets'))){const rel=path.relative(DIR,f);assert.deepEqual(fs.readFileSync(f),fs.readFileSync(path.join(UI,rel)),rel);}
 });

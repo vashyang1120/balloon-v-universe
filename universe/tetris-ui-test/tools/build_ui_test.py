@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""方塊派對 UI 測試版產生腳本（tetris-universe-ui-v0.3.2-test-2）
+"""方塊派對 UI 測試版產生腳本（tetris-universe-ui-v0.3.4-test-1）
 
 由「正式宇宙版」universe/tetris/ 產生 universe/tetris-ui-test/ 的 index.html 與 universe-shell.js。
 正式版檔案只讀不寫；正式建置流程 universe/tetris/tools/build_prototype.py 完全不動。
@@ -25,7 +25,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 TEST_DIR = os.path.dirname(HERE)
 ROOT = os.path.abspath(os.path.join(TEST_DIR, "..", ".."))
 PROD_DIR = os.path.join(ROOT, "universe", "tetris")
-VERSION = "tetris-universe-ui-v0.3.2-test-2"
+VERSION = "tetris-universe-ui-v0.3.4-test-1"
 TAG = "[UI 測試版]"
 
 
@@ -63,11 +63,11 @@ def build_html(src):
         '<link rel="stylesheet" href="ui-test.css">\n'
         f'<!-- {TAG} 第二階段品牌視覺（v0.2.0）：首頁、結算、HUD 配色 -->\n'
         '<link rel="stylesheet" href="ui-brand.css">\n'
-        '<link rel="stylesheet" href="desktop-ui.css?v=0.3.2-test-2">', "universe-shell.css link")
+        '<link rel="stylesheet" href="desktop-ui.css?v=0.3.4-layout-2">', "universe-shell.css link")
     # 5. UI 程式（在原版程式之後載入）
     s = replace_once(s, "</body>",
-        f'<!-- {TAG} 手機版 UI：棋盤尺寸、半透明觸控按鍵、頂部 HUD -->\n<script src="ui-test.js"></script>\n'
-        f'<!-- {TAG} 第二階段品牌視覺：上下式首頁、結算角色、同難度再玩一次 -->\n<script src="ui-brand.js?v=0.3.2-test-2"></script>\n<script src="balloon-assets.js"></script>\n<script src="creation-story.js?v=0.3.2-test-1"></script>\n<link rel="stylesheet" href="creation-story.css?v=0.3.2-test-1">\n<link rel="stylesheet" href="tutorial.css?v=0.3.2-test-1">\n<script src="guided-practice.js?v=0.3.2-test-1"></script>\n<script src="tutorial.js?v=0.3.2-test-1"></script>\n<script src="menu-audio.js?v=0.1.2-test-1"></script>\n</body>',
+        f'<!-- {TAG} 手機版 UI：棋盤尺寸、半透明觸控按鍵、頂部 HUD -->\n<script src="ui-test.js"></script>\n<script src="desktop-ui.js?v=0.3.4-test-1"></script>\n'
+        f'<!-- {TAG} 第二階段品牌視覺：上下式首頁、結算角色、同難度再玩一次 -->\n<script src="ui-brand.js?v=0.3.4-test-1"></script>\n<script src="balloon-assets.js"></script>\n<script src="creation-story.js?v=0.3.3-test-1"></script>\n<link rel="stylesheet" href="creation-story.css?v=0.3.3-test-1">\n<link rel="stylesheet" href="tutorial.css?v=0.3.2-test-1">\n<script src="guided-practice.js?v=0.3.2-test-1"></script>\n<script src="tutorial.js?v=0.3.2-test-1"></script>\n<script src="menu-audio.js?v=0.1.2-test-1"></script>\n</body>',
         "</body>")
     return s
 

@@ -10,7 +10,7 @@
 <script>
 (function(){
   'use strict';
-  window.BV_TEST_ISOLATION = { version: 'v2.7.0-tutorial-test-1', namespace: 'vRhythmV270UniverseTest1::' };
+  window.BV_TEST_ISOLATION = { version: 'v2.7.0-tutorial-test-3', namespace: 'vRhythmV270UniverseTest1::' };
   var API = 'https://balloon-v-universe-api.vashyang1120.workers.dev';
   var API_READ = [/^\/v1\/players\/p_[a-z2-7]{20}$/, /^\/v1\/avatars\/base$/];
   var BLOCK_HOST = /firebaseio\.com|firebasedatabase\.app|identitytoolkit\.googleapis|securetoken\.googleapis|firebaseinstallations|firebase\.googleapis/i;
@@ -52,7 +52,7 @@
 </script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>【測試版／資料隔離】氣球小V魔法派對｜遊戲宇宙版 v2.7.0-tutorial-test-1</title>
+<title>【測試版／資料隔離】氣球小V魔法派對｜遊戲宇宙版 v2.7.0-tutorial-test-3</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;700;900&family=M+PLUS+Rounded+1c:wght@400;700;800;900&display=swap');
 
@@ -1918,19 +1918,19 @@ button,input,select,textarea{
   <!-- [Universe 換殼] 不再載入 Firebase SDK；改用遊戲宇宙共用 SDK（唯讀玩家資料；成績只進 Mock） -->
   <!-- v2.7.0-universe-foundation-test-1：正式 SDK 與正式換殼樣式唯讀引用；換殼層改用測試專用 universe-shell-test.js -->
   <script src="../../universe/shared/universe-sdk.js"></script>
-  <script src="universe-shell-test.js?v=tutorial-test-1"></script>
-  <script src="mv-sync.js?v=mv-sync-test-1"></script>
+  <script src="universe-shell-test.js?v=tutorial-test-3"></script>
+  <script src="mv-sync.js?v=tutorial-test-3.1"></script>
   <link rel="stylesheet" href="../../universe/shared/universe-ui.css">
   <link rel="stylesheet" href="../../universe/rhythm/universe-shell.css">
   <link rel="stylesheet" href="test-isolation.css">
   <!-- v2.7.0-home-songselect-ui-test-2：首頁＋選歌頁正式美術、動態演出、直向提示 -->
   <link rel="stylesheet" href="home-songselect-ui.css">
-  <script src="home-songselect-ui.js?v=tutorial-test-1"></script>
-  <link rel="stylesheet" href="tutorial.css?v=1">
-  <script src="tutorial.js?v=1"></script>
-  <!-- v2.7.0-tutorial-test-1：選單 BGM／UI 按鈕音效、橫向結算頁 -->
+  <script src="home-songselect-ui.js?v=tutorial-test-3"></script>
+  <link rel="stylesheet" href="tutorial.css?v=3">
+  <script src="tutorial.js?v=3"></script>
+  <!-- v2.7.0-tutorial-test-3：選單 BGM／UI 按鈕音效、橫向結算頁 -->
   <link rel="stylesheet" href="result-ui.css">
-  <script src="menu-audio.js?v=tutorial-test-1"></script>
+  <script src="menu-audio.js?v=tutorial-test-3"></script>
   <script src="result-ui.js"></script>
 </head>
 <body>
@@ -1941,7 +1941,7 @@ button,input,select,textarea{
   <div class="title-deco">🎈 ✨ 🌸</div>
   <div class="logo" onclick="handleLogoClick()" style="cursor:default;user-select:none">氣球小V魔法派對<small>BALLOON V MAGIC PARTY</small></div>
   <div class="title-hint">Suno AI × YouTube MV</div>
-  <div id="game-version" style="font-size:9px;color:rgba(155,93,229,.35);letter-spacing:.12em;margin-top:3px;">v2.7.0-tutorial-test-1</div>
+  <div id="game-version" style="font-size:9px;color:rgba(155,93,229,.35);letter-spacing:.12em;margin-top:3px;">v2.7.0-tutorial-test-3</div>
   <div id="home-daily-challenge-hint" class="rhythm-daily-hint-card need-profile">
     <div class="rhythm-daily-hint-top">
       <div>
@@ -2307,7 +2307,7 @@ button,input,select,textarea{
 </div>
 
 
-<div class="bv-test-banner" id="bv-test-banner">🧪 測試版／資料隔離 · v2.7.0-tutorial-test-1</div>
+<div class="bv-test-banner" id="bv-test-banner">🧪 測試版／資料隔離 · v2.7.0-tutorial-test-3</div>
 <button id="fs-btn" onclick="toggleFullscreen()" title="全螢幕">🔲</button>
 </div><!-- #root -->
 <script>
@@ -4165,6 +4165,7 @@ UniverseRhythm.boot(function(){
   validateDisplayAvatarForCurrentIdentity();
   updateGamePlayerCard();
   updateRhythmDailyChallengeHint();
+  setTimeout(function(){RVCoach.maybeAuto();},0);
 });
 ensureSongsLoaded();
 // leaderboard clear: admin-only
@@ -4347,14 +4348,12 @@ function stopAudio() {
   if (audioSource) { try { audioSource.stop(); } catch(e){} audioSource = null; }
 }
 function pauseAudio() {
-  if (G.tutorialPractice) { RVCoach.pausePractice(); return; }
   if (!audioCtx || !audioSource) return;
   audioPauseOffset = audioCtx.currentTime - audioStartTime;
   stopAudio();
   ytPause();  // 暫停 YouTube MV
 }
 function resumeAudio() {
-  if (G.tutorialPractice) return;
   if (!audioCtx) return;
   if (audioCtx.state === 'suspended') audioCtx.resume();
   startAudio(audioPauseOffset);
@@ -4362,7 +4361,6 @@ function resumeAudio() {
 }
 // THE KEY FUNCTION: game time always = audio clock
 function getGameTimeSec() {
-  if (G.tutorialPractice) return RVCoach.practiceClock();
   if (!audioCtx || !audioSource) return G.gt / 1000;
   return audioCtx.currentTime - audioStartTime;
 }
@@ -4450,6 +4448,7 @@ function pauseGameForProfile() {
   pauseVideoForProfile();
 }
 function openProfileFromGameCard() {
+  if (RVCoach.active()) return;
   if (!G.running) return;
   pauseGameForProfile();
   initProfile();
@@ -4493,7 +4492,6 @@ function resumeGameWithCountdown(shouldResumeMedia) {
     isResumeCountingDown = false;
     if (!G.running) return;
     G.paused = false;
-    if (G.tutorialPractice) RVCoach.resumePractice();
     if (shouldResumeMedia !== false) {
       resumeAudio();
       resumeVideoFromProfile();
@@ -4683,7 +4681,7 @@ function loop(ts) {
   tickHolds();
   updateLyrics();
 
-  if (G.tutorialPractice && RVCoach.afterFrame()) return;
+  if (G.tutorialClipStart && RVCoach.afterFrame()) return;
   if (G.tutorialClipStart && G.gt >= G.duration) { RVCoach.complete(); return; }
   if (G.gt >= G.duration && G.notes.length === 0) { endGame(); return; }
   G.raf = requestAnimationFrame(loop);
@@ -4803,7 +4801,7 @@ function tickHolds() {
 }
 function finishHold(n) {
   n.holdScored = true;
-  if (G.tutorialPractice && !G.holding[n.lane]) G.tutorialEarlyRelease = true;
+  if (G.tutorialClipStart && !G.holding[n.lane] && G.gt < n.hitTime+n.holdDur) G.tutorialEarlyRelease = true;
   if (G.holding[n.lane]) { G.perf++; addScore(300); showFX(n.lane,'perfect'); }
   else                    { G.good++; addScore(120);  showFX(n.lane,'good'); }
   if(n.el) n.el.remove();
@@ -4926,6 +4924,7 @@ function updateLyrics() {
 //  PAUSE / QUIT
 // ═══════════════════════════════════════════════════════
 function togglePause() {
+  if (G.tutorialClipStart && RVCoach.interceptPause()) return;
   if (!G.running || isResumeCountingDown) return;
   if (!G.paused) {
     G.paused = true;

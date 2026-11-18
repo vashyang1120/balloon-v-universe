@@ -33,10 +33,14 @@ export function createCollectionService({ db, now }) {
   async function mirror(playerId, col, profile) {
     const eq = (col && col.equipped) || {};
     const t = eq.titleKey && TITLES_BY_KEY[eq.titleKey];
-    await db.put(cpaths.publicProfile(playerId), {
+    const revision = col.rev;
+    const value = {
       displayAvatarKey: eq.displayAvatarKey || (profile && profile.baseAvatarKey) || null,
       titleKey: t ? t.titleKey : null, titleName: t ? t.name : null, updatedAt: now(),
-    });
+      collectionRevision: revision,
+    };
+    await casUpdate(db, cpaths.publicProfile(playerId), (current) =>
+      current?.collectionRevision >= revision ? { result: current } : { value });
   }
 
   /** 新增解鎖（冪等）。返回這次新解鎖的 key */
@@ -62,7 +66,7 @@ export function createCollectionService({ db, now }) {
       const next = { ...c, playerId, rev: Number(c.rev || 0) + 1, updatedAt: t };
       return { value: next, result: { fresh, col: next, changed: true } };
     });
-    if (r.result.changed) await mirror(playerId, r.result.col, profile);
+    if ((titles.length || avatars.length) && r.result.col.rev > 0) await mirror(playerId, r.result.col, profile);
     return r.result.fresh;
   }
 

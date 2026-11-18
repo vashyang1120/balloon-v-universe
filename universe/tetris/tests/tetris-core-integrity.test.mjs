@@ -106,5 +106,5 @@ test("網頁不載入 Firebase SDK、沒有舊資料庫網址或 API Key", () =>
   assert.doesNotMatch(html, /firebaseio\.com/);
   assert.doesNotMatch(html, /AIza[0-9A-Za-z_-]{20,}/);
   assert.match(html, /<script src="\.\.\/shared\/universe-sdk\.js"><\/script>/);
-  assert.match(html, /<script src="universe-shell\.js"><\/script>/);
+  assert.match(html, /<script src="universe-shell\.js\?v=0\.3\.3"><\/script>/);
 });
