@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: a9027ab46cbb5ec84ef7e1d16862a452bb445dc1
+          ref: 634f1ba84ea28b34b33f6cf8a472b1eb8b87b14a
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -52,7 +52,7 @@ jobs:
           test -s assets/audio/universe_lobby_bgm.mp3
           for f in v_full_open_arms v_bust_congrats v_bust_happy v_bust_point v_bust_remind; do test -s "assets/rpg/$f.png" || exit 1; done
           test -s assets/ui/avatar_frame_pink_idle.png
-          git diff --name-only 943e5590616bdc437788987ebee621e172785a97 HEAD | awk '!/^test\/rhythm-v2\.7\// { bad=1; print } END { exit bad }'
+          git diff --name-only d166d988a244124ee1f84d238467e14dd2f1fb3e HEAD | awk '!/^universe\/rhythm\// { bad=1; print } END { exit bad }'
 
   browser:
     runs-on: ubuntu-latest
@@ -60,7 +60,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: a9027ab46cbb5ec84ef7e1d16862a452bb445dc1
+          ref: 634f1ba84ea28b34b33f6cf8a472b1eb8b87b14a
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -94,10 +94,12 @@ jobs:
            const {ctx,page:p}=await H.newPage({mobile:true,viewport:{width:844,height:390}});
            await p.goto(H.ORIGIN+"/universe/rhythm/?bvPlayerId="+A.playerId);
            await ready(p);
+           await p.waitForFunction(()=>RVCoach.debug().mode==='welcome');
+           await p.locator('.rv-coach-card .btn-outline').click();
            await p.waitForFunction(v=>UniverseRhythm.session.official.isEnabled()===v,official,{timeout:15000});
            await sleep(900);
            assert((await val(p,"rv-player-name"))==="節奏回歸甲","identity card "+official);
-           assert((await val(p,"game-version")).includes("v2.6.5"),"version");
+           assert((await val(p,"game-version")).includes("v2.7.0"),"version");
            assert(await p.evaluate(()=>document.getElementById("rv-player-avatar").naturalWidth>0),"avatar asset");
            assert(await p.evaluate(()=>!window.BV_TEST_ISOLATION&&!document.getElementById("bv-test-chooser")),"no test isolation");
            await p.screenshot({path:H.out+"/home.png"});
@@ -156,7 +158,7 @@ jobs:
             assert(!w&&!H.db.get("scores")&&!H.db.get("leaderboards"),"fallback has no server score or reward");
            }
            assert(await p.evaluate(()=>!document.getElementById("r-rec").classList.contains("hidden")),"first accepted or local personal record shown");
-           if(official) assert(Object.values(H.db.get("scores")||{}).some(r=>r.gameVersion==="rhythm-v2.6.5+universe-v0.3.1"),"new server version recorded");
+           if(official) assert(Object.values(H.db.get("scores")||{}).some(r=>r.gameVersion==="rhythm-v2.7.0+universe-v0.3.1"),"new server version recorded");
            const balance=w?.balance||0;
            await click(p,"rv-btn-r-songs"); await screen(p,"s-songlist");
            await p.waitForFunction(()=>document.getElementById("rv-best-value").textContent.includes("分"),null,{timeout:15000});
@@ -175,6 +177,8 @@ jobs:
            await click(p,"btn-lb-home"); await screen(p,"s-title");
            await p.goto(H.ORIGIN+"/universe/rhythm/?bvPlayerId="+B.playerId); await ready(p);
            assert((await val(p,"rv-player-name"))==="節奏回歸乙","switch player");
+           await p.waitForFunction(()=>RVCoach.debug().mode==="welcome");await p.keyboard.press("Escape");
+           assert(await p.evaluate(()=>!RVCoach.active()),"new player independent tutorial preference");
            assert(!H.db.get("wallets/"+B.playerId),"no cross-player rewards");
            assert(JSON.stringify(H.db.get("players/"+A.playerId+"/profile"))===profileBefore,"identity unchanged");
            assert(p.errors.length===0,"no page errors: "+p.errors.join(" | "));
@@ -256,6 +260,7 @@ jobs:
           const H=await createHarness({clones:{tetris:R,rhythm:R,quiz:Q},out:OUT,flags:{SCORES_ENABLED:"on",REWARDS_ENABLED:"on"}});
           const assert=(ok,m)=>{if(!ok)throw Error(m);console.log("PASS",m)};
           try{
+            const A=await H.apiCreate("正式教學驗證","boy1");
             const {ctx,page:p}=await H.newPage({mobile:true,viewport:{width:844,height:390}});
             await p.addInitScript(()=>{
               window.open=(url)=>{window.testPlaylist=url;window.testPausedAtOpen=window.RV27Audio.debug();return null;};
@@ -272,8 +277,10 @@ jobs:
                 destroy(){this.destroyed=true;}
               }};
             });
-            await p.goto(H.ORIGIN+"/test/rhythm-v2.7/?bvTestMock=1");
+            await p.goto(H.ORIGIN+"/universe/rhythm/?bvPlayerId="+A.playerId);
             await p.waitForFunction(()=>window.UniverseRhythm?.isReady()&&window.RVCoach&&window.RV27UI);
+            await p.waitForFunction(()=>UniverseRhythm.session.official.isEnabled());
+            const writesBefore=H.apiCalls.filter(x=>!/^(GET|HEAD) /.test(x)).length;
             await p.waitForFunction(()=>RVCoach.debug().mode==="welcome");
             await p.locator(".rv-coach-card .btn-outline").click();
             await p.reload();await p.waitForFunction(()=>UniverseRhythm.isReady());
@@ -318,7 +325,7 @@ jobs:
             assert(await p.evaluate(()=>!G.running&&!audioSource&&RVMV.debug()===null),"completion stops media");
             await next();await p.waitForSelector("#s-title:not(.off)");
             await p.locator("#rv-btn-tutorial").click();await p.keyboard.press("Escape");await p.waitForFunction(()=>!RVCoach.active()&&!G.running);assert(true,"Escape exits tutorial");
-            assert(!H.apiCalls.some(x=>!/^(GET|HEAD) /.test(x))&&!H.db.get("scores")&&!H.db.get("wallets"),"no formal writes");
+            assert(H.apiCalls.filter(x=>!/^(GET|HEAD) /.test(x)).length===writesBefore&&!H.db.get("scores")&&!H.db.get("wallets"),"no formal writes");
             assert(!p.errors.length,"no page errors "+p.errors.join(" | "));
             await ctx.close();
           }finally{await H.finish("tutorial-qa");}
