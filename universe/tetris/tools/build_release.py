@@ -22,7 +22,7 @@ def once(s,old,new):
 
 def outputs():
     base=strip_release((DEST/'index.html').read_text())
-    head='<!-- BV-TETRIS-UI:HEAD -->\n'+''.join(f'<link rel="stylesheet" href="{f}?v={VERSION}">\n' for f in CSS)+'<!-- /BV-TETRIS-UI:HEAD -->\n'
+    head='<!-- BV-TETRIS-UI:HEAD -->\n'+''.join(f'<link rel="stylesheet" href="{f}?v={VERSION + '-layout-2' if f == 'desktop-ui.css' else VERSION}">\n' for f in CSS)+'<!-- /BV-TETRIS-UI:HEAD -->\n'
     body='<!-- BV-TETRIS-UI:BODY -->\n'+''.join(f'<script src="{f}?v={VERSION}"></script>\n' for f in JS)+'<!-- /BV-TETRIS-UI:BODY -->\n'
     out={'index.html':once(once(base,'</head>',head+'</head>'),'</body>',body+'</body>').encode()}
     for f in JS+CSS:out[f]=(SOURCE/f).read_bytes()
