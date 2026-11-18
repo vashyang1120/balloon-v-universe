@@ -128,12 +128,13 @@
     var prof = $("btn-profile-go");
     if (prof) { artButton(prof, "purple", "small"); prof.classList.add("rv-in", "rv-in-b4"); minor.appendChild(prof); }
     var mv = s.querySelector('button[onclick*="youtube.com/playlist"]');
-    if (mv) { artButton(mv, "blue", "small"); mv.classList.add("rv-in", "rv-in-b5"); minor.appendChild(mv); }
+    if (mv) { mv.id = "rv-btn-watch-mv"; mv.addEventListener("click",function(){if(window.RV27Audio) RV27Audio.externalPause();},true); artButton(mv, "blue", "small"); mv.classList.add("rv-in", "rv-in-b5"); minor.appendChild(mv); }
     panel.appendChild(minor);
 
     // 玩法教學：只預留 U-14 藍色風格的位置（不是按鈕、不可點擊），等新手教學版本完成再啟用
-    var slot = el("div", "rv-tutorial-slot", "🎓 玩法教學・下個版本開放");
-    slot.setAttribute("aria-hidden", "true");
+    var slot = el("button", "rv-tutorial-slot", "🎓 玩法教學");
+    slot.id = "rv-btn-tutorial"; slot.type = "button"; artButton(slot,"blue","small");
+    slot.addEventListener("click",function(){window.RVCoach.enter();});
     panel.appendChild(slot);
 
     home.appendChild(panel);
