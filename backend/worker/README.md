@@ -217,8 +217,8 @@ Cloudflare 後台 → `balloon-v-universe-api` →「設定」→「建置（Bui
 
 ## 遊戲宇宙 Staging
      
-- Worker `balloon-v-universe-api-staging` 使用 Wrangler `staging` environment。設定專用 Firebase 專案 `balloon-v-universe-staging` 及 Realtime Database，並在 Staging Worker 的 Secrets 設定 `FIREBASE_PROJECT_ID`、`FIREBASE_DATABASE_URL`、`FIREBASE_SERVICE_ACCOUNT_JSON`、`ADMIN_UIDS`。使用測試專用服務帳戶與管理員。Staging 拒絕其他 Firebase 專案與資料庫。
-- 將 `ALLOWED_ORIGINS` 設為專用 HTTPS 測試站來源。在 `backend/worker` 使用 `npx wrangler deploy --env staging`。Staging 的 V 幣獎勵預設停用。
+- Worker `balloon-v-universe-api-staging` 使用 Wrangler `staging` environment。Staging 設定使用專用 Firebase 專案 `balloon-v-universe-staging` 和新加坡 Realtime Database。請在 Staging Worker 的 Secrets 設定 `FIREBASE_SERVICE_ACCOUNT_JSON` 與需要時使用的 `ADMIN_UIDS`。使用測試專用服務帳戶與管理員。Staging 拒絕其他 Firebase 專案與資料庫。
+- `ALLOWED_ORIGINS` 預設為 `https://balloon-v-universe-staging.pages.dev`。若專用測試站使用不同網域，請更新 Staging 的來源。在 `backend/worker` 使用 `npx wrangler deploy --env staging`。Staging 的 V 幣獎勵預設停用。
 - 以 `node staging/build.mjs <Universe checkout> <Adventure checkout> <new output directory> <staging frontend origin> <staging Worker origin>` 建置四款遊戲與遊戲大廳，再把輸出發佈到專用 Pages 站。建置會改用 Staging SDK 和獨立網域，並限制每頁的 API 連線。用新測試玩家驗證建立身份、四款遊戲入口、結算、收藏與裝備都走 Staging Worker。
 - 派對島進入後，驗證身份成功會自動補登七個指定舊稱號。使用獨立測試身份，在瀏覽器存檔放入該身份的舊版永久稱號，保留一筆完整結算並模擬另一筆舊結算已移除。首次進入後查閱收藏，重新整理、斷線重連與另一台測試裝置重跑時各稱號只發一次。核對審計來源 `settlement` 或 `permanent_record` 和遊戲內獎勵。
 - 歷史資料屬於客戶端成就，Staging 測試不使用任何正式資料。若需要人工覆核，可使用小 V 的家玩家資料頁的下載功能，並在後台以管理員身份將已覆核的資料以 `{ "note": "覆核依據", "evidence": [...] }` 送至 `POST /v1/admin/collections/:playerId/adventure-evidence`。
