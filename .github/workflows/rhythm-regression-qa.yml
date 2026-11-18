@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 7fd3a111262fa21d33361ca0d450eb65e1544e9a
+          ref: a9027ab46cbb5ec84ef7e1d16862a452bb445dc1
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -52,7 +52,7 @@ jobs:
           test -s assets/audio/universe_lobby_bgm.mp3
           for f in v_full_open_arms v_bust_congrats v_bust_happy v_bust_point v_bust_remind; do test -s "assets/rpg/$f.png" || exit 1; done
           test -s assets/ui/avatar_frame_pink_idle.png
-          git diff --name-only e8674027f39f7d72bcad949bda154843ed2f98f5 HEAD | awk '!/^test\/rhythm-v2\.7\// { bad=1; print } END { exit bad }'
+          git diff --name-only 943e5590616bdc437788987ebee621e172785a97 HEAD | awk '!/^test\/rhythm-v2\.7\// { bad=1; print } END { exit bad }'
 
   browser:
     runs-on: ubuntu-latest
@@ -60,7 +60,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 7fd3a111262fa21d33361ca0d450eb65e1544e9a
+          ref: a9027ab46cbb5ec84ef7e1d16862a452bb445dc1
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -215,7 +215,7 @@ jobs:
               });
               await p.goto(H.ORIGIN+"/test/rhythm-v2.7/?bvTestMock=1");
               await p.waitForFunction(()=>window.UniverseRhythm?.isReady()&&window.RVMV&&window.RV27UI,null,{timeout:15000});
-              assert(await p.evaluate(()=>BV_TEST_ISOLATION.version==="v2.7.0-tutorial-test-2"&&!UniverseRhythm.session.official.isEnabled()),"isolated "+mode);
+              assert(await p.evaluate(()=>BV_TEST_ISOLATION.version==="v2.7.0-tutorial-test-3"&&!UniverseRhythm.session.official.isEnabled()),"isolated "+mode);
               await p.locator(".rv-coach-card .btn-outline").click();
               await p.locator("#btn-play").click();
               await p.waitForFunction(()=>SONGS.length>=9);
@@ -243,6 +243,7 @@ jobs:
               assert(!p.errors.length,"no JS errors "+p.errors.join(" | "));
               await ctx.close();
             }
+            await p.locator("#rv-btn-tutorial").click();await p.keyboard.press("Escape");await p.waitForFunction(()=>!RVCoach.active()&&!G.running);assert(true,"Escape exits tutorial");
             assert(!H.apiCalls.some(x=>!/^(GET|HEAD) /.test(x)),"no production API writes");
             assert(!H.db.get("scores")&&!H.db.get("wallets"),"no formal scores or rewards");
           }finally{await H.finish("mv-qa");}
@@ -286,16 +287,19 @@ jobs:
             await p.locator("#rv-player-name").click();
             await p.waitForFunction(()=>RV27Audio.debug().playing);
             await p.locator("#rv-btn-tutorial").click();
-            const next=()=>p.locator(".rv-coach-card .btn-y").click();
+            const next=()=>p.keyboard.press("Space");
             await next();
             await p.waitForFunction(()=>RVCoach.debug().mode==="explain",null,{timeout:60000});
             assert(await p.evaluate(()=>G.song.id==="song009"&&G.tutorialClipStart===207&&G.paused&&!audioSource&&G.notes.length>0&&mvTestPlayers.length===1&&!RVMV.debug().want),"real MV scene paused with notes");
+            assert(await p.evaluate(()=>{const n=G.notes.find(n=>n.lane===0&&!n.hit);const r=n.el.getBoundingClientRect(),l=laneEls[0].getBoundingClientRect();return r.left>=l.left&&r.right<=l.right&&r.width>0;}),"first note physically inside mobile lane");
+            const checkpoint=await p.evaluate(()=>RVCoach.debug().checkpoint);
             await next();
             assert(await p.locator(".rv-coach-arrow").isVisible(),"white line arrow");
+            assert(await p.evaluate(()=>{const a=document.querySelector(".rv-coach-line img").getBoundingClientRect(),b=document.querySelector("#lanes .hline").getBoundingClientRect();return b.left-a.right>=0&&b.left-a.right<32;}),"V-13 beside judgment line");
             await p.screenshot({path:H.out+"/line-explanation.png"});
             await next();
             await p.waitForFunction(()=>RVCoach.debug().mode==="retry",null,{timeout:12000});
-            assert(await p.evaluate(()=>Math.abs(G.gt-350)<1&&G.miss===0&&G.notes.length>0&&mvTestPlayers.length===1&&Math.abs(RVMV.debug().time-207.35)<0.001),"retry rewinds chart and resets counters");
+            assert(await p.evaluate(()=>Math.abs(G.gt-RVCoach.debug().checkpoint*1000)<1&&G.miss===0&&G.notes.length>0&&mvTestPlayers.length===1&&Math.abs(RVMV.debug().time-207-RVCoach.debug().checkpoint)<0.001),"retry rewinds chart and resets counters");
             await next();
             async function hit(lane,hold=0){
               await p.waitForFunction(l=>G.running&&!G.paused&&G.notes.some(n=>n.lane===l&&!n.hit&&!n.missed&&Math.abs(n.hitTime-G.gt)<65),lane,{timeout:12000,polling:10});
