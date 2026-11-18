@@ -32,7 +32,9 @@
   var labels = {};          // 身份圖案名稱（來自 assets/avatars/base/manifest.json）
   var game = { startedAt: null, submissionId: null };
   var readyCallbacks = [];
+  var localNewRecord = false;
   var wallet = null;        // 正式 V幣（後端回傳；只讀）
+  var officialInitFailed = false, officialResolved = false, officialBest = null, bestRevision = 0, bestRequest = null, runSerial = 0, officialNewRecord = false;
   var lastOfficial = null;  // 最近一場的伺服器判定
 
   function $(id) { return document.getElementById(id); }
@@ -134,7 +136,7 @@
   }
 
   /* 切換玩家（同一頁內）：清掉上一位的狀態。目前遊戲內不提供切換，切換請回大廳 */
-  S.onReset(function () { player = null; wallet = null; game.startedAt = null; game.submissionId = null; });
+  S.onReset(function () { player = null; wallet = null; officialInitFailed = false; officialResolved = false; officialBest = null; bestRequest = null; ++bestRevision; ++runSerial; officialNewRecord = false; localNewRecord = false; game.startedAt = null; game.submissionId = null; });
 
 
   /* ---------- v0.3.0 正式成績／V幣 ---------- */
@@ -159,15 +161,48 @@
       return w;
     }, function () { return null; });
   }
+  function cachedOfficialBest() {
+    var n = S.playerStore.get("officialBest");
+    return n !== null && n !== undefined && n !== "" && isFinite(Number(n)) ? Number(n) : null;
+  }
+  function paintBest() {
+    var el = $("best-disp"); if (!el) return;
+    if (!S.isSandbox && !officialResolved) { var cached = cachedOfficialBest(); el.textContent = officialInitFailed ? (cached !== null ? Number(cached).toLocaleString() : "暫無法讀取") : "讀取中…"; return; }
+    var n = officialOn() ? (officialBest !== null ? officialBest : cachedOfficialBest()) : parseInt(S.playerStore.get("localBest") || "0", 10) || 0;
+    el.textContent = n === null ? "暫無法讀取" : n ? Number(n).toLocaleString() : "—";
+  }
+  function applyBest(n) {
+    if (!isFinite(Number(n)) || Number(n) < 0) return;
+    officialBest = Number(n); ++bestRevision;
+    S.playerStore.set("officialBest", String(officialBest)); paintBest();
+  }
+  function refreshOfficialBest() {
+    if (!officialOn() || !player) { paintBest(); return Promise.resolve(null); }
+    if (bestRequest) return bestRequest;
+    var pid = player.playerId, rev = bestRevision;
+    var request = S.official.getBoard("total", { limit: 1 }).then(function (board) {
+      if (!player || player.playerId !== pid || bestRevision !== rev) return null;
+      var me = board.me || (board.rows || []).find(function (r) { return r.playerId === pid; });
+      applyBest(me ? me.score : 0); return officialBest;
+    }, function () { if (player && player.playerId === pid) paintBest(); return null; });
+    bestRequest = request;
+    request.then(function () { if (bestRequest === request) bestRequest = null; });
+    return request;
+  }
+  function paintNewRecord() { var el = $("new-best"); if (el) el.style.display = officialNewRecord ? "block" : "none"; }
+
   function initOfficial() {
+    var pid = player && player.playerId;
     return S.official.init().then(function () {
-      applyOfficialMode();
+      if (!player || player.playerId !== pid) return;
+      officialInitFailed = false; officialResolved = true; applyOfficialMode(); paintBest();
       if (!officialOn()) return;
       return S.official.flushOutbox().then(function (sent) {
+        if (!player || player.playerId !== pid) return;
         if (sent && sent.length) toastSafe("📮 已補送上次沒送出的 " + sent.length + " 筆成績");
-        return refreshWallet();
+        return Promise.all([refreshWallet(), refreshOfficialBest()]);
       });
-    });
+    }).catch(function () { if (player && player.playerId === pid) { officialInitFailed = true; paintBest(); } });
   }
   function setVcoinMsg(text, type) {
     if (typeof window.setResultVCoinMessage === "function") { try { window.setResultVCoinMessage(text, type); return; } catch (e) {} }
@@ -269,8 +304,11 @@
     },
 
     /* 本機最佳分數：依 playerId 分開存放（不同玩家不共用；不是正式紀錄） */
-    getLocalBest: function () { return parseInt(S.playerStore.get("localBest") || "0", 10) || 0; },
-    setLocalBest: function (n) { S.playerStore.set("localBest", String(n)); },
+    getLocalBest: function () { return officialOn() ? (officialBest !== null ? officialBest : cachedOfficialBest()) || 0 : parseInt(S.playerStore.get("localBest") || "0", 10) || 0; },
+    setLocalBest: function (n) { if (!S.isSandbox && (!officialResolved || officialOn())) return; localNewRecord = Number(n) > this.getLocalBest(); S.playerStore.set("localBest", String(n)); },
+    isNewRecord: function (n) { if (!S.isSandbox && !officialResolved) return false; return officialOn() ? officialNewRecord : localNewRecord || n > this.getLocalBest(); },
+    refreshBestDisplay: function () { paintBest(); return Promise.resolve(this.getLocalBest()); },
+    refreshOfficialBest: refreshOfficialBest,
 
     /* 每一場開局時固定 submissionId，結算時用來防止重複提交 */
     wrapStartGame: function () {
@@ -279,7 +317,8 @@
       var wrapped = function () {
         game.startedAt = new Date().toISOString();
         game.submissionId = null;
-        lastOfficial = null;
+        lastOfficial = null; officialNewRecord = false; localNewRecord = false; ++runSerial; paintNewRecord();
+        refreshOfficialBest();
         if (player) S.startRun();   // 正式成績開啟時向伺服器取得場次（沒開啟／沙盒不會寫入任何資料）
         return orig.apply(this, arguments);
       };
@@ -293,12 +332,23 @@
         if (note) note.textContent = L.resultNote + "（沒有遊戲宇宙玩家，本場未記錄）";
         return Promise.resolve(null);
       }
+      var pid = player.playerId, serial = runSerial;
       var scoreData = { score: d.score, level: d.level, lines: d.lines, difficulty: d.difficulty, peakCombo: d.peakCombo };
       if (officialOn()) {
         if (note) note.textContent = "📮 正在把成績送到遊戲宇宙伺服器…";
         return S.finishRun(scoreData).then(function (out) {
+          if (!player || player.playerId !== pid) return out;
+          if (runSerial !== serial) {
+            var older = out.result && out.result.status === "accepted" && (out.result.boards || []).find(function(r){return r.boardId === "total";});
+            if (older) applyBest(Math.max(officialBest || 0, Number(older.best) || 0));
+            return out;
+          }
           if (out.official && out.result) {
             lastOfficial = out.result;
+            var b = (out.result.boards || []).find(function (r) { return r.boardId === "total"; });
+            officialNewRecord = out.result.status === "accepted" && !!b && b.improved === true;
+            if (out.result.status === "accepted" && b) applyBest(b.best);
+            paintNewRecord();
             if (note) note.textContent = S.describeOfficialResult(out.result);
             setVcoinMsg(S.describeOfficialResult(out.result), out.result.status === "accepted" ? "success" : "already");
             refreshWallet();
@@ -336,7 +386,9 @@
         var dl = { easy: "輕鬆", normal: "普通", hard: "挑戰" };
         var load = function () {
           listEl.innerHTML = '<div class="lb-msg">🎈 載入中...</div>';
+          var pid = player && player.playerId, rev = bestRevision;
           return S.official.getBoard("total", { limit: 50 }).then(function (board) {
+            if (player && player.playerId === pid && bestRevision === rev) { var me = board.me || board.rows.find(function(r){return r.playerId===pid;}); applyBest(me ? me.score : 0); }
             if (!board.rows.length) { listEl.innerHTML = '<div class="lb-msg">正式排行榜還沒有成績，成為第一名吧！🎈</div>'; return; }
             listEl.innerHTML = officialRowsHtml(board, avatarUrlOf, function (r) { var x = r.extra || {}; return (r.titleName ? "🎖" + r.titleName + " · " : "") + "LV" + (x.level || "-") + " · " + (x.lines || 0) + "行 · " + (dl[x.difficulty] || ""); }) +
               (board.me && board.me.rank > board.rows.length ? '<div class="lb-msg">我的名次：第 ' + board.me.rank + " 名（" + Number(board.me.score).toLocaleString() + "）</div>" : "");
