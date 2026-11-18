@@ -105,3 +105,8 @@ Storage：傳給 SDK 的 localStorage／sessionStorage 都加上前綴 `vRhythmV
 - Base: v2.6.5 approved production gameplay; existing isolated test shell retained.
 - YouTube IFrame Player API / native video preparation parallel to original MP3 loading; bounded 6.5s wait, then original countdown. No reloading iframe on pause/resume. MP3 clock authoritative; seek on recovery and drift >0.65s, at most every 2.5s. Optional song.mvOffsetSec default 0. Muted background only. No changes to scoring, beatmap, visuals or production routes.
 - Real YouTube buffering, mobile autoplay and per-song matching require physical device validation; CUED is not a guarantee of full buffering.
+
+
+## v2.7.0-tutorial-test-1
+- 真實四軌引擎教學，單音符、四軌連擊、長音符（早放重試）。最後使用 song009 原音訊/MV/字幕，207–226.7 秒，16 個原始音符含兩個 hold。教學不進正式結算或提交。觀看播放清單前立即暫停 BGM，返回或下一次操作恢復。
+- 只修改獨立測試版，正式 v2.6.5 不變。
