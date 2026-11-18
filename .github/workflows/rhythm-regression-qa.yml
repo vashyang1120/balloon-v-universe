@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 0f8be1a17eac38244a24ffc99fd4e086bcdbcaf4
+          ref: 7fd3a111262fa21d33361ca0d450eb65e1544e9a
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -60,7 +60,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 0f8be1a17eac38244a24ffc99fd4e086bcdbcaf4
+          ref: 7fd3a111262fa21d33361ca0d450eb65e1544e9a
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -295,7 +295,7 @@ jobs:
             await p.screenshot({path:H.out+"/line-explanation.png"});
             await next();
             await p.waitForFunction(()=>RVCoach.debug().mode==="retry",null,{timeout:12000});
-            assert(await p.evaluate(()=>Math.abs(G.gt-350)<1&&G.miss===0&&G.notes.length>0&&mvTestPlayers.length===1),"retry rewinds chart and resets counters");
+            assert(await p.evaluate(()=>Math.abs(G.gt-350)<1&&G.miss===0&&G.notes.length>0&&mvTestPlayers.length===1&&Math.abs(RVMV.debug().time-207.35)<0.001),"retry rewinds chart and resets counters");
             await next();
             async function hit(lane,hold=0){
               await p.waitForFunction(l=>G.running&&!G.paused&&G.notes.some(n=>n.lane===l&&!n.hit&&!n.missed&&Math.abs(n.hitTime-G.gt)<65),lane,{timeout:12000,polling:10});
