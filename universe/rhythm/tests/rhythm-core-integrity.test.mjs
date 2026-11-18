@@ -33,16 +33,21 @@ const RELEASE_EDITS = [
   ]
 ];
 let html = releaseHtml;
+const v270 = JSON.parse(fs.readFileSync(path.join(DIR,'tools/release-v2.7.0-edits.json'),'utf8'));
+for (const [previous, actual] of [...v270].reverse()) {
+  assert.equal(html.split(actual).length,2,'Missing or duplicated approved v2.7.0 edit');
+  html=html.replace(actual,previous);
+}
 for (const [actual, previous] of RELEASE_EDITS) {
   assert.equal(html.split(actual).length, 2, "Missing or duplicated approved v2.6.5 edit");
   html = html.replace(actual, previous);
 }
 html = html.replace('<script src="universe-shell.js?v=2.6.5"></script>', '<script src="universe-shell.js"></script>');
-test("v2.6.5 release wiring keeps live shell and excludes isolation", () => {
-  assert.match(releaseHtml, /universe-shell\.js\?v=2\.6\.5/);
+test("v2.7.0 release wiring keeps live shell and excludes isolation", () => {
+  assert.match(releaseHtml, /universe-shell\.js\?v=2\.7\.0/);
   assert.doesNotMatch(releaseHtml, /BV_TEST_ISOLATION|universe-shell-test\.js|test-isolation\.css|bv-test-banner/);
-  for (const file of ["home-songselect-ui.css","home-songselect-ui.js","result-ui.css","result-ui.js","menu-audio.js"]) {
-    assert.ok(releaseHtml.includes(file + "?v=2.6.5"), file);
+  for (const file of ["home-songselect-ui.css","home-songselect-ui.js","result-ui.css","result-ui.js","menu-audio.js","tutorial.js","tutorial.css","mv-sync.js"]) {
+    assert.ok(releaseHtml.includes(file + "?v=2.7.0"), file);
     assert.ok(fs.existsSync(path.join(DIR,file)), file);
   }
 });

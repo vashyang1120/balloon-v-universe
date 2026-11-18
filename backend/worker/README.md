@@ -215,9 +215,10 @@ Cloudflare 後台 → `balloon-v-universe-api` →「設定」→「建置（Bui
 |---|---|---|---|---|
 | v0.1.0-deploy-test-1 | 2026-11-09 | 驗證 Cloudflare GitHub Builds 自動部署流程（不含新功能） | `balloon-v-universe-api` | `main` / `backend/worker` |
 
-## 派對島稱號同步驗收
-
-- Worker 使用 `title-sync-test`，名稱為 `balloon-v-universe-title-sync-test`。在獨立 Firebase 測試專案建立服務帳戶和測試玩家。對該 Worker 設定 `FIREBASE_PROJECT_ID`、`FIREBASE_DATABASE_URL`、`FIREBASE_SERVICE_ACCOUNT_JSON` 和測試管理員 `ADMIN_UIDS`，並將 `ALLOWED_ORIGINS` 指向實際使用的 HTTPS 測試前端來源。環境預設沒有 Firebase 連線資料或 CORS 來源，V 幣獎勵停用。
-- 從 `backend/worker` 執行 `npm run verify`，再用 `npx wrangler deploy --env title-sync-test --dry-run` 檢查打包。正式 Worker 的 deploy 指令不適用於驗收。
-- 獨立測試站需同時包含 Universe #39 和派對島 #35 的分支產物。只在測試站的 SDK 副本改 `DEFAULT_API_BASE`，並確認大廳、三款遊戲與派對島使用該副本。排球與打地鼠的 iframe 相對路徑也須保留。使用全新的瀏覽器資料空間及測試身份進行測試。瀏覽器網路面板中的建角、場次、成績、稱號及裝備請求都應指向獨立 Worker。
-- 新的小遊戲稱號使用伺服器場次綁定玩家、遊戲種類與結算，成績仍由客戶端產生。歷史結果由小 V 的家玩家資料頁下載。管理員檢視與確認證據後，可將下載檔中的符合條件項目，以 `{ "note": "覆核依據", "evidence": [...] }` 格式送到 `POST /v1/admin/collections/:playerId/adventure-evidence`，每批 1–25 筆。永久稱號清單供人工查閱。只有該清單但比賽或通關資料缺失的情況，需要另外佐證。
+## 遊戲宇宙 Staging
+     
+- Worker `balloon-v-universe-api-staging` 使用 Wrangler `staging` environment。設定專用 Firebase 專案 `balloon-v-universe-staging` 及 Realtime Database，並在 Staging Worker 的 Secrets 設定 `FIREBASE_PROJECT_ID`、`FIREBASE_DATABASE_URL`、`FIREBASE_SERVICE_ACCOUNT_JSON`、`ADMIN_UIDS`。使用測試專用服務帳戶與管理員。Staging 拒絕其他 Firebase 專案與資料庫。
+- 將 `ALLOWED_ORIGINS` 設為專用 HTTPS 測試站來源。在 `backend/worker` 使用 `npx wrangler deploy --env staging`。Staging 的 V 幣獎勵預設停用。
+- 以 `node staging/build.mjs <Universe checkout> <Adventure checkout> <new output directory> <staging frontend origin> <staging Worker origin>` 建置四款遊戲與遊戲大廳，再把輸出發佈到專用 Pages 站。建置會改用 Staging SDK 和獨立網域，並限制每頁的 API 連線。用新測試玩家驗證建立身份、四款遊戲入口、結算、收藏與裝備都走 Staging Worker。
+- 派對島進入後，驗證身份成功會自動補登七個指定舊稱號。使用獨立測試身份，在瀏覽器存檔放入該身份的舊版永久稱號，保留一筆完整結算並模擬另一筆舊結算已移除。首次進入後查閱收藏，重新整理、斷線重連與另一台測試裝置重跑時各稱號只發一次。核對審計來源 `settlement` 或 `permanent_record` 和遊戲內獎勵。
+- 歷史資料屬於客戶端成就，Staging 測試不使用任何正式資料。若需要人工覆核，可使用小 V 的家玩家資料頁的下載功能，並在後台以管理員身份將已覆核的資料以 `{ "note": "覆核依據", "evidence": [...] }` 送至 `POST /v1/admin/collections/:playerId/adventure-evidence`。

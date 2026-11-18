@@ -329,6 +329,16 @@ export function launchRoutes() {
       },
     },
     {
+      method: "POST", path: "/v1/players/:playerId/adventure-title-migration", auth: "public", summary: "還原派對島歷史稱號",
+      handler: async (ctx) => {
+        await enforceRateLimit(ctx, "score");
+        const pid = playerParam(ctx);
+        const body = await readJson(ctx.request, MAX_BODY);
+        const profile = await adventureTitleProfile(ctx, pid, body);
+        return ok(ctx, await adventureTitleService(ctx).migrate(profile, body));
+      },
+    },
+    {
       method: "POST", path: "/v1/admin/collections/:playerId/adventure-evidence", auth: "admin", summary: "派對島歷史成就人工補登",
       handler: async (ctx) => {
         const pid = playerParam(ctx);

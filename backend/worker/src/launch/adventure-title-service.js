@@ -1,7 +1,7 @@
 import { ApiError } from "../utils/errors.js";
 import { casUpdate } from "./cas.js";
 import { SESSION_TTL_MS } from "./score-service.js";
-import { adventureTitleKeys } from "./adventure-title-evidence.js";
+import { adventureTitleKeys, legacyAdventureClaim } from "./adventure-title-evidence.js";
 
 const minigames = new Set(["volleyball", "whack"]);
 export const validEvidenceId = (id) => typeof id === "string" && /^[A-Za-z0-9_-]{6,128}$/.test(id);
@@ -71,5 +71,36 @@ export function createAdventureTitleService({ db, collections, now }) {
     return { fresh, collection: await collections.get(playerId, profile) };
   }
 
-  return { settle, review };
+  async function migrate(profile, body) {
+    const { playerId } = profile;
+    if (body.playerId !== playerId || body.mode !== "production" || body.workspace !== "__c1u__prd__" + playerId ||
+        !Array.isArray(body.claims) || body.claims.length < 1 || body.claims.length > 7) throw new ApiError("VALIDATION_FAILED");
+    const claims = body.claims.map((item) => {
+      if (item?.evidence !== undefined && !validEvidenceId(item.evidence?.id)) throw new ApiError("VALIDATION_FAILED");
+      const claim = legacyAdventureClaim(item, now());
+      if (!claim) throw new ApiError("VALIDATION_FAILED");
+      return claim;
+    });
+    const confirmed = [];
+    if (new Set(claims.map((claim) => claim.titleKey)).size !== claims.length) throw new ApiError("VALIDATION_FAILED");
+    for (const claim of claims) {
+      const { titleKey, ...provenance } = claim;
+      const location = `collectionAudit/${playerId}_adventure_legacy_${titleKey}`;
+      const audit = await casUpdate(db, location, (existing) => {
+        if (existing) return { result: existing };
+        const record = { ...provenance, playerId, titleKey, action: "adventure_legacy_migration", at: now() };
+        return { value: record, result: record };
+      });
+      const accepted = audit.result;
+      await collections.grantKeys(playerId, profile, { titles: [titleKey] }, {
+        type: "adventure_legacy_client", migratedAt: accepted.at, evidenceLevel: accepted.evidenceLevel,
+        legacyUnlockedAt: accepted.unlockedAt, legacyGameVersion: accepted.gameVersion,
+        ...(accepted.evidenceId ? { evidenceId: accepted.evidenceId } : {}),
+      });
+      confirmed.push(titleKey);
+    }
+    return { confirmed };
+  }
+
+  return { settle, review, migrate };
 }

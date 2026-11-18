@@ -121,3 +121,48 @@ test("trial title submissions stay in the trial namespace and simultaneous award
   const collection = await trial.call("GET", "/v1/players/" + pid + "/collection");
   assert.deepEqual(collection.body.data.titles.map((t) => t.titleKey).sort(), ["volleyball_expert", "volleyball_rookie"].map(key));
 });
+
+test("legacy titles migrate per player and per title across devices without changing equipment or rewards", async () => {
+  const e = setup();
+  const p = await newPlayer(e.call, player.displayId);
+  const migrate = (claim, override = {}) => e.call("POST", "/v1/players/" + p + "/adventure-title-migration",
+    { ...player, playerId: p, mode: "production", workspace: "__c1u__prd__" + p, claims: [claim], ...override });
+  const legacy = { gameId: "adventure", category: "adventure", source: "client", serverConfirmed: false,
+    gameVersion: "adventure-v0.4.1-continent1-universe-test-1", unlockedAt: e.clock.t - 1 };
+  const id = "adv-m123abcd-xyz123";
+  const thrift = { record: { ...legacy, titleKey: key("super_thrifty"), challengeId: id },
+    evidence: { id, kind: "continent", complete: true, track: track(1, 1, 0) } };
+  const whack = { record: { ...legacy, titleKey: key("whack_legend"), via: "whack:660" } };
+  assert.equal((await e.call("POST", "/v1/players/" + p + "/equip", { ...player, titleKey: null })).status, 200);
+  for (const [claim, opts, status] of [
+    [thrift, { mode: "sandbox" }, 400],
+    [thrift, { workspace: "__c1u__sbx__" + p }, 400],
+    [thrift, { workspace: "__c1u__prd__" + p + "devplay" }, 400],
+    [thrift, { playerId: "p_aaaaaaaaaaaaaaaaaaaa" }, 400],
+    [thrift, { baseAvatarKey: "boy2" }, 403],
+    [{ record: { titleKey: key("whack_legend") } }, {}, 400],
+    [{ record: { ...legacy, titleKey: "tetris_first_clear" } }, {}, 400],
+    [{ record: { ...whack.record, via: "whack:659" } }, {}, 400],
+    [{ ...thrift, evidence: { ...thrift.evidence, track: track(1, 1, 1) } }, {}, 400],
+  ]) assert.equal((await migrate(claim, opts)).status, status);
+  assert.deepEqual((await migrate(thrift)).body.data.confirmed, [key("super_thrifty")]);
+  assert.deepEqual((await migrate(whack)).body.data.confirmed, [key("whack_legend")]);
+  assert.deepEqual((await migrate(thrift)).body.data.confirmed, [key("super_thrifty")]);
+  const collection = (await e.call("GET", "/v1/players/" + p + "/collection")).body.data;
+  assert.equal(collection.equipped.titleKey, null);
+  assert.equal(collection.titles.length, 2);
+  const rows = Object.values(e.db.get("collectionAudit"));
+  assert.deepEqual(rows.map((r) => r.evidenceLevel).sort(), ["permanent_record", "settlement"]);
+  assert.equal(e.db.get("scores"), null);
+  assert.equal(e.db.get("wallets/" + p), null);
+});
+
+test("Staging refuses production Firebase project or database", async () => {
+  const { readConfig } = await import("../src/config.js");
+  const config = { SERVICE_ENV: "staging", FIREBASE_PROJECT_ID: "balloon-v-universe-staging",
+    FIREBASE_DATABASE_URL: "https://balloon-v-universe-staging-default-rtdb.asia-southeast1.firebasedatabase.app",
+    FIREBASE_SERVICE_ACCOUNT_JSON: "{}" };
+  assert.equal(readConfig(config).firebaseConfigured, true);
+  assert.equal(readConfig({ ...config, FIREBASE_PROJECT_ID: "balloon-v-universe" }).firebaseConfigured, false);
+  assert.equal(readConfig({ ...config, FIREBASE_DATABASE_URL: "https://balloon-v-universe-default-rtdb.asia-southeast1.firebasedatabase.app" }).firebaseConfigured, false);
+});

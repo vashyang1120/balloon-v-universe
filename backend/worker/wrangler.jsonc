@@ -68,12 +68,12 @@
 
   // Independent Worker. Provide only the separate test project's Firebase bindings.
   "env": {
-    "title-sync-test": {
-      "name": "balloon-v-universe-title-sync-test",
+    "staging": {
+      "name": "balloon-v-universe-api-staging",
       "workers_dev": true,
       "preview_urls": false,
       "vars": {
-        "SERVICE_ENV": "production",
+        "SERVICE_ENV": "staging",
         "ALLOWED_ORIGINS": "",
         "FIREBASE_TIMEOUT_MS": "8000",
         "SCORES_ENABLED": "on",

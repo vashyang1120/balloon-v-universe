@@ -1,5 +1,5 @@
 /* ==========================================================
-   v2.6.5 — 橫向結算頁＋結算動態演出
+   v2.7.0 — 橫向結算頁＋結算動態演出
 
    原則：
    - 只「搬移」原有結算 DOM（#r-grade、#r-grade-msg、.stats、#r-rec、#r-vcoin-msg、#r-title-unlock-msg、
@@ -61,7 +61,7 @@
     if (h2) { h2.textContent = "🌟 RESULT"; head.appendChild(h2); }
     songLine = el("div", "rv-res-song");
     head.appendChild(songLine);
-    var tag = el("div", "rv-test-tag", "節奏遊戲 v2.6.5");   // 版本號放在提示文字（首頁、選歌頁已完整顯示）
+    var tag = el("div", "rv-test-tag", "節奏遊戲 v2.7.0");   // 版本號放在提示文字（首頁、選歌頁已完整顯示）
     tag.title = window.RV27UI ? window.RV27UI.version : "";
     head.appendChild(tag);
     right.appendChild(head);

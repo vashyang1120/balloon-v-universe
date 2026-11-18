@@ -1,0 +1,23 @@
+#rv-btn-tutorial{display:block!important;min-height:28px;--bh:clamp(28px,7vh,40px);border:0;background:transparent;padding:0;cursor:pointer;pointer-events:auto;opacity:1;color:#fff;font-weight:900;}
+.rv-coach-card{position:absolute;z-index:160;left:3%;bottom:9%;width:min(76%,700px);max-height:43%;display:flex;align-items:flex-end;gap:8px;color:#59346e;pointer-events:auto;box-sizing:border-box;}
+.rv-coach-card img{width:clamp(76px,16vw,164px);max-height:38vh;object-fit:contain;flex:none;filter:drop-shadow(0 3px 5px #32134566);animation:rvCoachIn .2s ease-out;}
+.rv-coach-card>div{flex:1;min-width:0;padding:10px 13px;border-radius:16px;border:2px solid #b888f2;background:rgba(255,248,255,.96);box-shadow:0 5px 20px #43216b66;display:flex;flex-direction:column;gap:6px;}
+.rv-coach-card strong{font-size:clamp(14px,2.5vw,22px);}
+.rv-coach-card p{font-size:clamp(12px,1.9vw,17px);line-height:1.4;}
+.rv-coach-actions{display:flex;gap:8px;}
+.rv-coach-actions button{flex:1;min-height:28px;padding:4px 8px;font-size:clamp(11px,1.8vw,15px);}
+#s-title .rv-coach-card{z-index:220;left:8%;bottom:12%;width:84%;max-width:800px;max-height:none;}
+.rv-coach-target{outline:3px solid #fff6a2!important;box-shadow:0 0 16px 5px #ffdc55!important;animation:rvCoachGlow .7s alternate infinite!important;z-index:12!important;}
+.rv-coach-arrow{position:absolute;z-index:155;background:#fff9d6;color:#59346e;border:2px solid #ffd166;border-radius:10px;padding:6px 8px;font-weight:900;pointer-events:none;}
+@keyframes rvCoachGlow{to{filter:brightness(1.5);box-shadow:0 0 26px 9px #fff6a2;}}
+@keyframes rvCoachIn{from{transform:translateY(12px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+@media(max-height:340px){.rv-coach-card{bottom:6%;gap:4px;}.rv-coach-card>div{padding:6px;gap:3px;}.rv-coach-card img{max-height:31vh;}.rv-coach-card p{font-size:11px;}}
+
+/* Home layout hides all direct children except its main panel. Explicitly expose the coach. */
+#s-title.rv-ui > .rv-coach-card{display:flex!important;}
+#s-title.rv-ui:has(> .rv-coach-card) > .rv-home{pointer-events:none;}
+
+/* Pointing pose is immediately left of the judgment line, not behind the dialog. */
+.rv-coach-line{left:auto;right:10%;width:min(76%,700px);flex-direction:row-reverse;bottom:9%;}
+.rv-coach-line img{width:clamp(76px,16vw,164px);}
+.rv-coach-line>div{flex:1;}

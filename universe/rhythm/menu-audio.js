@@ -1,5 +1,5 @@
 /* ==========================================================
-   v2.6.5 — 選單 BGM＋UI 按鈕音效
+   v2.7.0 — 選單 BGM＋UI 按鈕音效
 
    ■ BGM：氣球小V遊戲宇宙正式大廳 BGM（唯讀引用，不複製、不改寫）
      來源：balloon-v-universe/assets/audio/universe_lobby_bgm.mp3
@@ -48,7 +48,7 @@
      BGM
      ========================================================== */
   var bgm = { els: [], gains: [], graph: false, cur: 0, playing: false, unlocked: false, blocked: false,
-              loopTimer: 0, xfading: false, pauseTimers: [], leaving: false, attempts: 0 };
+              loopTimer: 0, xfading: false, pauseTimers: [], leaving: false, external: false, externalAway:false, attempts: 0 };
 
   function makeEl() {
     var el = new Audio();
@@ -90,7 +90,7 @@
   }
   function maskShown() { var m = document.getElementById("rv-rotate-mask"); return !!m && !m.hidden; }
   function shouldPlay() {
-    if (bgm.leaving || document.hidden) return false;
+    if (bgm.leaving || bgm.external || document.hidden) return false;
     var G = window.G;
     if (G && G.running) return false;                       // 演奏中、暫停、恢復倒數、遊戲中開角色設定
     var scr = visibleScreen();
@@ -194,7 +194,8 @@
     var c = getCtx();
     if (c && c.state === "suspended" && !document.hidden) { try { c.resume(); } catch (err) {} }
     decodeClick();
-    if (bgm.playing || bgm.leaving || document.hidden) return;
+    if (bgm.external && e.isTrusted && !(e.target && e.target.closest && e.target.closest('#rv-btn-watch-mv'))) {bgm.external=false;bgm.externalAway=false;update('external-gesture');}
+    if (bgm.playing || bgm.leaving || bgm.external || document.hidden) return;
     if (!bgm.unlocked || bgm.blocked) {
       ensureEls();
       bgm.els[bgm.cur].muted = true;      // 先靜音解鎖；確認仍在選單畫面才取消靜音並淡入
@@ -272,9 +273,11 @@
     document.addEventListener("pointerdown", function (e) { if (e.isPrimary !== false) uiPress(e); }, true);
     document.addEventListener("click", function (e) { if (e.detail === 0) uiPress(e); }, true);   // 鍵盤 Enter／空白鍵
     document.addEventListener("visibilitychange", function () {
-      if (document.hidden) { pausePlay(0); if (ctx && ctx.state === "running") { try { ctx.suspend(); } catch (e) {} } }
-      else { if (ctx && ctx.state === "suspended") { try { ctx.resume(); } catch (e) {} } update("visible"); }
+      if (document.hidden) { if(bgm.external)bgm.externalAway=true; pausePlay(0); if (ctx && ctx.state === "running") { try { ctx.suspend(); } catch (e) {} } }
+      else { if(bgm.external&&bgm.externalAway){bgm.external=false;bgm.externalAway=false;} if (ctx && ctx.state === "suspended") { try { ctx.resume(); } catch (e) {} } update("visible"); }
     });
+    window.addEventListener("blur",function(){if(bgm.external)bgm.externalAway=true;});
+    window.addEventListener("focus",function(){if(bgm.external&&bgm.externalAway&&!document.hidden){bgm.external=false;bgm.externalAway=false;update("external-return");}});
     window.addEventListener("pagehide", function () { stopAll(); });
     window.addEventListener("pageshow", function (e) { if (e.persisted) { bgm.leaving = false; update("pageshow"); } });
   }
@@ -292,11 +295,12 @@
     update: update,                 // 畫面切換／旋轉後呼叫
     onHomeIntro: function () { update("intro"); },   // 首次首頁登場時嘗試淡入
     onGameStart: function () { pausePlay(0.15); },   // 開始歌曲／再玩一次：立即淡出
+    externalPause:function(){bgm.external=true;bgm.externalAway=false;pausePlay(0);},
     stopAll: stopAll,               // 返回遊戲宇宙、離開頁面
     shouldPlay: shouldPlay,
     debug: function () {
       var el = bgm.els[bgm.cur];
-      return { playing: bgm.playing, unlocked: bgm.unlocked, blocked: bgm.blocked, graph: bgm.graph, els: bgm.els.length, cur: bgm.cur,
+      return { external:bgm.external, playing: bgm.playing, unlocked: bgm.unlocked, blocked: bgm.blocked, graph: bgm.graph, els: bgm.els.length, cur: bgm.cur,
         paused: bgm.els.map(function (e) { return e.paused; }), muted: bgm.els.map(function (e) { return e.muted; }),
         gains: bgm.graph ? bgm.gains.map(function (g) { return +g.gain.value.toFixed(3); }) : bgm.els.map(function (e) { return +e.volume.toFixed(3); }),
         time: el ? +el.currentTime.toFixed(2) : 0, ctx: ctx ? ctx.state : "none", clickLoaded: !!sfx.buffer, log: log.slice() };

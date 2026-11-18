@@ -33,3 +33,36 @@ export function adventureTitleKeys(evidence) {
   }
   return null;
 }
+
+const CONTINENT_TITLES = new Set(["adventure_kind_adventurer", "adventure_peace_ambassador", "adventure_super_thrifty"]);
+const LEGACY_BUILD = "adventure-v0.4.1-continent1-universe-test-1";
+const LEGACY_VOLLEY = /^volleyball:(scorpion|orange|orange_king):7-0$/;
+const LEGACY_WHACK = /^whack:(\d{1,8})$/;
+const LEGACY_RUN = /^adv-[a-z0-9]+-[a-z0-9]{0,6}$/;
+
+export function legacyAdventureClaim(item, now) {
+  const { record, evidence } = item || {};
+  if (!record || record.gameId !== "adventure" || record.category !== "adventure" ||
+      record.source !== "client" || record.serverConfirmed !== false || record.gameVersion !== LEGACY_BUILD ||
+      !Number.isSafeInteger(record.unlockedAt) || record.unlockedAt <= 0 || record.unlockedAt > now) return null;
+  const { titleKey, via, challengeId } = record;
+  const volley = typeof via === "string" && via.match(LEGACY_VOLLEY);
+  const whack = typeof via === "string" && via.match(LEGACY_WHACK);
+  const continent = CONTINENT_TITLES.has(titleKey);
+  if (continent) {
+    if (via !== undefined || typeof challengeId !== "string" || !LEGACY_RUN.test(challengeId)) return null;
+  } else if (volley) {
+    if (VOLLEYBALL_TITLES[volley[1]] !== titleKey) return null;
+  } else if (!whack || Number(whack[1]) < 660 || titleKey !== "adventure_whack_legend") return null;
+
+  if (evidence !== undefined) {
+    const matches = continent ? evidence?.kind === "continent" && evidence.id === challengeId
+      : volley ? evidence?.kind === "volleyball" && evidence.opponent === volley[1]
+      : evidence?.kind === "whack" && evidence.score === Number(whack[1]);
+    if (!matches || !adventureTitleKeys(evidence)?.includes(titleKey)) return null;
+  }
+  return { titleKey, unlockedAt: record.unlockedAt, gameVersion: record.gameVersion,
+    ...(typeof challengeId === "string" && LEGACY_RUN.test(challengeId) ? { challengeId } : {}),
+    ...(typeof via === "string" ? { via } : {}),
+    evidenceLevel: evidence ? "settlement" : "permanent_record", ...(evidence ? { evidenceId: evidence.id } : {}) };
+}

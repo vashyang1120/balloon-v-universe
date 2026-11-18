@@ -1,0 +1,138 @@
+[
+  [
+    "<title>氣球小V魔法派對｜遊戲宇宙版 v2.6.5</title>\n<style>",
+    "<title>氣球小V魔法派對｜遊戲宇宙版 v2.7.0</title>\n<style>"
+  ],
+  [
+    "</style>\n  <!-- [Universe 換殼] 不再載入 Firebase SDK；改用遊戲宇宙共用 SDK（唯讀玩家資料；成績只進 Mock） -->\n  <script src=\"../shared/universe-sdk.js\"></script>",
+    "</style>\n  <!-- [Universe 換殼] 不再載入 Firebase SDK；改用遊戲宇宙共用 SDK（正式 API／離線備援） -->\n  <script src=\"../shared/universe-sdk.js\"></script>"
+  ],
+  [
+    "  <script src=\"../shared/universe-sdk.js\"></script>\n  <script src=\"universe-shell.js?v=2.6.5\"></script>\n  <link rel=\"stylesheet\" href=\"../shared/universe-ui.css\">",
+    "  <script src=\"../shared/universe-sdk.js\"></script>\n  <script src=\"universe-shell.js?v=2.7.0\"></script>\n  <script src=\"mv-sync.js?v=2.7.0\"></script>\n  <script src=\"tutorial.js?v=2.7.0\"></script>\n  <link rel=\"stylesheet\" href=\"../shared/universe-ui.css\">"
+  ],
+  [
+    "  <link rel=\"stylesheet\" href=\"home-songselect-ui.css?v=2.6.5\">\n  <link rel=\"stylesheet\" href=\"result-ui.css?v=2.6.5\">\n  <script src=\"home-songselect-ui.js?v=2.6.5\"></script>\n  <script src=\"menu-audio.js?v=2.6.5\"></script>\n  <script src=\"result-ui.js?v=2.6.5\"></script>\n</head>",
+    "  <link rel=\"stylesheet\" href=\"home-songselect-ui.css?v=2.7.0\">\n  <link rel=\"stylesheet\" href=\"tutorial.css?v=2.7.0\">\n  <link rel=\"stylesheet\" href=\"result-ui.css?v=2.7.0\">\n  <script src=\"home-songselect-ui.js?v=2.7.0\"></script>\n  <script src=\"menu-audio.js?v=2.7.0\"></script>\n  <script src=\"result-ui.js?v=2.7.0\"></script>\n</head>"
+  ],
+  [
+    "  <div id=\"game-version\" style=\"font-size:9px;color:rgba(155,93,229,.35);letter-spacing:.12em;margin-top:3px;\">v2.6.4</div>\n  <div id=\"home-daily-challenge-hint\" class=\"rhythm-daily-hint-card need-profile\">",
+    "  <div id=\"game-version\" style=\"font-size:9px;color:rgba(155,93,229,.35);letter-spacing:.12em;margin-top:3px;\">v2.7.0</div>\n  <div id=\"home-daily-challenge-hint\" class=\"rhythm-daily-hint-card need-profile\">"
+  ],
+  [
+    "  loadPlayerProfile();\n  validateDisplayAvatarForCurrentIdentity();\n  updateGamePlayerCard();\n  updateRhythmDailyChallengeHint();\n});\nensureSongsLoaded();",
+    "  loadPlayerProfile();\n  validateDisplayAvatarForCurrentIdentity();\n  updateGamePlayerCard();\n  updateRhythmDailyChallengeHint();\n  setTimeout(function(){RVCoach.maybeAuto();},0);\n});\nensureSongsLoaded();"
+  ],
+  [
+    "var mvLoaded = false;\n\nfunction ytGetVid(){var f=document.getElementById('yt-player');return f&&f.dataset&&f.dataset.vid||'';}\nfunction ytPlayFrom(s){var f=document.getElementById('yt-player'),v=ytGetVid();if(!f||!v)return;var t=Math.floor(Math.max(0,s||0));f.src='https://www.youtube.com/embed/'+v+'?autoplay=1&controls=0&mute=1&loop=1&playlist='+v+'&rel=0&modestbranding=1&playsinline=1&start='+t;f.style.display='block';}\nfunction ytPause(){var f=document.getElementById('yt-player'),v=ytGetVid();if(!f||!v)return;f.src='https://www.youtube.com/embed/'+v+'?autoplay=0&controls=0&mute=1&rel=0';}\nfunction ytStop(){var f=document.getElementById('yt-player');if(!f)return;f.src='';f.style.display='none';}\nfunction ytGetVid(){var f=document.getElementById('yt-player');return(f&&f.dataset&&f.dataset.vid)||'';}function ytPlayFrom(s){var f=document.getElementById('yt-player'),v=ytGetVid();if(!f||!v)return;var t=Math.floor(Math.max(0,s||0));f.src='https://www.youtube.com/embed/'+v+'?autoplay=1&controls=0&mute=1&loop=1&playlist='+v+'&rel=0&modestbranding=1&playsinline=1&start='+t;f.style.display='block';}function ytPause(){var f=document.getElementById('yt-player'),v=ytGetVid();if(!f||!v)return;f.src='https://www.youtube.com/embed/'+v+'?autoplay=0&controls=0&mute=1&rel=0';}function ytStop(){var f=document.getElementById('yt-player');if(!f)return;f.src='';f.style.display='none';}\nfunction setupBackground(song){\n  var bgVid=document.getElementById('bg-video'),ytFrame=document.getElementById('yt-player'),mvBtn=document.getElementById('mv-btn');\n  bgVid.src='';bgVid.style.display='none';ytFrame.src='';ytFrame.style.display='none';mvBtn.style.display='none';mvLoaded=false;\n  if(song.videoUrl){bgVid.src=song.videoUrl;bgVid.style.display='block';bgVid.load();bgVid.play().catch(function(){});}\n  else if(song.youtubeId){var vid=song.youtubeId.trim().replace(/.*shorts\\//,'').replace(/.*v=/,'').replace(/[?&].*/,'').trim();ytFrame.dataset.vid=vid;}\n}\n\nfunction toggleMV() {\n  // 點擊後切換 YouTube iframe 的靜音狀態\n  // 用 postMessage 控制 YouTube iframe 音量\n  var ytFrame = document.getElementById('yt-player');\n  var mvBtn = document.getElementById('mv-btn');\n  if (!ytFrame || ytFrame.style.display === 'none') return;\n\n  if (mvBtn.textContent === '🔊') {\n    // 重新載入 iframe，這次不靜音（需要使用者手勢才有效）\n    var song = selectedSong;\n    if (!song || !song.youtubeId) return;\n    var vid = song.youtubeId.trim()\n      .replace(/.*shorts\\//,'')\n      .replace(/.*v=/,'')\n      .replace(/[?&].*/,'')\n      .trim();\n    var params = [\n      'autoplay=1', 'controls=0', 'mute=0',\n      'loop=1', 'playlist=' + vid,\n      'rel=0', 'modestbranding=1', 'playsinline=1'\n    ].join('&');\n    ytFrame.src = 'https://www.youtube.com/embed/' + vid + '?' + params;\n    mvBtn.textContent = '🔇';\n    mvBtn.title = '靜音 MV';\n  } else {\n    // 靜音：重新載入靜音版\n    var song2 = selectedSong;\n    if (!song2 || !song2.youtubeId) return;\n    var vid2 = song2.youtubeId.trim()\n      .replace(/.*shorts\\//,'')\n      .replace(/.*v=/,'')\n      .replace(/[?&].*/,'')\n      .trim();\n    var params2 = [\n      'autoplay=1', 'controls=0', 'mute=1',\n      'loop=1', 'playlist=' + vid2,\n      'rel=0', 'modestbranding=1', 'playsinline=1'\n    ].join('&');\n    ytFrame.src = 'https://www.youtube.com/embed/' + vid2 + '?' + params2;\n    mvBtn.textContent = '🔊';\n    mvBtn.title = '開啟 MV 聲音';\n  }\n}\n\n// ═══════════════════════════════════════════════════════\n//  AUDIO ENGINE  (Web Audio API)",
+    "// MV is controlled exclusively by the v2.7 controller.\nfunction setupBackground(song) { return RVMV.prepare(song); }\nfunction toggleMV() { /* background MV stays muted */ }\n\n// ═══════════════════════════════════════════════════════\n//  AUDIO ENGINE  (Web Audio API)"
+  ],
+  [
+    "function loadAudio(url) {\n  setAudioDot('...');\n  if (!url) { setAudioDot('none'); audioBuffer = null; return Promise.resolve(); }\n  initACtx();\n  // 直接 fetch 外部 MP3 檔案",
+    "function loadAudio(url) {\n  setAudioDot('...');\n  if (!url) { setAudioDot('none'); audioBuffer = null; return Promise.resolve(); }\n  initACtx();\n  var audioRound=G;\n  // 直接 fetch 外部 MP3 檔案"
+  ],
+  [
+    "      return r.arrayBuffer();\n    })\n    .then(function(b){ return audioCtx.decodeAudioData(b); })\n    .then(function(decoded){\n      audioBuffer = decoded;",
+    "      return r.arrayBuffer();\n    })\n    .then(function(b){ return audioCtx.decodeAudioData(b); })\n    .then(function(decoded){\n      if(G!==audioRound)return;\n      audioBuffer = decoded;"
+  ],
+  [
+    "      audioBuffer = decoded;\n      setAudioDot('ok');\n    })\n    .catch(function(e){\n      console.error('audio load fail', e);",
+    "      audioBuffer = decoded;\n      setAudioDot('ok');\n    })\n    .catch(function(e){\n      if(G!==audioRound)return;\n      console.error('audio load fail', e);"
+  ],
+  [
+    "  audioSource.buffer = audioBuffer;\n  audioSource.connect(audioCtx.destination);\n  audioSource.start(0, offset);\n  audioStartTime = audioCtx.currentTime - offset;",
+    "  audioSource.buffer = audioBuffer;\n  audioSource.connect(audioCtx.destination);\n  audioSource.start(0, offset + (G.tutorialClipStart || 0));\n  audioStartTime = audioCtx.currentTime - offset;"
+  ],
+  [
+    "  // MV 已在倒數時開始，不需要重設\n}\n\n\n// ── YouTube iframe 控制（postMessage API）──────────────\nfunction ytCmd(cmd) {\n  var ytFrame = document.getElementById('yt-player');\n  if (!ytFrame || ytFrame.style.display === 'none') return;\n  try {\n    ytFrame.contentWindow.postMessage(\n      JSON.stringify({ event: 'command', func: cmd, args: [] }),\n      '*'\n    );\n  } catch(e) {}\n}\nfunction ytPlay()  { ytCmd('playVideo'); }\nfunction ytPause() { ytCmd('pauseVideo'); }\n\n\n// ── YouTube MV 控制 helper ────────────────────────────\nfunction ytPause() {\n  var ytFrame = document.getElementById('yt-player');\n  if (!ytFrame || ytFrame.style.display === 'none') return;\n  var vid = ytFrame.dataset.vid;\n  if (!vid) return;\n  // 暫停：載入靜態版本（autoplay=0）\n  ytFrame.src = 'https://www.youtube.com/embed/' + vid +\n    '?autoplay=0&controls=0&mute=1&rel=0&modestbranding=1&playsinline=1';\n}\n\nfunction ytResume(offsetSec) {\n  var ytFrame = document.getElementById('yt-player');\n  if (!ytFrame || ytFrame.style.display === 'none') return;\n  var vid = ytFrame.dataset.vid;\n  if (!vid) return;\n  // 從指定秒數繼續播\n  var startSec = Math.floor(offsetSec || 0);\n  var params = [\n    'autoplay=1', 'controls=0', 'mute=1',\n    'loop=1', 'playlist=' + vid,\n    'rel=0', 'modestbranding=1', 'playsinline=1',\n    'start=' + startSec\n  ].join('&');\n  ytFrame.src = 'https://www.youtube.com/embed/' + vid + '?' + params;\n}\n\nfunction ytStop() {\n  var ytFrame = document.getElementById('yt-player');\n  if (!ytFrame) return;\n  var vid = ytFrame.dataset.vid;\n  if (!vid) return;\n  ytFrame.src = 'https://www.youtube.com/embed/' + vid +\n    '?autoplay=0&controls=0&mute=1&rel=0&modestbranding=1&playsinline=1';\n}\n\nfunction stopAudio() {",
+    "  // Background video is controlled separately by RVMV.\n}\n\n\nfunction ytPause() { RVMV.pause(); }\nfunction ytResume(s) { RVMV.play(s); }\nfunction ytPlayFrom(s) { RVMV.play(s); }\nfunction ytStop() { RVMV.stop(); }\n\nfunction stopAudio() {"
+  ],
+  [
+    "  if (audioCtx.state === 'suspended') audioCtx.resume();\n  startAudio(audioPauseOffset);\n  // startAudio 裡已有 syncYouTubeToAudio，所以不需再呼叫 ytResume\n}\n// THE KEY FUNCTION: game time always = audio clock",
+    "  if (audioCtx.state === 'suspended') audioCtx.resume();\n  startAudio(audioPauseOffset);\n  // resumeVideoFromProfile resumes the existing muted player.\n}\n// THE KEY FUNCTION: game time always = audio clock"
+  ],
+  [
+    "var shouldResumeMediaFromProfile = false;\nvar isResumeCountingDown = false;\nvar resumeCountdownToken = 0; // [v2.6.5] 恢復倒數代號：轉直向時可安全中止該次倒數\n\nfunction getProfileText(id, fallback) {",
+    "var shouldResumeMediaFromProfile = false;\nvar isResumeCountingDown = false;\nvar resumeCountdownToken = 0; // [v2.7.0] 恢復倒數代號：轉直向時可安全中止該次倒數\n\nfunction getProfileText(id, fallback) {"
+  ],
+  [
+    "function pauseVideoForProfile() {\n  var bgVid = document.getElementById('bg-video');\n  if (bgVid && bgVid.style.display !== 'none') {\n    try { bgVid.pause(); } catch(e) {}\n  }\n  try { ytPause(); } catch(e2) {}\n}\nfunction resumeVideoFromProfile() {\n  var bgVid = document.getElementById('bg-video');\n  if (bgVid && bgVid.style.display !== 'none' && bgVid.src) {\n    try { bgVid.play().catch(function(){}); } catch(e) {}\n  }\n  try { ytResume(audioPauseOffset || (G.gt / 1000) || 0); } catch(e2) {\n    try { ytPlayFrom(audioPauseOffset || (G.gt / 1000) || 0); } catch(e3) {}\n  }\n}\nfunction pauseGameForProfile() {",
+    "function pauseVideoForProfile() { RVMV.pause(); }\nfunction resumeVideoFromProfile() { RVMV.play(audioPauseOffset); }\nfunction pauseGameForProfile() {"
+  ],
+  [
+    "    var ov = document.getElementById('pause-ov');\n    if (ov) ov.classList.add('off');\n  }\n  pauseAudio();\n  pauseVideoForProfile();\n}\nfunction openProfileFromGameCard() {\n  if (!G.running) return;",
+    "    var ov = document.getElementById('pause-ov');\n    if (ov) ov.classList.add('off');\n  }\n  pauseAudio();\n  pauseVideoForProfile();\n}\nfunction openProfileFromGameCard() {\n  if (RVCoach.active()) return;\n  if (!G.running) return;"
+  ],
+  [
+    "  var myToken = ++resumeCountdownToken; // [v2.6.5] 被 cancelResumeCountdown() 取消後，舊倒數不再繼續\n  G.paused = true;\n  pauseAudio();\n  pauseVideoForProfile();\n  var ov = document.getElementById('pause-ov');\n  if (ov) ov.classList.add('off');",
+    "  var myToken = ++resumeCountdownToken; // [v2.7.0] 被 cancelResumeCountdown() 取消後，舊倒數不再繼續\n  G.paused = true;\n  pauseAudio();\n  pauseVideoForProfile();\n  var ov = document.getElementById('pause-ov');\n  if (ov) ov.classList.add('off');"
+  ],
+  [
+    "  var el = document.getElementById('countdown');\n  var n = 3;\n  function done() {\n    if (myToken !== resumeCountdownToken) return; // [v2.6.5] 已取消：不啟動音訊／MV／計時\n    isResumeCountingDown = false;",
+    "  var el = document.getElementById('countdown');\n  var n = 3;\n  function done() {\n    if (myToken !== resumeCountdownToken) return; // [v2.7.0] 已取消：不啟動音訊／MV／計時\n    isResumeCountingDown = false;"
+  ],
+  [
+    "    G.raf = requestAnimationFrame(loop);\n  }\n  function step() {\n    if (myToken !== resumeCountdownToken) return; // [v2.6.5] 已取消\n    if (!G.running) { isResumeCountingDown = false; return; }",
+    "    G.raf = requestAnimationFrame(loop);\n  }\n  function step() {\n    if (myToken !== resumeCountdownToken) return; // [v2.7.0] 已取消\n    if (!G.running) { isResumeCountingDown = false; return; }"
+  ],
+  [
+    "    showCnt(el, String(n), '#fff', function(){ n--; step(); });\n  }\n  step();\n}\n// [v2.6.5] 立即中止進行中的 3 秒恢復倒數，保持暫停並顯示原本暫停選單（倒數開始時已呼叫 pauseAudio／pauseVideoForProfile）\nfunction cancelResumeCountdown() {",
+    "    showCnt(el, String(n), '#fff', function(){ n--; step(); });\n  }\n  step();\n}\n// [v2.7.0] 立即中止進行中的 3 秒恢復倒數，保持暫停並顯示原本暫停選單（倒數開始時已呼叫 pauseAudio／pauseVideoForProfile）\nfunction cancelResumeCountdown() {"
+  ],
+  [
+    "  document.getElementById('pause-ov').classList.add('off');\n\n  go('s-game');\n  setupBackground(song);\n\n  // Load beatmap from external JSON (or fall back to embedded)",
+    "  document.getElementById('pause-ov').classList.add('off');\n\n  go('s-game');\n  var mvReady = setupBackground(song);\n  var thisRound = G;\n\n  // Load beatmap from external JSON (or fall back to embedded)"
+  ],
+  [
+    "  // Load beatmap from external JSON (or fall back to embedded)\n  G.total = 0;\n\n  // Load audio then beatmap then lyrics, then start\n  loadAudio(song.audioUrl || '').then(function(){\n    // Load beatmap",
+    "  // Load beatmap from external JSON (or fall back to embedded)\n  G.total = 0;\n\n  // Load audio then beatmap then lyrics, then start\n  loadAudio(song.audioUrl || '').then(function(){\n    if (G !== thisRound) return;\n    // Load beatmap"
+  ],
+  [
+    "        .then(function(r){ return r.ok ? r.json() : null; })\n        .then(function(data){\n          if (data && data.length) {",
+    "        .then(function(r){ return r.ok ? r.json() : null; })\n        .then(function(data){\n          if (G !== thisRound) return;\n          if (data && data.length) {"
+  ],
+  [
+    "        })\n        .catch(function(){ G.beatmap = makeBeatmap(diff); G.total = G.beatmap.length; });\n    } else {\n      bmPromise = Promise.resolve();",
+    "        })\n        .catch(function(){ if(G === thisRound){ G.beatmap = makeBeatmap(diff); G.total = G.beatmap.length; } });\n    } else {\n      bmPromise = Promise.resolve();"
+  ],
+  [
+    "      G.total = G.beatmap.length;\n    }\n    return bmPromise;\n  }).then(function(){\n    var lyrPromise = song.srtUrl ? loadSRT(song.srtUrl) : Promise.resolve(song.lyrics || []);",
+    "      G.total = G.beatmap.length;\n    }\n    return bmPromise;\n  }).then(function(){\n    if (G !== thisRound) return [];\n    var lyrPromise = song.srtUrl ? loadSRT(song.srtUrl) : Promise.resolve(song.lyrics || []);"
+  ],
+  [
+    "    var lyrPromise = song.srtUrl ? loadSRT(song.srtUrl) : Promise.resolve(song.lyrics || []);\n    return lyrPromise;\n  }).then(function(lyrics){\n    G.lyrics = lyrics;",
+    "    var lyrPromise = song.srtUrl ? loadSRT(song.srtUrl) : Promise.resolve(song.lyrics || []);\n    return lyrPromise;\n  }).then(function(lyrics){\n    if (G !== thisRound) return;\n    G.lyrics = lyrics;"
+  ],
+  [
+    "    G.lyrics = lyrics;\n    countdown(3);\n  });\n}\n\n// ═══════════════════════════════════════════════════════\n//  COUNTDOWN → START",
+    "    G.lyrics = lyrics;\n    return mvReady.then(function(){\n      if (G === thisRound && !document.getElementById('s-game').classList.contains('off')) countdown(3);\n    });\n  });\n}\n\n// ═══════════════════════════════════════════════════════\n//  COUNTDOWN → START"
+  ],
+  [
+    "  if (n === 0) { showCnt(el,'GO!','#06d6a0',startLoop); return; }\n  showCnt(el, String(n), '#fff', function(){ countdown(n-1); });\n}\nfunction showCnt(el,txt,c,cb) {",
+    "  var round = G;\n  function valid(){ return G === round && !document.getElementById('s-game').classList.contains('off'); }\n  function next(fn){ if (!valid()) return; var mask = document.getElementById('rv-rotate-mask'); if(mask && !mask.hidden){setTimeout(function(){next(fn);},120);return;} fn(); }\n  next(function(){\n    if (n === 0) { showCnt(el,'GO!','#06d6a0',function(){next(startLoop);}); return; }\n    showCnt(el,String(n),'#fff',function(){next(function(){countdown(n-1);});});\n  });\n}\nfunction showCnt(el,txt,c,cb) {"
+  ],
+  [
+    "  document.getElementById('prog').style.width = Math.min(G.gt / G.duration * 100, 100) + '%';\n\n  spawnNotes();\n  moveNotes();\n  tickHolds();\n  updateLyrics();\n\n  if (G.gt >= G.duration && G.notes.length === 0) { endGame(); return; }",
+    "  document.getElementById('prog').style.width = Math.min(G.gt / G.duration * 100, 100) + '%';\n\n  spawnNotes();\n  moveNotes();\n  tickHolds();\n  updateLyrics();\n\n  if (G.tutorialClipStart && RVCoach.afterFrame()) return;\n  if (G.tutorialClipStart && G.gt >= G.duration) { RVCoach.complete(); return; }\n  if (G.gt >= G.duration && G.notes.length === 0) { endGame(); return; }"
+  ],
+  [
+    "  n.holdScored = true;\n  if (G.holding[n.lane]) { G.perf++; addScore(300); showFX(n.lane,'perfect'); }",
+    "  n.holdScored = true;\n  if (G.tutorialClipStart && !G.holding[n.lane] && G.gt < n.hitTime+n.holdDur) G.tutorialEarlyRelease = true;\n  if (G.holding[n.lane]) { G.perf++; addScore(300); showFX(n.lane,'perfect'); }"
+  ],
+  [
+    "//  PAUSE / QUIT\n// ═══════════════════════════════════════════════════════\nfunction togglePause() {\n  if (!G.running || isResumeCountingDown) return;\n  if (!G.paused) {",
+    "//  PAUSE / QUIT\n// ═══════════════════════════════════════════════════════\nfunction togglePause() {\n  if (G.tutorialClipStart && RVCoach.interceptPause()) return;\n  if (!G.running || isResumeCountingDown) return;\n  if (!G.paused) {"
+  ],
+  [
+    "  G.running = false;\n  cancelAnimationFrame(G.raf);\n  stopAudio();\n  // Stop video\n  var bgVid = document.getElementById('bg-video');\n  bgVid.pause(); bgVid.src = '';\n  var ytFrame = document.getElementById('yt-player');\n  ytFrame.src = ''; ytFrame.style.display = 'none';\n  go('s-title');\n}\n\n// ═══════════════════════════════════════════════════════\n//  END GAME",
+    "  if (window.RVCoach && RVCoach.active()) { RVCoach.exit(); return; }\n  G.running = false;\n  cancelAnimationFrame(G.raf);\n  stopAudio();\n  RVMV.stop();\n  go('s-title');\n}\n\n// ═══════════════════════════════════════════════════════\n//  END GAME"
+  ],
+  [
+    "// ═══════════════════════════════════════════════════════\nfunction endGame() {\n  ytStop();\n  ytStop();\n  G.running = false;\n  cancelAnimationFrame(G.raf);\n  stopAudio();\n  ytStop();  // 遊戲結束，停止 MV",
+    "// ═══════════════════════════════════════════════════════\nfunction endGame() {\n  if (window.RVCoach && RVCoach.active()) { RVCoach.complete(); return; }\n  G.running = false;\n  cancelAnimationFrame(G.raf);\n  stopAudio();\n  ytStop();  // 遊戲結束，停止 MV"
+  ],
+  [
+    "  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）\n  return UniverseRhythm.recordSongResult({",
+    "  if (G.tutorialClipStart || RVCoach.active()) return false;\n  // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）\n  return UniverseRhythm.recordSongResult({"
+  ]
+]
