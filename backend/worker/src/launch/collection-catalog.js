@@ -42,6 +42,9 @@ function attemptedSubjects(progress, grade) {
 }
 const QUIZ_SUBJECT_COUNT = 8;
 const partFull = (part) => (d) => Number(d.continentId) === 1 && Number((d.parts || {})[part]) === ADVENTURE_CONTINENTS[1].partMax[part];
+// Optional evidence from a completed official run. Missing legacy evidence is not zero.
+const adventureTrack = (d, key) => d.continentId === 1 && Number.isSafeInteger(d.achievementTrack?.[key]) && d.achievementTrack[key] === 0;
+
 
 /* ---------- 稱號 ---------- */
 // rule(scoreData, ctx) → boolean；ctx = { quizProgress }（問答會帶伺服器更新後的進度）
@@ -73,9 +76,9 @@ export const TITLE_CATALOG = Object.freeze([
   T("adventure", "adventure_battle_master", "戰鬥大師", "第一大陸完整結算時「戰鬥」滿分", partFull("combat")),
   T("adventure", "adventure_unyielding_hero", "不屈勇者", "第一大陸完整結算時「生存」滿分", partFull("survival")),
   T("adventure", "adventure_swift_adventurer", "神速冒險家", "第一大陸完整結算時「效率」滿分", partFull("efficiency")),
-  T("adventure", "adventure_kind_adventurer", "善良冒險家", "整個第一大陸都沒有擊倒任何怪物（直接或間接都不行；橘子王決戰不計）", null, { note: "判定資料不在正式成績內，伺服器無法驗證" }),
-  T("adventure", "adventure_peace_ambassador", "和平大使", "整個第一大陸都沒有對任何怪物造成傷害（橘子王決戰不計）；同時獲得「善良冒險家」", null, { note: "判定資料不在正式成績內，伺服器無法驗證" }),
-  T("adventure", "adventure_super_thrifty", "超勤儉冒險家", "整個第一大陸都沒有在商店成功購買任何東西（打地鼠入場費不算）", null, { note: "判定資料不在正式成績內，伺服器無法驗證" }),
+  T("adventure", "adventure_kind_adventurer", "善良冒險家", "整個第一大陸都沒有擊倒任何怪物（直接或間接都不行；橘子王決戰不計）", (d) => adventureTrack(d, "kills")),
+  T("adventure", "adventure_peace_ambassador", "和平大使", "整個第一大陸都沒有對任何怪物造成傷害（橘子王決戰不計）；同時獲得「善良冒險家」", (d) => adventureTrack(d, "kills") && adventureTrack(d, "damage")),
+  T("adventure", "adventure_super_thrifty", "超勤儉冒險家", "整個第一大陸都沒有在商店成功購買任何東西（打地鼠入場費不算）", (d) => adventureTrack(d, "purchases")),
   T("adventure", "adventure_volleyball_rookie", "排球新星", "氣球排球 7：0 完封蠍子怪", null, { note: "小遊戲成績不是正式成績" }),
   T("adventure", "adventure_volleyball_expert", "排球高手", "氣球排球 7：0 完封橘子怪", null, { note: "小遊戲成績不是正式成績" }),
   T("adventure", "adventure_volleyball_king", "排球王者", "氣球排球 7：0 完封橘子王", null, { note: "小遊戲成績不是正式成績" }),
