@@ -28,13 +28,20 @@ test("all game pages and shared SDK are locked to the test Worker", async () => 
   await put(adventure, adventurePage, html);
   await put(adventure, "minigames/sample/index.html", html);
   await put(adventure, "assets/adventure/image.txt");
+  const comicPage = "motion-comic/player/index.html";
+  await put(adventure, comicPage, html);
+  const comicFiles = ["motion-comic/player/motion-comic-player.js", "motion-comic/player/motion-comic-audio.js",
+    "motion-comic/assets/scene1_bg.png", "motion-comic/assets/ui_button_click.mp3",
+    "motion-comic/projects/party-island-opening.js", "motion-comic/projects/party-island-opening.json"];
+  for (const file of comicFiles) await put(adventure, file, file);
   const opts = { universe, adventure, output, web, api };
   await assert.rejects(buildStaging({ ...opts, api: prodApi }), /dedicated Staging/);
   await buildStaging(opts);
-  for (const page of [...pages, adventurePage, "minigames/sample/index.html"]) {
+  for (const page of [...pages, adventurePage, "minigames/sample/index.html", comicPage]) {
     const result = await readFile(join(output, page), "utf8");
     assert.ok(result.includes("connect-src 'self' " + api));
     assert.ok(result.includes(web + "/universe/shared/universe-sdk.js"));
     assert.ok(!result.includes("vashyang1120.github.io"));
   }
+  for (const file of comicFiles) assert.equal(await readFile(join(output, file), "utf8"), file);
 });

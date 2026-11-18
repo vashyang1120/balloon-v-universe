@@ -10,7 +10,9 @@ const games = ["universe/tetris", "universe/rhythm", "universe/quiz", "rpg-conti
 const hubFiles = ["index.html", "assets", "audio.js", "dialogue.js", "identity.js", "lobby-launch.js",
   "main.js", "onboarding.js", "player-store.js", "rpg-actor.js", "rpg-text.js", "style.css", "zones.js",
   "universe/shared", ...games.slice(0, 3)];
-const rushFiles = ["rpg-continent1-universe", "minigames"];
+const rushFiles = ["rpg-continent1-universe", "minigames",
+  "motion-comic/player", "motion-comic/assets",
+  "motion-comic/projects/party-island-opening.js", "motion-comic/projects/party-island-opening.json"];
 const adventureRepository = "https://github.com/vashyang1120/balloon-v-rush.git";
 
 function stagingOrigin(value, service) {
