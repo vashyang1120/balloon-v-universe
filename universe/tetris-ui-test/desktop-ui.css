@@ -1,37 +1,63 @@
-/* v0.3.2-test-2: desktop sidebar sizing. The accepted mobile layout is untouched.
-   The old 130px side minus side/player padding left only 92px for four buttons. */
+/* UI v0.3.4: one centered desktop play area; all rules exclude the accepted mobile mode. */
 html.uit-brand:not(.uit-m) #s-game {
-  padding-inline: clamp(16px, 2vw, 32px);
+  --dt-side: clamp(190px, 18vw, 260px);
+  --dt-gap: clamp(16px, 2vw, 32px);
+  padding: 24px clamp(16px, 2vw, 32px);
+  gap: var(--dt-gap);
+  align-items: center;
+  justify-content: center;
 }
 html.uit-brand:not(.uit-m) #s-game .side {
   box-sizing: border-box;
-  width: clamp(168px, 14vw, 192px);
-  flex: 0 0 clamp(168px, 14vw, 192px);
+  width: var(--dt-side);
+  flex: 0 0 var(--dt-side);
+  height: var(--dt-board-h, calc(100dvh - 48px));
+  max-height: calc(100dvh - 48px);
+  min-height: 0;
   min-width: 0;
-  padding: 12px;
+  padding: 16px;
+  gap: 14px;
+  overflow-y: auto;
+  border: 1px solid rgba(201,169,242,.28);
+  border-radius: 24px;
+  background: linear-gradient(160deg,rgba(89,63,123,.5),rgba(37,24,57,.75));
+  box-shadow: 0 14px 40px rgba(12,5,25,.18);
 }
 html.uit-brand:not(.uit-m) #game-mid {
+  flex: 0 0 auto;
   min-width: 0;
+  padding: 0;
 }
+html.uit-brand:not(.uit-m) #g-avatar { width:76px; height:76px; }
+html.uit-brand:not(.uit-m) #g-name { font-size:17px; line-height:1.4; }
+html.uit-brand:not(.uit-m) #s-game .hud-card { padding:16px; border-radius:18px; }
+html.uit-brand:not(.uit-m) #s-game .hud-label {
+  font-family:'Nunito','Noto Sans TC',sans-serif;
+  font-size:15px; line-height:1.4; letter-spacing:.03em; margin-bottom:7px;
+}
+html.uit-brand:not(.uit-m) #s-game .hud-val { font-size:clamp(28px,2vw,36px); line-height:1.15; }
+html.uit-brand:not(.uit-m) #s-game .ctrl-hint { font-size:16px; line-height:1.85; color:#e3d4ff; }
+html.uit-brand:not(.uit-m) #next-canvas { display:block; width:124px; height:124px; max-width:100%; margin:0 auto; }
+html.uit-brand:not(.uit-m) #s-game #pause-btn,
+html.uit-brand:not(.uit-m) #s-game #btn-quit { min-height:46px; font-size:16px!important; flex-shrink:0; }
 html.uit-brand:not(.uit-m) #s-game .music-mini {
-  box-sizing: border-box;
-  width: 100%;
-  min-width: 0;
+  box-sizing:border-box; width:100%; min-width:0; padding:14px; border-radius:18px;
 }
 html.uit-brand:not(.uit-m) #s-game .mc-row {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  width: 100%;
-  gap: 4px;
+  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); width:100%; gap:6px; margin-top:12px;
 }
 html.uit-brand:not(.uit-m) #s-game .mc-btn {
-  box-sizing: border-box;
-  width: 100%;
-  min-width: 0;
-  min-height: 32px;
-  padding: 4px 0;
+  box-sizing:border-box; width:100%; min-width:0; min-height:42px; padding:4px 0; font-size:17px;
 }
-html.uit-brand:not(.uit-m) #s-game .mini-title {
-  min-width: 0;
-  max-width: 100%;
+html.uit-brand:not(.uit-m) #s-game .mini-title { min-width:0; max-width:100%; font-size:14px; line-height:1.5; }
+/* Reserve room for the approved tutorial navigation instead of covering its bottom-row target. */
+html.bv-guided.uit-brand:not(.uit-m) #s-game { padding-bottom:124px; }
+@media(max-height:800px) {
+  html.uit-brand:not(.uit-m) #s-game .side { padding:12px; gap:10px; }
+  html.uit-brand:not(.uit-m) #g-avatar { width:52px; height:52px; }
+  html.uit-brand:not(.uit-m) #s-game .hud-card { padding:12px; }
+  html.uit-brand:not(.uit-m) #s-game .hud-label { font-size:13px; margin-bottom:4px; }
+  html.uit-brand:not(.uit-m) #s-game .hud-val { font-size:28px; }
+  html.uit-brand:not(.uit-m) #s-game .ctrl-hint { font-size:14px; line-height:1.6; }
+  html.uit-brand:not(.uit-m) #next-canvas { width:88px; height:88px; }
 }

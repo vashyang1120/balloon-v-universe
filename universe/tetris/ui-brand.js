@@ -16,8 +16,8 @@
   "use strict";
   document.title = "氣球小V方塊派對 🎈｜遊戲宇宙";
 
-  var VERSION = "tetris-universe-ui-v0.3.3";
-  var UI_LABEL = "UI v0.3.3";
+  var VERSION = "tetris-universe-ui-v0.3.4";
+  var UI_LABEL = "UI v0.3.4";
   var DOC = document.documentElement;
   var $ = function (id) { return document.getElementById(id); };
 
