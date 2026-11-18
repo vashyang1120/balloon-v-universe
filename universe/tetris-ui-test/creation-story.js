@@ -18,7 +18,7 @@
     '<button type="button" class="btn bv-story-close" aria-label="關閉創作故事">關閉 ✕</button>' +
     '<h2 id="bv-story-heading">方塊派對的誕生</h2>' +
     '<p class="bv-story-lead">從氣球教室，到方塊世界！</p>' +
-    '<p>我是小V哥哥。這個遊戲的靈感，來自我和孩子們一起上氣球課的時光。</p>' +
+    '<p>我是小V老師。這個遊戲的靈感，來自我和孩子們一起上氣球課的時光。</p>' +
     '<p>在課堂上，我們用長條氣球折出一顆顆立方體，也就是氣球骰子。這些孩子們親手完成的作品，就是方塊派對每一顆基本方塊的起點。</p>' +
     '<section class="bv-story-classroom" aria-label="孩子們完成的真實氣球作品"><h3>氣球教室裡的方塊</h3>' +
     '<p class="bv-story-gallery-hint">← 左右滑動看照片 →</p>' +
