@@ -9,11 +9,11 @@
   ],
   [
     "  <script src=\"../shared/universe-sdk.js\"></script>\n  <script src=\"universe-shell.js?v=2.6.5\"></script>\n  <link rel=\"stylesheet\" href=\"../shared/universe-ui.css\">",
-    "  <script src=\"../shared/universe-sdk.js\"></script>\n  <script src=\"universe-shell.js?v=2.7.0\"></script>\n  <script src=\"mv-sync.js?v=2.7.0\"></script>\n  <script src=\"tutorial.js?v=2.7.0\"></script>\n  <link rel=\"stylesheet\" href=\"tutorial.css?v=2.7.0\">\n  <link rel=\"stylesheet\" href=\"../shared/universe-ui.css\">"
+    "  <script src=\"../shared/universe-sdk.js\"></script>\n  <script src=\"universe-shell.js?v=2.7.0\"></script>\n  <script src=\"mv-sync.js?v=2.7.0\"></script>\n  <script src=\"tutorial.js?v=2.7.0\"></script>\n  <link rel=\"stylesheet\" href=\"../shared/universe-ui.css\">"
   ],
   [
     "  <link rel=\"stylesheet\" href=\"home-songselect-ui.css?v=2.6.5\">\n  <link rel=\"stylesheet\" href=\"result-ui.css?v=2.6.5\">\n  <script src=\"home-songselect-ui.js?v=2.6.5\"></script>\n  <script src=\"menu-audio.js?v=2.6.5\"></script>\n  <script src=\"result-ui.js?v=2.6.5\"></script>\n</head>",
-    "  <link rel=\"stylesheet\" href=\"home-songselect-ui.css?v=2.7.0\">\n  <link rel=\"stylesheet\" href=\"result-ui.css?v=2.7.0\">\n  <script src=\"home-songselect-ui.js?v=2.7.0\"></script>\n  <script src=\"menu-audio.js?v=2.7.0\"></script>\n  <script src=\"result-ui.js?v=2.7.0\"></script>\n</head>"
+    "  <link rel=\"stylesheet\" href=\"home-songselect-ui.css?v=2.7.0\">\n  <link rel=\"stylesheet\" href=\"tutorial.css?v=2.7.0\">\n  <link rel=\"stylesheet\" href=\"result-ui.css?v=2.7.0\">\n  <script src=\"home-songselect-ui.js?v=2.7.0\"></script>\n  <script src=\"menu-audio.js?v=2.7.0\"></script>\n  <script src=\"result-ui.js?v=2.7.0\"></script>\n</head>"
   ],
   [
     "  <div id=\"game-version\" style=\"font-size:9px;color:rgba(155,93,229,.35);letter-spacing:.12em;margin-top:3px;\">v2.6.4</div>\n  <div id=\"home-daily-challenge-hint\" class=\"rhythm-daily-hint-card need-profile\">",
