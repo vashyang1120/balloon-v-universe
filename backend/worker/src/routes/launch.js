@@ -41,6 +41,7 @@ import { PATTERNS } from "../utils/validate.js";
 import { readJson } from "../middleware/body.js";
 import { enforceRateLimit } from "../middleware/rate-limit.js";
 import { taipeiDateKey } from "../utils/ids.js";
+import { createAdventureTitleService } from "../launch/adventure-title-service.js";
 import { createScoreService } from "../launch/score-service.js";
 import { boardCatalog, isValidBoard } from "../launch/leaderboard-service.js";
 import { OFFICIAL_GAME_IDS } from "../launch/game-rules.js";
@@ -82,6 +83,19 @@ async function profileOf(ctx, playerId) {
   const p = await ctx.firebase().get(`players/${playerId}/profile`);
   if (!p || p.playerId !== playerId || p.status === "deleted") throw new ApiError("PLAYER_NOT_FOUND");
   return p;
+}
+async function adventureTitleProfile(ctx, pid, body) {
+  requireScores(ctx, pid);
+  const profile = await profileOf(ctx, pid);
+  const id = normalizeDisplayId(body?.displayId);
+  if (!id.ok || id.value !== profile.displayId || body?.baseAvatarKey !== profile.baseAvatarKey || (profile.status && profile.status !== "active")) {
+    throw new ApiError("FORBIDDEN");
+  }
+  return profile;
+}
+function adventureTitleService(ctx) {
+  return createAdventureTitleService({ db: lazyDb(ctx), collections: svc(ctx).collections,
+    now: ctx.now || Date.now, staging: ctx.cfg.serviceEnv === "staging" });
 }
 function playerParam(ctx) {
   const id = ctx.params.playerId;
@@ -291,6 +305,49 @@ export function launchRoutes() {
         if (!n.ok || n.value !== profile.displayId || body.baseAvatarKey !== profile.baseAvatarKey) throw new ApiError("FORBIDDEN", { message: "玩家 ID 或身份頭像不正確" });
         const view = await svc(ctx).collections.equip(pid, profile, { titleKey: body.titleKey, displayAvatarKey: body.displayAvatarKey });
         return ok(ctx, { ...view, canEquip: true, mode: ctx.cfg.scoresMode });
+      },
+    },
+
+    {
+      method: "POST", path: "/v1/players/:playerId/adventure-title-session", auth: "public", summary: "開始派對島小遊戲稱號場次",
+      handler: async (ctx) => {
+        await enforceRateLimit(ctx, "score");
+        const pid = playerParam(ctx);
+        const body = await readJson(ctx.request, 1024);
+        const profile = await adventureTitleProfile(ctx, pid, body);
+        return ok(ctx, await adventureTitleService(ctx).settle(profile, body.id, body.kind), 201);
+      },
+    },
+    {
+      method: "POST", path: "/v1/players/:playerId/adventure-title-result", auth: "public", summary: "派對島小遊戲稱號結算",
+      handler: async (ctx) => {
+        await enforceRateLimit(ctx, "score");
+        const pid = playerParam(ctx);
+        const body = await readJson(ctx.request, 2048);
+        const profile = await adventureTitleProfile(ctx, pid, body);
+        if (!body.evidence || typeof body.evidence !== "object") throw new ApiError("VALIDATION_FAILED");
+        return ok(ctx, await adventureTitleService(ctx).settle(profile, body.id, body.evidence.kind, body.evidence));
+      },
+    },
+    {
+      method: "POST", path: "/v1/players/:playerId/adventure-title-migration", auth: "public", summary: "還原派對島歷史稱號",
+      handler: async (ctx) => {
+        await enforceRateLimit(ctx, "score");
+        const pid = playerParam(ctx);
+        const body = await readJson(ctx.request, MAX_BODY);
+        const profile = await adventureTitleProfile(ctx, pid, body);
+        return ok(ctx, await adventureTitleService(ctx).migrate(profile, body));
+      },
+    },
+    {
+      method: "POST", path: "/v1/admin/collections/:playerId/adventure-evidence", auth: "admin", summary: "派對島歷史成就人工補登",
+      handler: async (ctx) => {
+        const pid = playerParam(ctx);
+        requireScores(ctx, pid);
+        const profile = await profileOf(ctx, pid);
+        if (profile.status && profile.status !== "active") throw new ApiError("FORBIDDEN");
+        const body = await readJson(ctx.request, MAX_BODY);
+        return ok(ctx, await adventureTitleService(ctx).review(profile, body, ctx.admin));
       },
     },
 

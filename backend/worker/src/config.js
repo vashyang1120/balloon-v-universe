@@ -12,7 +12,7 @@ const PROJECT_ID = /^[a-z][a-z0-9-]{4,28}[a-z0-9]$/;
 const ORIGIN = /^https?:\/\/[A-Za-z0-9.-]+(:\d{1,5})?$/;
 
 export function readConfig(env = {}) {
-  const serviceEnv = env.SERVICE_ENV === "development" ? "development" : "production";
+  const serviceEnv = ["development", "staging"].includes(env.SERVICE_ENV) ? env.SERVICE_ENV : "production";
 
   const allowedOrigins = String(env.ALLOWED_ORIGINS || "")
     .split(",")
@@ -25,6 +25,12 @@ export function readConfig(env = {}) {
   const databaseUrl = DB_URL.test(String(env.FIREBASE_DATABASE_URL || "").replace(/\/+$/, ""))
     ? String(env.FIREBASE_DATABASE_URL).replace(/\/+$/, "")
     : "";
+
+  const databaseHost = databaseUrl ? new URL(databaseUrl).hostname : "";
+  const databaseName = databaseHost.split(".")[0];
+  const isolatedStaging = serviceEnv !== "staging" || (
+    projectId === "balloon-v-universe-staging" && ["balloon-v-universe-staging", "balloon-v-universe-staging-default-rtdb"].includes(databaseName)
+  );
 
   const timeout = Number.parseInt(env.FIREBASE_TIMEOUT_MS, 10);
   const firebaseTimeoutMs = Number.isFinite(timeout) ? Math.min(Math.max(timeout, 1000), 20000) : 8000;
@@ -42,7 +48,7 @@ export function readConfig(env = {}) {
     adminUids,
     hasServiceAccount: typeof env.FIREBASE_SERVICE_ACCOUNT_JSON === "string" && env.FIREBASE_SERVICE_ACCOUNT_JSON.trim().length > 0,
     // 是否已具備真實連線 Firebase 的所有條件（仍不代表連線成功）
-    firebaseConfigured: Boolean(projectId && databaseUrl && env.FIREBASE_SERVICE_ACCOUNT_JSON),
+    firebaseConfigured: Boolean(isolatedStaging && projectId && databaseUrl && env.FIREBASE_SERVICE_ACCOUNT_JSON),
     adminConfigured: Boolean(projectId && adminUids.length),
     // v0.3.0：正式寫入開關（預設關閉；只有明確設成 "on" 才開啟）
     scoresEnabled: env.SCORES_ENABLED === "on",

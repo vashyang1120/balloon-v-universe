@@ -20,7 +20,7 @@ test("目錄：沿用既有稱號 29 個（方塊 5、節奏 6、問答 6、派�
   assert.deepEqual([by("tetris").length, by("rhythm").length, by("quiz").length, by("adventure").length], [5, 6, 6, 12]);
   assert.deepEqual(by("tetris").map((t) => t.name), ["初次堆疊者", "方塊新星", "氣球堆疊師", "連消高手", "高塔建築師"]);
   assert.equal(r.body.data.titles.find((t) => t.titleKey === "rhythm_full_combo").status, "preparing");
-  assert.equal(r.body.data.titles.find((t) => t.titleKey === "adventure_kind_adventurer").status, "preparing");
+  assert.equal(r.body.data.titles.find((t) => t.titleKey === "adventure_kind_adventurer").status, "active");
   const av = r.body.data.avatars.map((a) => a.avatarKey);
   assert.ok(av.includes("xiaov_base") && av.includes("balloon_brother_03"));
   assert.ok(!av.some((k) => k.startsWith("student_")), "學生專屬頭像不出現在公開目錄");

@@ -64,5 +64,24 @@
     "SCORES_ENABLED": "on",
     "REWARDS_ENABLED": "on",
     "TRIAL_PLAYER_IDS": ""
+  },
+
+  // Independent Worker. Provide only the separate test project's Firebase bindings.
+  "env": {
+    "staging": {
+      "name": "balloon-v-universe-api-staging",
+      "workers_dev": true,
+      "preview_urls": false,
+      "vars": {
+        "SERVICE_ENV": "staging",
+        "ALLOWED_ORIGINS": "https://balloon-v-universe-staging.pages.dev",
+        "FIREBASE_PROJECT_ID": "balloon-v-universe-staging",
+        "FIREBASE_DATABASE_URL": "https://balloon-v-universe-staging-default-rtdb.asia-southeast1.firebasedatabase.app",
+        "FIREBASE_TIMEOUT_MS": "8000",
+        "SCORES_ENABLED": "on",
+        "REWARDS_ENABLED": "off",
+        "TRIAL_PLAYER_IDS": ""
+      }
+    }
   }
 }

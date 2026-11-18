@@ -1,0 +1,21 @@
+name: Universe Worker and Staging
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/worker/**'
+      - 'staging/**'
+      - '.github/workflows/title-sync.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm run verify
+        working-directory: backend/worker
+      - run: node --test staging/build.test.mjs

@@ -18,6 +18,7 @@
  * 純前端遊戲的分數無法只靠 client 回報就完全信任；這裡做的是「合理性檢查」：
  * 明顯不可能 → rejected；可能但可疑（太快、超出已知範圍、版本或歌曲未收錄）→ pending_review。
  */
+import { validAdventureTrack } from "./adventure-title-evidence.js";
 import { RHYTHM_SONGS } from "./rhythm-songs.js";
 import {
   QUIZ_GRADE_KEYS, QUIZ_SUBJECT_KEYS, QUIZ_QUESTIONS_PER_GAME, QUIZ_QUESTION_TIME_LIMIT_SEC,
@@ -183,6 +184,9 @@ function adventureCheck(d, t) {
   if (!d.complete || !d.bossDefeated) return { status: "rejected", reasons: ["adventure_not_complete"] };
   const stages = Array.isArray(d.stages) ? d.stages : [];
   if (stages.length !== c.stages.length || c.stages.some((s, i) => stages[i] !== s)) return { status: "rejected", reasons: ["adventure_stages_incomplete"] };
+  if (d.achievementTrack !== undefined && !validAdventureTrack(d.achievementTrack)) {
+    return { status: "rejected", reasons: ["adventure_achievement_track_invalid"] };
+  }
   const parts = d.parts || {};
   let sum = 0;
   for (const [k, max] of Object.entries(c.partMax)) {
@@ -235,6 +239,7 @@ export const GAME_RULES = Object.freeze({
       continentId: int(1, 99), total: int(0, 100000), rank: { type: "string", required: false, max: 4 },
       scoreVersion: { type: "string", required: true, max: 48, pattern: /^[A-Za-z0-9._-]+$/ },
       complete: { type: "boolean", required: true }, bossDefeated: { type: "boolean", required: true },
+      achievementTrack: { type: "object", required: false, maxKeys: 3 },
       parts: { type: "object", required: true, maxKeys: 8 }, chainBonus: int(0, 100000),
       stages: { type: "array", required: true, maxItems: 40 }, stageClearSec: { type: "object", required: true, maxKeys: 40 },
     },
