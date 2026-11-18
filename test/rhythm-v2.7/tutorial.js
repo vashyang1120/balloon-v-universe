@@ -26,7 +26,7 @@ function selectNotes(notes){return PICK.map(function(t){var n=notes.find(functio
 function lesson(){reset();mode="intro";card("小V老師・練習 "+(stage+1)+"/3",lessons[stage].text,practice);}
 function practice(){reset();mode="practice";G.tutorialPractice=true;G.beatmap=lessons[stage].notes.map(function(n){return Object.assign({},n);});G.total=G.beatmap.length;G.duration=20000;origin=performance.now();frozen=0;G.running=true;hint(lessons[stage].text);G.raf=requestAnimationFrame(loop);}
 function practiceClock(){return G.paused?frozen:(performance.now()-origin)/1000;}
-function pausePractice(){frozen=G.gt/1000;}
+function pausePractice(){frozen=G.gt/1000;G.holding=[false,false,false,false];}
 function resumePractice(){origin=performance.now()-frozen*1000;}
 function afterFrame(){
  if(mode!=="practice")return false;

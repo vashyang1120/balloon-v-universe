@@ -4304,6 +4304,7 @@ function loadAudio(url) {
   setAudioDot('...');
   if (!url) { setAudioDot('none'); audioBuffer = null; return Promise.resolve(); }
   initACtx();
+  var audioRound=G;
   // 直接 fetch 外部 MP3 檔案
   return fetch(url)
     .then(function(r){
@@ -4312,10 +4313,12 @@ function loadAudio(url) {
     })
     .then(function(b){ return audioCtx.decodeAudioData(b); })
     .then(function(decoded){
+      if(G!==audioRound)return;
       audioBuffer = decoded;
       setAudioDot('ok');
     })
     .catch(function(e){
+      if(G!==audioRound)return;
       console.error('audio load fail', e);
       audioBuffer = null;
       setAudioDot('err');

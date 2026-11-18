@@ -8,3 +8,5 @@
 .rv-coach-card button{min-height:32px;padding:5px 10px;font-size:clamp(12px,2vw,16px);}
 .rv-coach-hint{position:absolute;z-index:50;top:3px;left:26%;max-width:68%;padding:3px 8px;border-radius:9px;background:#fff4dded;color:#57376f;font-size:clamp(10px,1.6vw,14px);pointer-events:none;}
 @media(max-height:340px){.rv-coach-card{inset:5% 7%;padding:8px;gap:7px;}.rv-coach-card>div{gap:4px;}}
+
+#rv-btn-tutorial{display:block!important;min-height:28px;--bh:clamp(28px,7vh,40px);border:0;background:transparent;padding:0;}
