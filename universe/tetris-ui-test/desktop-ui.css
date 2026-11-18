@@ -1,0 +1,37 @@
+/* v0.3.2-test-2: desktop sidebar sizing. The accepted mobile layout is untouched.
+   The old 130px side minus side/player padding left only 92px for four buttons. */
+html.uit-brand:not(.uit-m) #s-game {
+  padding-inline: clamp(16px, 2vw, 32px);
+}
+html.uit-brand:not(.uit-m) #s-game .side {
+  box-sizing: border-box;
+  width: clamp(168px, 14vw, 192px);
+  flex: 0 0 clamp(168px, 14vw, 192px);
+  min-width: 0;
+  padding: 12px;
+}
+html.uit-brand:not(.uit-m) #game-mid {
+  min-width: 0;
+}
+html.uit-brand:not(.uit-m) #s-game .music-mini {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+html.uit-brand:not(.uit-m) #s-game .mc-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: 100%;
+  gap: 4px;
+}
+html.uit-brand:not(.uit-m) #s-game .mc-btn {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  padding: 4px 0;
+}
+html.uit-brand:not(.uit-m) #s-game .mini-title {
+  min-width: 0;
+  max-width: 100%;
+}
