@@ -1,5 +1,5 @@
 /* ==========================================================
-   v2.6.5 — 正式美術整合＋動態演出
+   v2.7.0 — 正式美術整合＋動態演出
    範圍：首頁 #s-title.rv-ui、選歌頁 #s-songlist.rv-ui、直向提示 #rv-rotate-mask
    遊戲畫面、HUD、結算、排行榜、角色設定的樣式完全不動
    ========================================================== */
@@ -132,7 +132,7 @@ body.rv27-ui:has(#s-songlist.rv-ui:not(.off)) #bv-test-banner { display: none; }
 .rv-tutorial-slot {   /* 預留 U-14 藍色風格；不是按鈕 */
   align-self: center; padding: 3px 14px; border-radius: 999px; border: 2px dashed rgba(120, 200, 255, .75);
   background: rgba(30, 120, 220, .18); color: rgba(255, 255, 255, .9); font-size: 11px; font-weight: 800;
-  text-shadow: 0 1px 2px rgba(20, 30, 90, .5); pointer-events: none; user-select: none;
+  text-shadow: 0 1px 2px rgba(20, 30, 90, .5); pointer-events: auto; user-select: none;
 }
 
 /* ---------- 首頁登場（約 1.4 秒）---------- */
@@ -277,7 +277,7 @@ body.rv27-ui:has(#s-songlist.rv-ui:not(.off)) #bv-test-banner { display: none; }
 
 /* ---------- 矮螢幕：先縮裝飾、留白、資訊卡、Logo／小V、間距；所有功能按鈕保留 ---------- */
 @media (max-height: 430px) {
-  .rv-tutorial-slot { display: none; }      /* 純裝飾預留位置 */
+  .rv-tutorial-slot { display: block; }
   .rv-panel { gap: 6px; }
   .rv-panel .rhythm-daily-hint-card, .rv-info-side .rhythm-daily-hint-card { padding: 3px 10px !important; }
   .rv-player-card { padding: 3px 12px 3px 3px; }
