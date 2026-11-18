@@ -65,7 +65,7 @@ def build_html(src):
     # 5. UI 程式（在原版程式之後載入）
     s = replace_once(s, "</body>",
         f'<!-- {TAG} 手機版 UI：棋盤尺寸、半透明觸控按鍵、頂部 HUD -->\n<script src="ui-test.js"></script>\n'
-        f'<!-- {TAG} 第二階段品牌視覺：上下式首頁、結算角色、同難度再玩一次 -->\n<script src="ui-brand.js"></script>\n<script src="balloon-assets.js"></script>\n<script src="creation-story.js"></script>\n<link rel="stylesheet" href="creation-story.css">\n<link rel="stylesheet" href="tutorial.css">\n<script src="tutorial-engine.js"></script>\n<script src="tutorial.js"></script>\n</body>',
+        f'<!-- {TAG} 第二階段品牌視覺：上下式首頁、結算角色、同難度再玩一次 -->\n<script src="ui-brand.js"></script>\n<script src="balloon-assets.js"></script>\n<script src="creation-story.js"></script>\n<link rel="stylesheet" href="creation-story.css">\n<link rel="stylesheet" href="tutorial.css">\n<script src="tutorial-engine.js"></script>\n<script src="tutorial.js"></script>\n<script src="menu-audio.js"></script>\n</body>',
         "</body>")
     return s
 

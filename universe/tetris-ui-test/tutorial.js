@@ -14,7 +14,7 @@
   function clear(){clearTimeout(timer);clearTimeout(holdDelay);clearInterval(repeat); timer=holdDelay=repeat=null;}
   function close(){seen();clear();state=null;mode='closed';if(d.open)d.close();}
   function open(){if(d.open)return;if(typeof running!=='undefined' && running)return;disposed=false;mode='welcome';welcome();d.showModal();}
-  function welcome(){content.innerHTML='<p class="bvt-lead">這些氣球方塊，來自我和孩子們一起完成的氣球立方體。</p><p>要先跟小V哥哥練習一下嗎？完成移動、旋轉與消除，就能開始挑戰！</p><div class="bvt-choices"><button type="button" data-tut="intro">開始練習</button><button type="button" data-tut="exit">我會玩了，回首頁</button><button type="button" data-tut="text">查看文字操作說明</button></div>';}
+  function welcome(){content.innerHTML='<p class="bvt-lead">這些氣球方塊，來自我和孩子們一起完成的氣球立方體。</p><p>要先跟小V老師練習一下嗎？完成移動、旋轉與消除，就能開始挑戰！</p><div class="bvt-choices"><button type="button" data-tut="intro">開始練習</button><button type="button" data-tut="exit">我會玩了，回首頁</button><button type="button" data-tut="text">查看文字操作說明</button></div>';}
   function intro(){
     clear();mode='intro';
     content.innerHTML='<div class="bvt-intro" aria-label="四顆氣球立方體組成遊戲方塊">'+[0,1,2,3].map(function(i){return '<img class="bvt-cube bvt-cube-'+i+'" src="assets/balloon_base.png" alt="氣球立方體">';}).join('')+'</div><p class="bvt-lead">從氣球教室，到方塊世界！</p><p>四顆立方體，組成不同的遊戲方塊。</p><button type="button" data-tut="practice">跳過開場，開始練習</button>';
