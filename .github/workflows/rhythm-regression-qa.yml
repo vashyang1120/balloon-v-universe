@@ -317,6 +317,7 @@ jobs:
             await p.waitForFunction(()=>RVCoach.debug().mode==="complete",null,{timeout:30000});
             assert(await p.evaluate(()=>!G.running&&!audioSource&&RVMV.debug()===null),"completion stops media");
             await next();await p.waitForSelector("#s-title:not(.off)");
+            await p.locator("#rv-btn-tutorial").click();await p.keyboard.press("Escape");await p.waitForFunction(()=>!RVCoach.active()&&!G.running);assert(true,"Escape exits tutorial");
             assert(!H.apiCalls.some(x=>!/^(GET|HEAD) /.test(x))&&!H.db.get("scores")&&!H.db.get("wallets"),"no formal writes");
             assert(!p.errors.length,"no page errors "+p.errors.join(" | "));
             await ctx.close();
