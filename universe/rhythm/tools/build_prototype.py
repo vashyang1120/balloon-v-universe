@@ -12,6 +12,7 @@
 """
 import os
 import sys
+import json
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "shared", "tools"))
 from buildlib import Builder, TAG  # noqa: E402
@@ -169,4 +170,7 @@ for previous, replacement in [
   ]
 ]:
     b.rep(previous, replacement, "v2.6.5 release overlay")
+with open(os.path.join(os.path.dirname(__file__), 'release-v2.7.0-edits.json'), encoding='utf-8') as f:
+    for previous, replacement in json.load(f):
+        b.rep(previous, replacement, 'v2.7.0 approved MV/tutorial overlay')
 b.write(out_path, header)
