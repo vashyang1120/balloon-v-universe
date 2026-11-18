@@ -1,7 +1,7 @@
 # 方塊派對 — 手機 UI 測試版（tetris-universe-ui-v0.3.2-test-2）
 
 **這是永久 Sandbox 的 UI 測試版**：不讀、不寫任何正式資料（成績、排行榜、V幣、稱號、頭像、玩家資料）。
-正式宇宙版 `universe/tetris/`、大廳入口 `zones.js`、共用 SDK、後端 Worker 都**沒有修改**；大廳也**沒有**連到這個測試版。
+本頁保持永久 Sandbox；大廳不連到本測試頁。已驗收 UI v0.3.2-test-2 另外升至正式宇宙入口 `universe/tetris/`（UI v0.3.2），保留原玩家與成績流程；詳見該目錄 README。
 
 ## 開啟方式
 

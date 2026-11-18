@@ -1,0 +1,113 @@
+{
+ "purple": {
+  "source_repo": "vashyang1120/balloon-v-rush",
+  "source_path": "assets/adventure/ui/components/ui_button_purple.png",
+  "source_size": [
+   1774,
+   887
+  ],
+  "source_sha256": "34d1053496f9d4d27c3ca7d6b56d501bbc4da2b6b94dfab2639ff8d8eadb5773",
+  "alpha_bbox_all_pixels": [
+   33,
+   57,
+   1738,
+   887
+  ],
+  "alpha_bbox_button_body": [
+   44,
+   160,
+   1730,
+   694
+  ],
+  "crop_box": [
+   43,
+   159,
+   1731,
+   695
+  ],
+  "crop_size": [
+   1688,
+   536
+  ],
+  "output": "universe/tetris-ui-test/assets/btn_purple.png",
+  "output_size": [
+   960,
+   305
+  ],
+  "output_bytes": 310918
+ },
+ "yellow": {
+  "source_repo": "vashyang1120/balloon-v-rush",
+  "source_path": "assets/adventure/ui/components/ui_button_yellow.png.png",
+  "source_size": [
+   1774,
+   887
+  ],
+  "source_sha256": "a54aae9613f1cf1d3c2d472a135db683a72e7514787125cb54526b53726b8e5b",
+  "alpha_bbox_all_pixels": [
+   51,
+   63,
+   1726,
+   871
+  ],
+  "alpha_bbox_button_body": [
+   58,
+   154,
+   1714,
+   684
+  ],
+  "crop_box": [
+   57,
+   153,
+   1716,
+   686
+  ],
+  "crop_size": [
+   1659,
+   533
+  ],
+  "output": "universe/tetris-ui-test/assets/btn_yellow.png",
+  "output_size": [
+   960,
+   308
+  ],
+  "output_bytes": 310530
+ },
+ "blue": {
+  "source_repo": "vashyang1120/balloon-v-rush",
+  "source_path": "assets/adventure/ui/components/ui_button_blue.png.png",
+  "source_size": [
+   1774,
+   887
+  ],
+  "source_sha256": "9deb1eef399344113e9225836e80fdf4436a3f3ef459739c7a03d574df2e20d1",
+  "alpha_bbox_all_pixels": [
+   0,
+   39,
+   1756,
+   871
+  ],
+  "alpha_bbox_button_body": [
+   82,
+   187,
+   1691,
+   705
+  ],
+  "crop_box": [
+   81,
+   185,
+   1692,
+   706
+  ],
+  "crop_size": [
+   1611,
+   521
+  ],
+  "output": "universe/tetris-ui-test/assets/btn_blue.png",
+  "output_size": [
+   960,
+   310
+  ],
+  "output_bytes": 307259
+ }
+}

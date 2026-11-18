@@ -1,0 +1,170 @@
+/* ==========================================================
+   氣球小V方塊派對 UI 測試版 — 手機版 UI 樣式（tetris-universe-ui-v0.1.0-test-2）
+   全部規則都在 html.uit-m（手機版）底下，桌機版完全維持原版。
+   原版 HTML 結構不變：只用 display:contents 把左右資訊欄的卡片排進頂部 HUD。
+   ========================================================== */
+
+#uit-safe-probe {
+  position: fixed; left: 0; top: 0; width: 0; height: 0; visibility: hidden; pointer-events: none;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+
+/* ---------- Sandbox 標示 ---------- */
+.uit-badge {
+  pointer-events: none; font: 800 10px/1.2 'Nunito', 'Noto Sans TC', sans-serif; letter-spacing: .02em;
+  color: #6b3f00; background: rgba(255, 214, 140, .92); border-radius: 999px; padding: 3px 8px; white-space: nowrap;
+}
+#uit-badge-page { position: fixed; left: calc(env(safe-area-inset-left, 0px) + 8px); bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); z-index: 9000; }
+html.uit-game #uit-badge-page { display: none; }
+#uit-badge-board { display: inline-block; margin-top: 2px; font-size: 9px; padding: 2px 6px; }
+html.uit-m #uit-badge-board { grid-area: badge; justify-self: start; margin-top: 0; }
+
+/* HUD 內的全螢幕按鈕：只在手機版遊戲畫面出現 */
+#uit-fs { display: none; }
+
+/* ---------- 觸控按鍵（預設隱藏，手機版遊戲中才顯示） ---------- */
+#uit-ctrl[hidden] { display: none !important; }
+#uit-ctrl {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 150;   /* 低於原版暫停／結束視窗（z-index 200） */
+  pointer-events: none;
+  padding: 0 calc(env(safe-area-inset-right, 0px) + var(--uit-edge, 10px)) calc(env(safe-area-inset-bottom, 0px) + var(--uit-edge, 10px)) calc(env(safe-area-inset-left, 0px) + var(--uit-edge, 10px));
+  display: flex; justify-content: space-between; align-items: flex-end;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
+.uit-group { display: flex; align-items: flex-end; gap: var(--uit-btn-gap, 10px); }
+.uit-group-r { flex-direction: column; align-items: flex-end; }
+.uit-row { display: flex; gap: var(--uit-btn-gap, 10px); }
+/* 單列（test-2 起）：由左至右 加速下降 → 直接落下 → 旋轉（只改視覺順序，按鍵與事件不變） */
+#uit-ctrl:not(.is-stacked) .uit-group-r { flex-direction: row; }
+#uit-ctrl:not(.is-stacked) .uit-row { display: contents; }
+#uit-ctrl:not(.is-stacked) .uit-btn-down   { order: 1; }
+#uit-ctrl:not(.is-stacked) .uit-btn-drop   { order: 2; }
+#uit-ctrl:not(.is-stacked) .uit-btn-rotate { order: 3; }
+/* 兩層（極窄螢幕）：下層 加速下降 → 直接落下；旋轉在上層、靠右（在直接落下正上方），維持「旋轉在最右邊」 */
+#uit-ctrl.is-stacked .uit-row-top { justify-content: flex-end; width: 100%; }
+
+.uit-btn {
+  pointer-events: auto; touch-action: none; -webkit-tap-highlight-color: transparent;
+  width: var(--uit-btn, 60px); height: var(--uit-btn, 60px); flex: 0 0 auto;
+  border-radius: 50%; padding: 0; margin: 0; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(36, 18, 66, var(--uit-btn-alpha, .35));
+  border: 2px solid rgba(255, 255, 255, .55);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .18);
+  transition: transform .06s ease, background-color .06s ease, border-color .06s ease;
+}
+.uit-btn svg {
+  width: 52%; height: 52%; fill: none; stroke: #fff; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, .55)); pointer-events: none;
+}
+.uit-btn.is-down {
+  transform: scale(.9);
+  background: rgba(255, 133, 161, .62);
+  border-color: #fff;
+}
+.uit-btn:focus { outline: none; }
+.uit-btn:focus-visible { outline: 3px solid rgba(255, 209, 102, .9); outline-offset: 2px; }
+
+/* ==========================================================
+   手機版遊戲畫面
+   ========================================================== */
+html.uit-m #mob-ctrl { display: none !important; }              /* 原版下方按鍵列（改用浮動按鍵） */
+html.uit-m.uit-game #fs-btn { display: none !important; }       /* 改用 HUD 內的全螢幕按鈕 */
+html.uit-m.uit-game body { overscroll-behavior: none; }
+
+html.uit-m #s-game {
+  position: fixed; inset: 0; height: auto;
+  display: grid !important;
+  padding: calc(env(safe-area-inset-top, 0px) + 6px) calc(env(safe-area-inset-right, 0px) + 6px)
+           calc(env(safe-area-inset-bottom, 0px) + 6px) calc(env(safe-area-inset-left, 0px) + 6px) !important;
+  column-gap: 0; row-gap: 6px;
+  align-items: stretch; justify-content: stretch;
+  touch-action: none; overflow: hidden;
+  /* 直式：第 1 列 身份／暫停／音樂／全螢幕／離開；第 2 列 分數／連消／消除行／關卡／NEXT；其餘＝棋盤 */
+  grid-template-columns: repeat(20, minmax(0, 1fr));
+  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-areas:
+    "id id id id id id id id pause pause pause music music music fs fs fs quit quit quit"
+    "score score score score score combo combo combo combo lines lines lines lines level level level level next next next"
+    "board board board board board board board board board board board board board board board board board board board board";
+}
+html.uit-m #s-game .side { display: contents; }
+html.uit-m #s-game .side-gap,
+html.uit-m #s-game .uit-hint { display: none !important; }
+
+/* 身份 */
+html.uit-m .uit-id {
+  grid-area: id; display: grid !important; min-width: 0; margin-right: 4px; padding: 0 2px;
+  grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; align-content: center;
+  grid-template-areas: "av name" "av badge"; column-gap: 8px; row-gap: 2px;
+}
+html.uit-m .uit-id #g-avatar { grid-area: av; align-self: center; }
+html.uit-m .uit-id #g-name { grid-area: name; align-self: end; }
+html.uit-m #g-avatar { width: 38px; height: 38px; flex: 0 0 38px; border-width: 2px; }
+html.uit-m #g-name { font-size: 13px; text-align: left; min-width: 0; }
+
+/* 即時資訊卡 */
+html.uit-m .uit-score, html.uit-m .uit-combo, html.uit-m .uit-lines, html.uit-m .uit-level, html.uit-m .uit-next {
+  width: auto; min-width: 0; margin: 0 3px; padding: 5px 4px 6px; border-radius: 12px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; overflow: hidden;
+}
+html.uit-m .uit-score { grid-area: score; margin-left: 0; }
+html.uit-m .uit-combo { grid-area: combo; }
+html.uit-m .uit-lines { grid-area: lines; }
+html.uit-m .uit-level { grid-area: level; }
+html.uit-m .uit-next  { grid-area: next; margin-right: 0; padding-top: 3px; padding-bottom: 3px; }
+html.uit-m #s-game .hud-label {
+  font-size: 11px; letter-spacing: .02em; margin-bottom: 2px; color: rgba(255, 255, 255, .72);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+}
+html.uit-m #s-game .hud-val { font-size: 18px; white-space: nowrap; }
+html.uit-m #next-canvas { width: 34px; height: 34px; border-radius: 7px; }
+
+/* 第 1 列按鈕：暫停、音樂、全螢幕、離開 */
+html.uit-m .uit-pause, html.uit-m #s-game .uit-quit, html.uit-m #uit-fs, html.uit-m #mc-play {
+  min-height: 40px; height: 100%; width: auto !important; margin: 0 3px; padding: 0 4px !important;
+  display: flex; align-items: center; justify-content: center; white-space: nowrap;
+  border-radius: 14px; font-size: 13px !important; line-height: 1;
+  background: rgba(255, 255, 255, .12); border: 1.5px solid rgba(255, 255, 255, .28); color: #fff;
+  font-family: 'Fredoka One', 'Noto Sans TC', cursive; cursor: pointer;
+}
+html.uit-m .uit-pause { grid-area: pause; }
+html.uit-m #s-game .uit-quit { grid-area: quit; margin-right: 0; }
+html.uit-m.uit-game #uit-fs { grid-area: fs; display: flex; font-size: 18px !important; }
+html.uit-m .uit-music, html.uit-m .uit-music .mc-row { display: contents; }
+html.uit-m .uit-music .hud-label, html.uit-m #mini-title,
+html.uit-m #mc-prev, html.uit-m #mc-next, html.uit-m #mc-list { display: none !important; }
+html.uit-m #mc-play { grid-area: music; font-size: 14px !important; gap: 2px; }
+html.uit-m #mc-play::before { content: "🎵"; font-size: 14px; }
+
+/* 棋盤：佔滿剩下的空間，置中；格子大小由 ui-test.js 依可用空間計算（整數、正方形） */
+html.uit-m #game-mid {
+  grid-area: board; min-width: 0; min-height: 0; padding: 0 !important; overflow: visible;
+  display: flex; align-items: center; justify-content: center;
+}
+html.uit-m #board-wrap { border-radius: 10px; flex: 0 0 auto; }
+html.uit-m #board-canvas { flex: 0 0 auto; max-width: none; max-height: none; }
+
+/* 暫停時：按鍵隱藏（原版暫停視窗在上層） */
+html.uit-m:not(.uit-playing) #uit-ctrl { display: none !important; }
+
+/* ---------- 手機橫式：棋盤置中、資訊在左右兩側上方、按鍵在左右下角 ---------- */
+html.uit-m.uit-land #s-game {
+  column-gap: 6px; row-gap: 6px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--uit-board-w, 200px) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+  grid-template-areas:
+    "id    id    board level next"
+    "score score board pause music"
+    "combo lines board fs    quit"
+    ".     .     board .     .";
+}
+html.uit-m.uit-land #s-game .uit-score, html.uit-m.uit-land #s-game .uit-next, html.uit-m.uit-land #s-game .uit-quit { margin-left: 0; margin-right: 0; }
+html.uit-m.uit-land .uit-pause, html.uit-m.uit-land .uit-quit,
+html.uit-m.uit-land #uit-fs, html.uit-m.uit-land #mc-play { height: 40px; }
+
+/* ---------- 極窄手機（≤ 350px，例如 320 寬）：資訊卡留白縮小，字級不變 ---------- */
+@media (max-width: 350px) {
+  html.uit-m .uit-score, html.uit-m .uit-combo, html.uit-m .uit-lines, html.uit-m .uit-level, html.uit-m .uit-next { padding-left: 1px; padding-right: 1px; margin: 0 2px; }
+  html.uit-m #s-game .hud-label { letter-spacing: 0; }
+}

@@ -1,55 +1,46 @@
-# 方塊派對 — 遊戲宇宙換殼原型（test-1）
+# 方塊派對 — 遊戲宇宙入口 UI v0.3.2
 
-**這是測試版**：玩家身份改用遊戲宇宙，成績只存在目前分頁（Mock），不會寫入正式排行榜；V幣、稱號、頭像收藏尚未開放。
-正式方塊遊戲（vparty-tetris）完全沒有被修改，在大廳正式切換入口之前持續照常運作。
+遊戲宇宙大廳「方塊工坊 → 開始遊玩」原本即導向 `universe/tetris/`。本版把已驗收 `universe/tetris-ui-test/` UI v0.3.2-test-2 升到這個既有入口，不將正式玩家導入 Sandbox。
 
-## 開啟方式
+- 大廳：https://vashyang1120.github.io/balloon-v-universe/
+- 遊戲入口：https://vashyang1120.github.io/balloon-v-universe/universe/tetris/
+- 正式玩家以大廳交接的 `?bvPlayerId=` 或既有同網域選擇載入；沒有有效玩家時，沿用原有錯誤／返回大廳流程，不建立「UI測試員」。
+- 獨立測試頁 `universe/tetris-ui-test/` 保持永久 Sandbox；正式入口只有明確加 `sandbox=1` 才為沙盒。
 
-合併後（GitHub Pages）：
-```
-https://vashyang1120.github.io/balloon-v-universe/universe/tetris/?bvPlayerId=<playerId>
-https://vashyang1120.github.io/balloon-v-universe/universe/tetris/?sandbox=1&bvPlayerId=<沙盒 playerId>
-```
-- `playerId` 可以在大廳「我的通行證」→「通行證代碼」看到（`p_` 開頭 22 個字元）。
-- 沒有參數時，會沿用同一分頁先前的玩家，或大廳目前選擇的玩家（同網域）。
-- 大廳的正式遊戲入口**沒有**改指向這個原型。
+## 升版範圍
 
-## 檔案
+基準：PR #36 合併後 `e867402`，UI v0.3.2-test-2 經使用者手機／電腦實測通過。
 
-| 檔案 | 說明 |
-|---|---|
-| `index.html` | 由正式版 `vparty-tetris@7f33885/index.html` 經 `tools/build_prototype.py` 產生（54 處修改，全部是玩家系統） |
-| `universe-shell.js` | 換殼層：身份、未開放功能、Mock 成績與排行榜、測試版標示 |
-| `universe-shell.css` | 換殼層樣式（只新增） |
-| `../shared/universe-sdk.js` | 三款共用 SDK |
-| `tools/build_prototype.py` | 建置腳本：每處修改必須剛好命中一次 |
-| `tools/js-functions.mjs` | 函式擷取與雜湊 |
-| `tools/original-functions.sha256.json` | 原版 174 個函式、CSS、頁面結構、頂層程式的基準 |
-| `tests/tetris-core-integrity.test.mjs` | 遊戲核心與原版逐字相同的驗證 |
-| `tests/browser/prototype-e2e.mjs` | 真實瀏覽器測試（需要 Playwright 與兩個正式遊戲的唯讀 clone） |
+沿用完整首頁、手機 HUD／操作配置、桌機播放器修正、原始氣球素材、R2 真實棋盤四步教學、紫金全頁創作故事、三張已遮臉照片、宇宙首頁 BGM 與既有按鈕音效。正式介面顯示 UI v0.3.2，移除固定 UI 測試／Sandbox 徽章；明確進沙盒時仍顯示徽章。
 
-素材不複製：方塊圖片讀 `vashyang1120.github.io/vparty-tetris/assets/`、BGM 讀節奏遊戲 `songs.json`，
-身份頭像讀遊戲宇宙 `assets/avatars/base/`（與大廳同一份）。
+`universe-shell.js`、共用 SDK、大廳路由、後端、玩家資料與存檔、成績／V幣／排行榜開關均未修改。原入口的伺服器確認與受控試營運狀態照常運作；後端未開啟的功能也不會因這次 UI 升版自行開啟。教學不呼叫開局或結算 API，不取得獎勵。
 
-## 重新建置與測試
+原版遊戲來源為 `vparty-tetris@7f3388562c35ca24572b3fb8cd861f7302f81509`。核心、計分、碰撞、速度、原 DOM／內嵌 CSS／事件處理程式皆保持逐字相同，只在標記區塊載入外部 UI 層。舊獨立 vparty-tetris repo 不受影響。
+
+## 建置
 
 ```
+# 升版／重新套用已驗收介面
+python3 -I universe/tetris/tools/build_release.py
+python3 -I universe/tetris/tools/build_release.py --check
+# Sandbox 仍可獨立重建；會先排除正式入口新增的 UI 載入標記，避免載入兩次
+python3 -I universe/tetris-ui-test/tools/build_ui_test.py --check
+# 若更新原遊戲換殼來源，先產生基底，再套用升版
 python3 -I universe/tetris/tools/build_prototype.py <vparty-tetris>/index.html universe/tetris/index.html
-node --test universe/tetris/tests/tetris-core-integrity.test.mjs
-node universe/tetris/tests/browser/prototype-e2e.mjs <vparty-tetris clone> <vparty-rhythm-game clone> <截圖資料夾>
+python3 -I universe/tetris/tools/build_release.py
 ```
 
-## 換殼前後對照
+`build_release.py` 將固定清單的已驗收 JS、CSS 與素材複製到正式目錄，正式入口不依賴測試目錄。大部分內容逐位元組一致，僅 `ui-test.js` 增加「只在明確沙盒顯示徽章」、`ui-brand.js` 修改正式 UI 版本與網頁標題。兩個 `BV-TETRIS-UI` 標記區塊使反覆建置冪等。原始照片不在部署資產內。
 
-| 功能 | 正式版 | 換殼原型 |
-|---|---|---|
-| 玩法、計分、等級、速度、音效、BGM、手機操作、全螢幕 | — | **完全相同**（函式 SHA-256 相同；同隨機種子結果相同） |
-| 玩家身份 | ID＋頭像 → playerKey（本機） | 遊戲宇宙 playerId（`GET /v1/players/:id`，唯讀） |
-| 角色設定 | 可改 ID／身份頭像 | 唯讀；切換玩家回大廳 |
-| 身份頭像 | 17 款（節奏遊戲素材） | 33 款（遊戲宇宙 `assets/avatars/base/`） |
-| V幣 | 前端直接改餘額 | 未開放（本場不發放） |
-| 稱號、頭像收藏 | 前端寫入 | 準備中 |
-| 成績、排行榜 | 寫舊 Firebase | Mock（本分頁、明確標示） |
-| 最高紀錄 | 全裝置共用 | 依 playerId 分開 |
-| 管理後台 | 標題點 5 下、前端密碼與 PIN | 停用；PIN 已清空 |
-| 舊 Firebase | 讀寫 | 完全不載入 |
+## 驗證與實機驗收
+
+```
+node --test universe/tetris/tests/*.test.mjs universe/tetris-ui-test/tests/*.test.*
+node --test universe/shared/tests/sdk-official.test.mjs
+```
+
+含既有 52 項 UI／核心／沙盒測試，以及 7 項正式升版檢查：入口與載入順序、無 Sandbox guard／示範玩家、JS／CSS／資產與已驗收版一致、可重現建置、真實 SDK 正式玩家讀取／明確沙盒、正式／沙盒徽章區分。整合測試以模擬 DOM／音訊驗證，並非真實瀏覽器排版測試。
+
+部署後：從大廳選既有玩家進方塊，確認玩家 ID／頭像正確及 UI v0.3.2；首頁 BGM／按鈕音效、四步教學後正式開局、故事滑動與返回、桌機播放器及手機操作正常。正式資料流程由既有後端開關與伺服器判定，本升版不建立額外驗收玩家／成績。
+
+回退可還原此 UI 升版提交；無資料遷移，也不需刪除任何玩家或成績。獨立測試頁保留不動，方便後續驗證。

@@ -24,7 +24,7 @@ const ROOT = path.resolve(TEST_DIR, "../..");
 const PROD_DIR = path.join(ROOT, "universe/tetris");
 const read = (p) => fs.readFileSync(p, "utf8");
 const testHtml = read(path.join(TEST_DIR, "index.html"));
-const prodHtml = read(path.join(PROD_DIR, "index.html"));
+const prodHtml = read(path.join(PROD_DIR, "index.html")).replace(/<!-- BV-TETRIS-UI:(HEAD|BODY) -->\n[\s\S]*?<!-- \/BV-TETRIS-UI:\1 -->\n/g, "");
 const baseline = JSON.parse(read(path.join(PROD_DIR, "tools/original-functions.sha256.json")));
 const uiJs = read(path.join(TEST_DIR, "ui-test.js"));
 const brandJs = read(path.join(TEST_DIR, "ui-brand.js"));
