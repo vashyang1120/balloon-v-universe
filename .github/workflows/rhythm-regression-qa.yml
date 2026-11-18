@@ -53,7 +53,14 @@ jobs:
           python3 - <<'PY'
           import re,pathlib
           def failures(p):
-              return sorted(re.findall(r'^not ok \d+ - (.+)
+              return sorted(re.findall(r'^not ok \d+ - (.+)$',pathlib.Path(p).read_text(),re.M))
+          known=['C. <style>、頁面 HTML 結構與正式宇宙版相同；拿掉插入的標籤後整份 HTML 逐字相同（只多了標題文字）']
+          b=failures('/tmp/baseline-tests.log'); c=failures('/tmp/candidate-tests.log')
+          assert (b==known and c in [known,[]]) or (not b and not c),(b,c)
+          print('Full suite comparison: no new regression; baseline failures:',b)
+          PY
+          if [ "$base_status" -ne 0 ]; then grep -q '^not ok ' /tmp/baseline-tests.log; fi
+          if [ "$candidate_status" -ne 0 ]; then grep -q '^not ok ' /tmp/candidate-tests.log; fi
           node --test universe/tetris-ui-test/tests/balloon-assets.test.cjs
           git clone --filter=blob:none --no-checkout https://github.com/vashyang1120/vparty-rhythm-game.git /tmp/bv-rhythm-generator
           git -C /tmp/bv-rhythm-generator checkout 9caa7dcb669ccbe83feedcb85c6237d773ad9b31 -- index.html
