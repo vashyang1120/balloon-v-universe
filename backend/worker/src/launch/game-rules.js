@@ -183,6 +183,10 @@ function adventureCheck(d, t) {
   if (!d.complete || !d.bossDefeated) return { status: "rejected", reasons: ["adventure_not_complete"] };
   const stages = Array.isArray(d.stages) ? d.stages : [];
   if (stages.length !== c.stages.length || c.stages.some((s, i) => stages[i] !== s)) return { status: "rejected", reasons: ["adventure_stages_incomplete"] };
+  if (d.achievementTrack !== undefined) {
+    const track = d.achievementTrack;
+    if (!track || Object.keys(track).length !== 3 || !["kills", "damage", "purchases"].every(k => Number.isSafeInteger(track[k]) && track[k] >= 0)) return { status: "rejected", reasons: ["adventure_achievement_track_invalid"] };
+  }
   const parts = d.parts || {};
   let sum = 0;
   for (const [k, max] of Object.entries(c.partMax)) {
@@ -236,6 +240,7 @@ export const GAME_RULES = Object.freeze({
       scoreVersion: { type: "string", required: true, max: 48, pattern: /^[A-Za-z0-9._-]+$/ },
       complete: { type: "boolean", required: true }, bossDefeated: { type: "boolean", required: true },
       parts: { type: "object", required: true, maxKeys: 8 }, chainBonus: int(0, 100000),
+      achievementTrack: { type: "object", required: false, maxKeys: 3 },
       stages: { type: "array", required: true, maxItems: 40 }, stageClearSec: { type: "object", required: true, maxKeys: 40 },
     },
     check: adventureCheck,
