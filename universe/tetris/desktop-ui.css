@@ -51,7 +51,7 @@ html.uit-brand:not(.uit-m) #s-game .mc-btn {
 }
 html.uit-brand:not(.uit-m) #s-game .mini-title { min-width:0; max-width:100%; font-size:14px; line-height:1.5; }
 /* Reserve room for the approved tutorial navigation instead of covering its bottom-row target. */
-html.bv-guided.uit-brand:not(.uit-m) #s-game { padding-bottom:124px; }
+html.bv-guided.uit-brand:not(.uit-m) #s-game { padding-bottom:124px!important; }
 @media(max-height:800px) {
   html.uit-brand:not(.uit-m) #s-game .side { padding:12px; gap:10px; }
   html.uit-brand:not(.uit-m) #g-avatar { width:52px; height:52px; }
