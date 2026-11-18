@@ -1,7 +1,7 @@
 /* ==========================================================
    氣球小V方塊派對 — 遊戲宇宙換殼層（Universe Shell）
    universe-game-migration-v0.1.0-foundation-test-1
-   [UI 測試版] tetris-universe-ui-v0.3.1-test-2：由 universe/tetris/universe-shell.js 產生，只改 Session 參數（永久 Sandbox）
+   [UI 測試版] tetris-universe-ui-v0.3.2-test-1：由 universe/tetris/universe-shell.js 產生，只改 Session 參數（永久 Sandbox）
 
    原版遊戲（vparty-tetris v1.3.7）的玩家系統函式改成呼叫這裡：
      身份      → BVUniverse SDK 讀取 playerId 的公開資料（唯讀，網址 ?bvPlayerId=）
@@ -15,7 +15,7 @@
 (function () {
   "use strict";
 
-  var GAME_VERSION = "tetris-v1.3.7+universe-v0.3.1+tetris-universe-ui-v0.3.1-test-2";
+  var GAME_VERSION = "tetris-v1.3.7+universe-v0.3.1+tetris-universe-ui-v0.3.2-test-1";
   var AV_BASE = "../../assets/avatars/base/";
   var BLANK = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
   var U = window.BVUniverse;

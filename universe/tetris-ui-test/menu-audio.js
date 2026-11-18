@@ -7,7 +7,7 @@
   "use strict";
 
   var CFG = {
-    version: "tetris-menu-audio-v0.1.1-test-1",
+    version: "tetris-menu-audio-v0.1.2-test-1",
     bgmSrc: "../../assets/audio/universe_lobby_bgm.mp3",
     bgmVolume: 0.22,          // 大廳 bgmVolume 0.25；節奏遊戲選單略低，不比正式歌曲大聲
     fadeInSec: 0.45,
@@ -73,7 +73,7 @@
 
   /* 是否應該播放選單 BGM（唯一判斷點） */
   function visibleScreen() {
-    var list = ["s-game", "s-title", "s-songlist", "s-result", "s-lb", "s-profile", "s-admin"];
+    var list = ["s-game", "s-story", "s-title", "s-songlist", "s-result", "s-lb", "s-profile", "s-admin"];
     for (var i = 0; i < list.length; i++) { var s = document.getElementById(list[i]); if (s && !s.classList.contains("off")) return list[i]; }
     return "";
   }
@@ -355,7 +355,7 @@
     mAudio.addEventListener("play", function () { pausePlay(0); });
     ["pause", "ended", "error"].forEach(function (name) { mAudio.addEventListener(name, function () { update("song-" + name); }); });
   }
-  var screens = ["s-title", "s-game", "s-result", "s-lb", "s-profile"];
+  var screens = ["s-story", "s-title", "s-game", "s-result", "s-lb", "s-profile"];
   var observer = new MutationObserver(function () { update("screen"); });
   screens.forEach(function (id) { var el = document.getElementById(id); if (el) observer.observe(el, { attributes: true, attributeFilter: ["class"] }); });
   window.addEventListener("storage", function (e) { if (e.key === PREF_KEY || e.key === null) { readPrefs(); update("prefs"); renderToggle(); } });

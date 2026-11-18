@@ -1,26 +1,14 @@
-/* v0.2.3-test-2: isolated homepage story and modal styles. */
-.uit-z2 .bv-story-tagline { margin: 3px 0 0; color: #513773; font-size: 13px; font-weight: 700; text-align: center; }
-.uit-z2 .bv-story-open { min-height: 44px; margin: 0; font-size: 13px; }
-#bv-creation-story { position: fixed; inset: 0; margin: auto; box-sizing: border-box; width: min(560px, calc(100% - 24px)); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); padding: 0; border: 2px solid #b999df; border-radius: 22px; color: #352249; background: #fff9ef; overflow: auto; overscroll-behavior: contain; }
-#bv-creation-story::backdrop { background: rgba(31, 17, 49, .76); }
-#bv-creation-story .bv-story-content { padding: 16px 22px max(24px, env(safe-area-inset-bottom)); line-height: 1.85; }
-#bv-creation-story h2 { clear: both; text-align: center; font-size: 23px; }
-#bv-creation-story .bv-story-close { display: block; margin-left: auto; min-height: 44px; }
-#bv-creation-story .bv-story-lead { text-align: center; font-weight: 700; color: #704299; }
-#bv-creation-story .bv-story-original { text-align: center; margin: 20px 0; padding: 14px; border-radius: 16px; background: #f0e5fb; }
-#bv-creation-story .bv-story-original img { display: block; object-fit: contain; margin: 0 auto 10px; }
-#bv-creation-story figcaption { font-size: 13px; }
-#bv-creation-story .bv-story-back { display: block; width: 100%; min-height: 48px; margin-top: 20px; }
+/* Homepage entry and approved full-page story. */
+.bv-story-tagline { margin: 3px 0 0; color: #513773; font-size: 13px; font-weight: 700; text-align: center; }
+.bv-story-open { min-height: 44px; margin: 0; font-size: 13px; }
 
-#bv-creation-story .bv-story-classroom h3 { text-align: center; font-size: 18px; }
-#bv-creation-story .bv-story-gallery { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 0 12px; }
-#bv-creation-story .bv-story-gallery figure { flex: 0 0 82%; margin: 0; scroll-snap-align: center; }
-#bv-creation-story .bv-story-gallery img { width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; object-position: center 35%; display: block; border-radius: 12px; }
-#bv-creation-story .bv-story-gallery figcaption { padding-top: 8px; text-align: center; }
-#bv-creation-story .bv-story-privacy { font-size: 12px; text-align: center; color: #6f5c7d; }
-
-#bv-creation-story .bv-story-gallery-controls { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 0 0 8px; }
-#bv-creation-story .bv-story-gallery-controls button { min-width: 44px; min-height: 44px; border: 1px solid #b999df; border-radius: 50%; background: #eee3fa; color: #513773; font-size: 22px; cursor: pointer; }
-#bv-creation-story .bv-story-gallery-controls button:disabled { opacity: .35; cursor: default; }
-#bv-creation-story .bv-story-gallery-hint { margin: 0 0 4px; text-align: center; font-size: 13px; font-weight: 700; color: #704299; }
-@media (prefers-reduced-motion: reduce) { #bv-creation-story .bv-story-gallery { scroll-behavior: auto; } }
+/* Approved R2 (6114a59): full-page purple/gold story, without preview toolbar. */
+#s-story{display:block;position:fixed;inset:0;overflow:auto;z-index:1000;background:linear-gradient(#21103750,#34204b80),url(../../assets/universe_map_bg.png) center/cover;color:#fff;font-family:'Noto Sans TC',sans-serif}.story-inner{width:min(100% - 32px,480px);margin:0 auto;padding:20px 0 34px}.story-top{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#f6e6ff}.story-back{color:#fff;background:#3d2164b8;border:1px solid #ad8dcc;border-radius:30px;padding:9px 14px;min-height:40px}.story-kicker{font-size:10px;letter-spacing:.24em;color:#ffe28b;margin:24px 0 7px;text-align:center}.story-title{font-size:29px;line-height:1.2;text-align:center;color:#ffe9a6;text-shadow:0 3px 0 #6c3b8b,0 5px 18px #0007;margin:0}.story-subtitle{font-size:13px;text-align:center;color:#f4e7ff;margin:10px 0 18px}.story-photo-frame{padding:7px;border-radius:23px;background:linear-gradient(150deg,#ffe6a1,#b77d29 52%,#ffe6a1);box-shadow:0 12px 35px #10052266;position:relative}.story-photo-frame img{display:block;width:100%;height:auto;aspect-ratio:4/4.1;object-fit:cover;object-position:center 35%;border-radius:16px}.story-photo-frame .story-chip{position:absolute;bottom:19px;left:18px;background:#281246bb;border:1px solid #f9d98188;border-radius:18px;font-size:10px;padding:5px 10px}.story-photo-nav{display:flex;align-items:center;justify-content:center;gap:18px;margin:13px 0 18px;font-size:11px}.story-photo-nav button{border:1px solid #d6b476;background:#6b438c88;color:#fff;border-radius:50%;width:34px;height:34px}.story-text-panel{border:1px solid #e5c68388;border-radius:20px;background:linear-gradient(135deg,#321b50e8,#4f3161e8);padding:18px 18px 16px;box-shadow:0 8px 25px #12082330}.story-text-head{display:flex;align-items:center;gap:12px}.story-text-head img{width:72px;height:84px;object-fit:contain;margin-top:-32px}.story-text-head small{display:block;letter-spacing:.12em;font-size:9px;color:#d6bcec}.story-text-head h2{font-size:18px;margin:3px 0;color:#ffe8a2}.story-text-panel p{font-size:13px;line-height:1.95;color:#fbf4ff;margin:12px 0}.story-text-panel strong{color:#ffe392}.story-blocks{display:flex;align-items:center;justify-content:center;gap:7px;margin:18px 0 12px}.story-blocks img{width:34px;height:34px}.story-small{font-size:10px!important;color:#cab7dd!important;text-align:center}.story-cta{display:block;width:85%;margin:20px auto 0;height:50px;border:0;color:#fff;font-size:15px;font-weight:800;background:transparent;border-image-source:url(assets/btn_purple.png);border-image-slice:0 250 fill;border-image-width:0 34px 0 34px;border-image-repeat:stretch;text-shadow:0 2px 2px #421655}
+#s-story{overscroll-behavior:contain;padding-bottom:env(safe-area-inset-bottom,0px)}
+#s-story .story-inner{box-sizing:border-box}
+#s-story figure{margin:0}
+#s-story .story-photo-frame img{touch-action:pan-y}
+#s-story .story-photo-nav button{cursor:pointer;font-size:25px;line-height:1}
+#s-story .story-photo-nav button:focus-visible,#s-story button:focus-visible{outline:3px solid #ffe392;outline-offset:3px}
+#s-story .story-swipe-hint{font-size:11px;text-align:center;color:#f6e6ff;margin:10px 0 0}
+#s-story.off{display:none!important}

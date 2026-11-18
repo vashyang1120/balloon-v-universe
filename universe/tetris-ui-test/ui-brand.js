@@ -15,8 +15,8 @@
 (function () {
   "use strict";
 
-  var VERSION = "tetris-universe-ui-v0.3.1-test-2";
-  var UI_LABEL = "UI v0.3.1-test-2";
+  var VERSION = "tetris-universe-ui-v0.3.2-test-1";
+  var UI_LABEL = "UI v0.3.2-test-1";
   var DOC = document.documentElement;
   var $ = function (id) { return document.getElementById(id); };
 
