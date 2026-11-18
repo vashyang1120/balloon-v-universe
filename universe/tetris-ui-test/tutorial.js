@@ -1,67 +1,148 @@
-/* v0.3.0-test-1: optional intro and isolated, action-gated practice. */
+/* v0.3.2-test-1: approved R2 guidance over the ORIGINAL game and controls.
+   Practice never calls startGame(), gameOver(), a session API, or a second engine. */
 (function () {
   'use strict';
-  var how=document.getElementById('btn-how'), E=window.BVTetrisPractice;
-  if(!how || !E)return;
-  var KEY='bv.tetris.tutorial.v1.seen', state=null, mode='welcome', timer=null, holdDelay=null, repeat=null, disposed=false;
-  var d=document.createElement('dialog'); d.id='bv-tutorial'; d.setAttribute('aria-labelledby','bv-tut-title');
-  d.innerHTML='<div class="bvt-wrap"><header><h2 id="bv-tut-title">一起玩氣球方塊！</h2><button type="button" data-tut="exit">跳過教學 ✕</button></header>'+
-    '<p class="bvt-note">練習模式・不計成績、不發放獎勵</p><div class="bvt-content"></div></div>';
-  document.body.append(d);
-  var content=d.querySelector('.bvt-content');
-  var steps=[['左右移動','先向左、向右各移動一次，再把方塊移到虛線位置。'],['旋轉方塊','把長條氣球方塊轉成直的，看看方向怎麼改變。'],['加速下降','按住或點按「加速下降」，讓方塊往下移動三格。'],['直接落下與消除','按「直接落下」，把方塊放進缺口，補滿最下面一行！']];
-  function seen(){try{localStorage.setItem(KEY,'1');}catch(e){}}
-  function clear(){clearTimeout(timer);clearTimeout(holdDelay);clearInterval(repeat); timer=holdDelay=repeat=null;}
-  function close(){seen();clear();state=null;mode='closed';if(d.open)d.close();}
-  function open(){if(d.open)return;if(typeof running!=='undefined' && running)return;disposed=false;mode='welcome';welcome();d.showModal();}
-  function welcome(){content.innerHTML='<p class="bvt-lead">這些氣球方塊，來自我和孩子們一起完成的氣球立方體。</p><p>要先跟小V老師練習一下嗎？完成移動、旋轉與消除，就能開始挑戰！</p><div class="bvt-choices"><button type="button" data-tut="intro">開始練習</button><button type="button" data-tut="exit">我會玩了，回首頁</button><button type="button" data-tut="text">查看文字操作說明</button></div>';}
-  function intro(){
-    clear();mode='intro';
-    content.innerHTML='<div class="bvt-intro" aria-label="四顆氣球立方體組成遊戲方塊">'+[0,1,2,3].map(function(i){return '<img class="bvt-cube bvt-cube-'+i+'" src="assets/balloon_base.png" alt="氣球立方體">';}).join('')+'</div><p class="bvt-lead">從氣球教室，到方塊世界！</p><p>四顆立方體，組成不同的遊戲方塊。</p><button type="button" data-tut="practice">跳過開場，開始練習</button>';
-    timer=setTimeout(practice,window.matchMedia('(prefers-reduced-motion: reduce)').matches?1000:3500);
+  var how=document.getElementById('btn-how');
+  if(!how || !window.BVGuidedPractice) return;
+  var holder=document.createElement('div');
+  holder.innerHTML="<div class=\"review-coach\" hidden><img src=\"../../assets/rpg/v_bust_point.png\" alt=\"小V老師引導\"><div class=\"review-speech\"><small>小V老師陪你練習 · 1 / 4</small><span aria-live=\"polite\">先試試<strong>左、右移動</strong>！<br>按亮起的原本按鈕，把氣球方塊移過去。</span></div></div>\n<div class=\"review-step-picker\" role=\"region\" aria-label=\"逐步教學\" hidden><div class=\"review-progress\" aria-label=\"教學進度\">●　○　○　○</div><div class=\"review-teaching-actions\"><button id=\"review-retry\">重試這一步</button><button id=\"review-next-step\" disabled>下一步 →</button><button id=\"review-restart\" hidden>再練一次</button><button id=\"review-play\" hidden>開始挑戰</button><button id=\"review-exit\">跳過教學</button></div></div>";
+  while(holder.firstElementChild)document.body.appendChild(holder.firstElementChild);
+  var coach=document.querySelector('.review-coach'),picker=document.querySelector('.review-step-picker');
+  var next=document.getElementById('review-next-step'),retry=document.getElementById('review-retry');
+  var restart=document.getElementById('review-restart'),play=document.getElementById('review-play'),exitButton=document.getElementById('review-exit');
+  var original={left:window.mLeft,right:window.mRight,rotate:window.tryRotate,down:window.mDown,drop:window.hardDrop,lock:window.lock};
+  var drawTimer=null,oldIdentity=null;
+  var legacy=[['mob-left','left'],['mob-right','right'],['mob-rotl','rotate'],['mob-down','down'],['mob-drop','drop']];
+  function cancelHeld(){
+    if(window.BVUiTest)Object.keys(BVUiTest.held).forEach(function(k){var h=BVUiTest.held[k];clearTimeout(h.timer);clearInterval(h.timer);delete BVUiTest.held[k];});
+    document.querySelectorAll('.uit-btn.is-down').forEach(function(b){b.classList.remove('is-down');});
   }
-  function practice(){clear();mode='practice';state=E.create(0);render();}
-  function isTouch(){return window.matchMedia('(pointer: coarse)').matches;}
-  function render(){
-    clearInterval(repeat);repeat=null;
-    if(mode!=='practice')return;
-    var s=steps[state.step],passed=state.passed;
-    content.innerHTML='<p class="bvt-progress">練習 '+(state.step+1)+' / 4</p><h3>'+s[0]+'</h3><p class="bvt-instruction" aria-live="polite">'+(passed?'太棒了！'+(state.step===3?'你完成了一行消除！':'這一步完成了！'):s[1])+'</p>'+
-      '<p class="bvt-input-hint">'+(isTouch()?'點下方按鈕操作；加速下降可以長按。':'鍵盤：← → 移動、↑ 旋轉、↓ 加速、空白鍵直接落下。')+'</p>'+
-      '<canvas width="256" height="320" class="bvt-board" role="img" aria-label="獨立教學棋盤，八欄十列"></canvas>'+
-      '<div class="bvt-controls">'+[['left','← 左'],['right','右 →'],['rotate','↑ 旋轉'],['down','↓ 加速下降'],['drop','⤓ 直接落下']].map(function(a){var allowed=!passed && (state.step===0?(a[0]==='left'||a[0]==='right'):a[0]===['','rotate','down','drop'][state.step]);return '<button type="button" data-action="'+a[0]+'" '+(allowed?'':'disabled')+'>'+a[1]+'</button>';}).join('')+'</div>'+
-      '<div class="bvt-bottom"><button type="button" data-tut="reset">重練這一步</button><button type="button" data-tut="next" '+(passed?'':'disabled')+'>'+(state.step===3?'完成練習':'下一步')+'</button></div><p class="bvt-text-help">'+(state.step===0?'虛線是要移動到的位置。':state.step===2?'加速下降會一格格往下；直接落下則會一次落到底。':'')+'</p>';
+  function resetPuzzle(step){
+    if(raf)cancelAnimationFrame(raf);raf=null;
+    clearTimeout(stkTmr);
+    board=newBoard();var k=step===1?'I':'O';
+    cur={key:k,cells:PIECES[k].cells.map(function(c){return c.slice();}),color:PIECES[k].color};
+    nxt={key:'T',cells:PIECES.T.cells.map(function(c){return c.slice();}),color:PIECES.T.color};
+    cx=3;cy=5;score=0;lines=0;level=1;combo=0;peakCombo=0;diff='normal';particles=[];running=true;paused=false;dropAcc=0;
+    if(step===3)for(var x=0;x<COLS;x++)if(x!==3&&x!==4)board[ROWS-1][x]='#bb9de5';
+    clearGameVisualState();
+    ['cl-flash','lv-flash'].forEach(function(id){var e=document.getElementById(id);if(e)e.classList.remove('show');});
+    document.getElementById('g-overlay').classList.add('off');
+    document.getElementById('pause-btn').textContent='⏸ 暫停';
+    updateHUD();initCanvas();paint();
+    document.getElementById('g-name').textContent='教學練習';
+    document.getElementById('g-avatar').src=coach.querySelector('img').src;
+    positionCoach();
+  }
+  var guard=BVGuidedPractice({cancelHeld:cancelHeld,reset:resetPuzzle,snapshot:function(){return {x:cx,y:cy,cells:cur.cells.map(function(c){return c.slice();}),lines:lines};}},update);
+  [['mLeft','left'],['mRight','right'],['tryRotate','rotate'],['mDown','down'],['hardDrop','drop'],['lock','lock']].forEach(function(pair){
+    window[pair[0]]=function(){return guard.invoke(pair[1],original[pair[1]],this,arguments);};
+  });
+  var originalLoop=window.loop,originalGameOver=window.gameOver,originalStart=window.startGame;
+  window.loop=function(){if(!guard.info().active)return originalLoop.apply(this,arguments);};
+  window.gameOver=function(){if(!guard.info().active)return originalGameOver.apply(this,arguments);};
+  window.startGame=function(){if(guard.info().active)cleanup();return originalStart.apply(this,arguments);};
+  var texts=[
+    '先按<strong>左鍵</strong>移動一次，<br>再把方塊移到<strong>右側亮框</strong>裡。',
+    '按亮起的<strong>原本旋轉鍵</strong>，<br>把這顆長條氣球方塊轉成直的。',
+    '按住或點按<strong>加速下降</strong>，<br>讓方塊往下移動<strong>三格</strong>。',
+    '按<strong>直接落下</strong>，<br>填進缺口，消除最下面一行！'
+  ];
+  var keyboardTexts=[
+    '按鍵盤<strong>←</strong>移動一次，<br>再用<strong>→</strong>移到右側亮框裡。',
+    '按鍵盤<strong>↑（旋轉）</strong>，<br>把長條氣球方塊轉成直的。',
+    '按住或點按鍵盤<strong>↓</strong>，<br>讓方塊往下移動<strong>三格</strong>。',
+    '按鍵盤<strong>空白鍵</strong>直接落下，<br>填進缺口，消除最下面一行！'
+  ];
+  function update(s){
+    document.querySelectorAll('.review-highlight').forEach(function(e){e.classList.remove('review-highlight');});
+    document.querySelectorAll('.uit-btn').forEach(function(b){
+      var allowed=s.active&&guard.allows(b.dataset.act);
+      b.disabled=s.active&&!allowed;
+      b.classList.toggle('review-locked',s.active&&!allowed);
+      if(allowed)b.classList.add('review-highlight');
+    });
+    legacy.forEach(function(pair){var b=document.getElementById(pair[0]);if(!b)return;var allowed=s.active&&guard.allows(pair[1]);b.disabled=s.active&&!allowed;b.classList.toggle('review-locked',s.active&&!allowed);if(allowed)b.classList.add('review-highlight');});
+    if(!s.active)return;
+    var desktop=window.BVUiTest&&!BVUiTest.isMobileLayout();
+    var hint=document.querySelector('#s-game .ctrl-hint');
+    if(desktop&&hint&&!s.passed&&!s.complete)hint.classList.add('review-highlight');
+    var label=coach.querySelector('small'),message=coach.querySelector('span');
+    if(s.complete){label.textContent='小V老師陪你練習 · 完成！';message.innerHTML='<strong>四個步驟都完成了！</strong><br>準備好，就來挑戰方塊派對吧！';}
+    else{label.textContent='小V老師陪你練習 · '+(s.step+1)+' / 4';message.innerHTML=s.passed?'<strong>太棒了，這一步完成了！</strong><br>按「下一步」，準備新的練習。':(desktop?keyboardTexts:texts)[s.step];}
+    next.disabled=!s.passed;next.hidden=s.complete;
+    retry.hidden=s.complete;restart.hidden=!s.complete;play.hidden=!s.complete;
+    exitButton.textContent=s.complete?'回到首頁':'跳過教學';
+    picker.querySelector('.review-progress').textContent=[0,1,2,3].map(function(i){return s.complete||i<s.step?'✓':i===s.step?'●':'○';}).join('　');
+  }
+  function positionCoach(){
+    if(!guard||!guard.info().active)return;
+    var r=document.getElementById('board-wrap').getBoundingClientRect();
+    document.documentElement.style.setProperty('--bv-coach-top',Math.max(8,r.top+4)+'px');
+  }
+  function paint(){
+    if(!board||!cur)return;
     draw();
+    if(guard&&guard.info().active&&!guard.info().passed&&guard.info().step===0){
+      bCtx.save();bCtx.strokeStyle='#ffde78';bCtx.lineWidth=3;bCtx.setLineDash([6,4]);
+      bCtx.strokeRect(5*CELL+2,5*CELL+2,2*CELL-4,2*CELL-4);bCtx.restore();
+    }
   }
-  function textureReady(){return typeof balloonImg!=='undefined' && balloonImg && balloonImg.complete && balloonImg.naturalWidth>0 && typeof IMG!=='undefined' && balloonImg.src===IMG.balloon;}
-  function draw(){
-    var canvas=content.querySelector('canvas');if(!canvas || !state)return;
-    var ctx=canvas.getContext('2d'),size=32;ctx.clearRect(0,0,256,320);ctx.fillStyle='#241638';ctx.fillRect(0,0,256,320);
-    ctx.strokeStyle='#ffffff20';ctx.lineWidth=1;
-    for(var x=0;x<=8;x++){ctx.beginPath();ctx.moveTo(x*size,0);ctx.lineTo(x*size,320);ctx.stroke();}
-    for(var y=0;y<=10;y++){ctx.beginPath();ctx.moveTo(0,y*size);ctx.lineTo(256,y*size);ctx.stroke();}
-    function cell(x,y,color){if(textureReady())ctx.drawImage(getTinted(color),x*size+1,y*size+1,30,30);}
-    state.board.forEach(function(row,y){row.forEach(function(v,x){if(v)cell(x,y,'#c6a8ed');});});
-    if(state.step===0&&!state.passed){ctx.strokeStyle='#ffdc76';ctx.lineWidth=3;ctx.setLineDash([5,3]);ctx.strokeRect(3*size+2,2,60,60);ctx.setLineDash([]);}
-    state.cells.forEach(function(c){cell(state.x+c[0],state.y+c[1],'#ffd166');});
-    // An unavailable image stays a visible loading message, never ordinary square blocks.
-    if(!(textureReady())){ctx.fillStyle='white';ctx.font='16px sans-serif';ctx.fillText('🎈 氣球素材準備中…',42,160);}
+  function cleanup(){
+    guard.exit();clearInterval(drawTimer);drawTimer=null;
+    if(raf)cancelAnimationFrame(raf);raf=null;
+    clearTimeout(stkTmr);clearGameVisualState();
+    running=false;paused=false;particles=[];
+    coach.hidden=picker.hidden=true;
+    document.documentElement.classList.remove('bv-guided');
+    if(oldIdentity){document.getElementById('g-name').textContent=oldIdentity.name;document.getElementById('g-avatar').src=oldIdentity.avatar;oldIdentity=null;}
   }
-  function action(a){if(mode!=='practice'||!state)return;if(!(textureReady())){return;}var passed=state.passed;if(E.act(state,a)){if(!passed&&state.passed)render();else draw();}}
-  content.addEventListener('click',function(event){var b=event.target.closest('button');if(!b||b.disabled)return;var a=b.dataset.action,t=b.dataset.tut;if(a){action(a);return;}if(t==='intro')intro();if(t==='practice')practice();if(t==='reset'){state=E.create(state.step);render();}if(t==='next'&&state&&state.passed){if(state.step<3){state=E.create(state.step+1);render();}else{seen();mode='complete';content.innerHTML='<h3>你完成練習了！🎉</h3><p>把氣球課的快樂，帶進你的方塊挑戰！</p><button type="button" data-tut="play">開始挑戰</button><button type="button" data-tut="again">再練一次</button>';}}if(t==='again')practice();if(t==='play'){close();document.getElementById('btn-start').click();}if(t==='text'){close();if(typeof toast==='function')toast('← → 移動　↑ 旋轉　↓ 加速　空白 落下　Esc 暫停',6000);}});
-  // Long press only for the gradual descent exercise. Tapping also works via click.
-  content.addEventListener('contextmenu',function(event){if(event.target.closest('[data-action]'))event.preventDefault();});
-  content.addEventListener('pointerdown',function(event){var b=event.target.closest('[data-action="down"]');if(!b||b.disabled)return;clearInterval(repeat);holdDelay=setTimeout(function(){repeat=setInterval(function(){action('down');},90);},250);});
-  function release(){clearTimeout(holdDelay);clearInterval(repeat);holdDelay=repeat=null;}
-  window.addEventListener('pointerup',release);window.addEventListener('pointercancel',release);window.addEventListener('blur',release);
-  d.addEventListener('click',function(event){if(event.target.closest('[data-tut="exit"]'))close();});
-  d.addEventListener('cancel',function(event){event.preventDefault();close();});
-  d.addEventListener('close',function(){clear();state=null;mode='closed';how.focus({preventScroll:true});});
-  document.addEventListener('keydown',function(event){if(!d.open)return;event.stopImmediatePropagation();if(event.key==='Escape'){event.preventDefault();close();return;}var keys={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'rotate',ArrowDown:'down',' ':'drop'};if(mode==='practice'&&keys[event.key]&&!(event.key===' '&&event.target.tagName==='BUTTON')){event.preventDefault();action(keys[event.key]);}},true);
-  how.addEventListener('click',function(event){event.preventDefault();event.stopImmediatePropagation();open();},true);
-  // Repaint after image arrival and viewport changes without progressing the exercise.
-  var repaint=setInterval(function(){if(mode==='practice')draw();},500);
-  window.addEventListener('pagehide',function(){clear();clearInterval(repaint);disposed=true;});
-  window.addEventListener('pageshow',function(){if(disposed){repaint=setInterval(function(){if(mode==='practice')draw();},500);disposed=false;}});
-  try{if(localStorage.getItem(KEY)!=='1')open();}catch(e){open();}
+  function focusBoard(){var canvas=document.getElementById('board-canvas');canvas.setAttribute('tabindex','-1');canvas.focus({preventScroll:true});}
+  function exit(){cleanup();showScreen('s-title');how.focus({preventScroll:true});}
+  function begin(){
+    if(guard.info().active){guard.start();focusBoard();return;}
+    if(typeof running!=='undefined'&&running)return;
+    // The texture loader already blocks entry while loading; never show solid substitute blocks.
+    if(!balloonImg.complete||!balloonImg.naturalWidth||balloonImg.src!==IMG.balloon){toast('🎈 氣球素材準備中，請稍後再試');return;}
+    oldIdentity={name:document.getElementById('g-name').textContent,avatar:document.getElementById('g-avatar').src};
+    if(typeof pauseSong==='function')pauseSong();
+    if(window.BVTetrisMenuAudio)BVTetrisMenuAudio.onGameStart();
+    document.documentElement.classList.add('bv-guided');
+    showScreen('s-game');coach.hidden=picker.hidden=false;
+    guard.start();
+    clearInterval(drawTimer);drawTimer=setInterval(function(){if(guard.info().active&&!document.hidden){paint();positionCoach();}},100);
+    focusBoard();
+  }
+  retry.addEventListener('click',function(){guard.retry();paint();focusBoard();});
+  next.addEventListener('click',function(){guard.next();paint();if(guard.info().complete)play.focus({preventScroll:true});else focusBoard();});
+  restart.addEventListener('click',begin);
+  exitButton.addEventListener('click',exit);
+  play.addEventListener('click',function(){exit();document.getElementById('btn-start').click();});
+  how.addEventListener('click',function(e){e.preventDefault();e.stopImmediatePropagation();begin();},true);
+  document.addEventListener('keydown',function(e){
+    if(!guard.info().active)return;
+    if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();exit();return;}
+    var key={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'rotate',z:'rotate',Z:'rotate',ArrowDown:'down',' ':'drop'}[e.key];
+    if(!key)return;
+    // Navigation buttons retain native keyboard activation; gameplay must not consume that same key.
+    if((e.key===' '||e.key==='ArrowLeft'||e.key==='ArrowRight')&&e.target.closest('.review-step-picker')){e.stopImmediatePropagation();return;}
+    if(!guard.allows(key)){e.preventDefault();e.stopImmediatePropagation();}
+  },true);
+  document.addEventListener('pointerdown',function(e){
+    if(!guard.info().active)return;
+    var b=e.target.closest('.uit-btn');
+    if(b&&!guard.allows(b.dataset.act)){e.preventDefault();e.stopImmediatePropagation();}
+  },true);
+  // Some original click handlers captured function references before our wrappers.
+  // Route those same buttons through the guard too (e.g. wide touchscreen PCs).
+  legacy.forEach(function(pair){var b=document.getElementById(pair[0]);if(!b)return;b.addEventListener('click',function(e){if(!guard.info().active)return;e.preventDefault();e.stopImmediatePropagation();if(guard.allows(pair[1]))window[{left:'mLeft',right:'mRight',rotate:'tryRotate',down:'mDown',drop:'hardDrop'}[pair[1]]]();},true);});
+  // Use the actual exit button; pause and song browsing cannot disrupt the scripted exercise.
+  ['pause-btn','btn-quit','mc-play','mc-list','mc-prev','mc-next'].forEach(function(id){
+    var b=document.getElementById(id);if(b)b.addEventListener('click',function(e){if(!guard.info().active)return;e.preventDefault();e.stopImmediatePropagation();if(id==='btn-quit')exit();},true);
+  });
+  window.addEventListener('resize',function(){if(guard.info().active){positionCoach();update(guard.info());}});
+  window.addEventListener('pagehide',function(){if(guard.info().active)exit();});
+  new MutationObserver(function(){if(guard.info().active&&document.getElementById('s-game').classList.contains('off'))cleanup();})
+    .observe(document.getElementById('s-game'),{attributes:true,attributeFilter:['class']});
+  window.BVTetrisTutorial={version:'v0.3.2-test-1',open:begin,close:exit,info:guard.info};
 })();

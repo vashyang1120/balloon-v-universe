@@ -1,31 +1,21 @@
-/* v0.3.0-test-1, isolated optional practice dialog. */
-#bv-tutorial { position: fixed; inset: 0; margin: auto; box-sizing: border-box; width: min(520px,calc(100% - 24px)); max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); padding: 0; border: 2px solid #b999df; border-radius: 22px; background: #fff9ef; color: #352249; overflow: auto; overscroll-behavior: contain; }
-#bv-tutorial::backdrop { background: #251541d9; }
-#bv-tutorial .bvt-wrap { padding: 16px 18px max(20px,env(safe-area-inset-bottom)); }
-#bv-tutorial header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-#bv-tutorial h2 { font-size: 20px; }
-#bv-tutorial h3 { text-align: center; font-size: 21px; margin: 6px 0; }
-#bv-tutorial p { line-height: 1.65; margin: 8px 0; }
-#bv-tutorial button { font-family: inherit; font-size: 14px; min-height: 44px; padding: 8px 12px; border: 1px solid #af8cd6; border-radius: 14px; background: #eee3fa; color: #4a286b; cursor: pointer; touch-action: manipulation; }
-#bv-tutorial button:focus-visible, #bv-tutorial canvas:focus-visible { outline: 3px solid #8050af; outline-offset: 3px; }
-#bv-tutorial button:disabled { opacity: .4; cursor: default; }
-#bv-tutorial .bvt-note, #bv-tutorial .bvt-input-hint, #bv-tutorial .bvt-text-help { font-size: 12px; text-align: center; color: #735b87; }
-#bv-tutorial .bvt-content { text-align: center; }
-#bv-tutorial .bvt-lead { font-weight: 700; color: #704299; }
-#bv-tutorial .bvt-choices { display: grid; gap: 12px; margin-top: 24px; }
-#bv-tutorial .bvt-progress { font-size: 13px; color: #704299; }
-#bv-tutorial .bvt-instruction { min-height: 3.3em; }
-#bv-tutorial .bvt-board { display: block; height: min(320px,36dvh); width: auto; max-width: 100%; margin: 10px auto; border: 2px solid #b999df; border-radius: 10px; }
-#bv-tutorial .bvt-controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
-#bv-tutorial .bvt-controls button { flex: 1 0 28%; user-select: none; -webkit-user-select: none; }
-#bv-tutorial .bvt-bottom { display: flex; justify-content: center; gap: 10px; margin-top: 14px; }
-#bv-tutorial [data-tut="next"], #bv-tutorial [data-tut="play"], #bv-tutorial [data-tut="intro"] { background: #8050af; color: white; }
-#bv-tutorial .bvt-intro { position: relative; width: 160px; height: 220px; margin: 25px auto; }
-#bv-tutorial .bvt-cube { position: absolute; width: 64px; height: 64px; object-fit: contain; animation: bvt-assemble 1.7s ease both; }
-#bv-tutorial .bvt-cube-0 { left: 16px; top: 4px; --from-x: -70px; --from-y: -20px; }
-#bv-tutorial .bvt-cube-1 { left: 16px; top: 68px; --from-x: 95px; --from-y: -40px; animation-delay: .15s; }
-#bv-tutorial .bvt-cube-2 { left: 16px; top: 132px; --from-x: -60px; --from-y: 50px; animation-delay: .3s; }
-#bv-tutorial .bvt-cube-3 { left: 80px; top: 132px; --from-x: 60px; --from-y: 50px; animation-delay: .45s; }
-@keyframes bvt-assemble { from { transform: translate(var(--from-x),var(--from-y)) scale(.65); opacity: 0; } to { transform: translate(0,0) scale(1); opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { #bv-tutorial .bvt-cube { animation: none; } }
-@media (max-height: 500px) and (min-width: 600px) { #bv-tutorial { width: min(700px,calc(100% - 24px)); } #bv-tutorial .bvt-board { height: 180px; } }
+/* Approved R2 (6114a59): coach, real-control highlights, sequential progress. */
+
+
+.review-coach{position:fixed;z-index:500;left:calc(50% - 170px);top:var(--bv-coach-top,160px);width:340px;display:flex;align-items:center;gap:8px;pointer-events:none}.review-coach img{width:86px;height:114px;object-fit:contain;filter:drop-shadow(0 5px 5px #0005)}.review-speech{flex:1;position:relative;background:linear-gradient(135deg,#fff9e9,#f4e5ff);border:2px solid #e8c979;border-radius:18px;padding:12px 14px;box-shadow:0 7px 22px #10061b55;color:#422b60;font:700 14px/1.6 sans-serif}.review-speech small{display:block;color:#8960a9;font-size:10px;letter-spacing:.1em;margin-bottom:4px}.review-speech strong{color:#7e42b3}.review-speech:before{content:'';position:absolute;left:-9px;top:45%;width:14px;height:14px;background:#fff6ea;border-left:2px solid #e8c979;border-bottom:2px solid #e8c979;transform:rotate(45deg)}.review-highlight{outline:3px solid #ffde78!important;outline-offset:5px;box-shadow:0 0 0 9px #ffde7822,0 0 25px #ffde7877!important}.review-step-picker{position:fixed;left:50%;transform:translateX(-50%);bottom:92px;z-index:600;display:flex;gap:6px;background:#251541bb;border:1px solid #9a70c0;border-radius:20px;padding:5px}.review-step-picker button{font:700 11px sans-serif;background:transparent;border:0;color:#dccbf2;padding:7px}.review-step-picker .on{border-radius:12px;background:#ffd76b;color:#4c2e6a}
+@media(min-width:901px){.review-coach{left:calc(50% - 185px);top:var(--bv-coach-top,120px)}.review-step-picker{bottom:30px}}
+
+.review-locked{opacity:.22!important;filter:saturate(.3);pointer-events:none!important}.review-step-picker{display:flex;flex-direction:column;align-items:center;width:min(352px,calc(100% - 28px));border-radius:20px;gap:1px;padding:7px}.review-progress{font:700 10px sans-serif;color:#ffe392;letter-spacing:.25em}.review-teaching-actions{display:flex;align-items:center;justify-content:center;gap:6px;width:100%}.review-teaching-actions button{min-height:36px;font-size:11px;white-space:nowrap}.review-teaching-actions #review-next-step,.review-teaching-actions #review-restart{background:#ffd76b;color:#4c2e6a;border-radius:12px;font-weight:800}.review-teaching-actions button:disabled{opacity:.3}.review-teaching-actions button[hidden]{display:none!important}
+
+.review-coach[hidden],.review-step-picker[hidden]{display:none!important}
+.review-coach{width:min(340px,calc(100% - 24px));left:50%;transform:translateX(-50%)}
+.review-step-picker{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+html:not(.uit-m) .review-coach{left:50%}
+.review-note-live{font-size:10px;letter-spacing:0;color:#d4c2e8}
+.review-step-picker #review-play{background:#ffd76b;color:#4c2e6a;border-radius:12px}
+@media(min-width:901px){.review-step-picker{bottom:30px}}
+@media(max-height:500px) and (orientation:landscape){
+ .review-coach{width:250px;left:auto;right:8px;transform:none;top:100px}
+ .review-coach img{width:46px;height:64px}.review-speech{font-size:11px;padding:8px}
+ .review-step-picker{left:auto;right:8px;transform:none;width:250px;bottom:80px}
+ .review-teaching-actions{gap:1px}.review-teaching-actions button{font-size:10px;padding:5px}
+}
