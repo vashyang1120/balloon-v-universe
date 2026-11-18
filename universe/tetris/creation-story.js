@@ -7,7 +7,7 @@
   tagline.className = 'bv-story-tagline';
   tagline.textContent = '從氣球教室誕生的方塊遊戲！';
   var button = document.createElement('button');
-  button.type = 'button'; button.className = 'btn btn-outline bv-story-open';
+  button.type = 'button'; button.className = 'btn bv-story-open uit-pngbtn uit-png-blue';
   button.textContent = '📖 方塊派對的誕生';
   button.setAttribute('aria-controls','s-story');
   title.append(tagline,button);

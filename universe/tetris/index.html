@@ -10,7 +10,7 @@
 <title>氣球小V方塊派對 🎈｜遊戲宇宙換殼測試版</title>
 <!-- [Universe 換殼] 不再載入 Firebase SDK；改用遊戲宇宙共用 SDK（唯讀玩家資料；成績只進 Mock） -->
 <script src="../shared/universe-sdk.js"></script>
-<script src="universe-shell.js"></script>
+<script src="universe-shell.js?v=0.3.3"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800;900&family=Noto+Sans+TC:wght@400;700&display=swap');
 :root{
@@ -665,11 +665,11 @@ body:not(.game-active) #mob-ctrl{display:none!important}
 </style>
 <link rel="stylesheet" href="universe-shell.css">
 <!-- BV-TETRIS-UI:HEAD -->
-<link rel="stylesheet" href="ui-test.css?v=0.3.2">
-<link rel="stylesheet" href="ui-brand.css?v=0.3.2">
-<link rel="stylesheet" href="desktop-ui.css?v=0.3.2">
-<link rel="stylesheet" href="creation-story.css?v=0.3.2">
-<link rel="stylesheet" href="tutorial.css?v=0.3.2">
+<link rel="stylesheet" href="ui-test.css?v=0.3.3">
+<link rel="stylesheet" href="ui-brand.css?v=0.3.3">
+<link rel="stylesheet" href="desktop-ui.css?v=0.3.3">
+<link rel="stylesheet" href="creation-story.css?v=0.3.3">
+<link rel="stylesheet" href="tutorial.css?v=0.3.3">
 <!-- /BV-TETRIS-UI:HEAD -->
 </head>
 <body>
@@ -3080,7 +3080,7 @@ function gameOver(){
     }
   });
   const prev=UniverseTetris.getLocalBest();  // [Universe 換殼] 最佳分數依 playerId 分開（原版為全裝置共用）
-  const isNew=score>prev;
+  const isNew=UniverseTetris.isNewRecord(score);
   if(isNew){ UniverseTetris.setLocalBest(score); updateBestDisp(); }
   var titleResult = {
     score: score,
@@ -3114,7 +3114,7 @@ function gameOver(){
     $("res-combo").textContent=peakCombo;
     const em=["😅","🎈","🎪","🎉","🌟","🏆"];
     $("res-emoji").textContent=em[Math.min(level-1,em.length-1)];
-    $("new-best").style.display=isNew?"block":"none";
+    $("new-best").style.display=UniverseTetris.isNewRecord(score)?"block":"none";
     showScreen("s-result");
   // 顯示本場新解鎖頭像通知
   setTimeout(function(){
@@ -3438,9 +3438,7 @@ function renderBestScore(value){
 
 function updateBestDisp(){
   // [Universe 換殼] 原版玩家系統邏輯已改由遊戲宇宙換殼層處理（見 universe-shell.js）
-  var b = UniverseTetris.getLocalBest();
-  renderBestScore(b);
-  return Promise.resolve(b);
+  return UniverseTetris.refreshBestDisplay();
 }
 
 // ── ADMIN ──
@@ -3690,13 +3688,13 @@ window.addEventListener("orientationchange",function(){
 });
 </script>
 <!-- BV-TETRIS-UI:BODY -->
-<script src="ui-test.js?v=0.3.2"></script>
-<script src="ui-brand.js?v=0.3.2"></script>
-<script src="balloon-assets.js?v=0.3.2"></script>
-<script src="creation-story.js?v=0.3.2"></script>
-<script src="guided-practice.js?v=0.3.2"></script>
-<script src="tutorial.js?v=0.3.2"></script>
-<script src="menu-audio.js?v=0.3.2"></script>
+<script src="ui-test.js?v=0.3.3"></script>
+<script src="ui-brand.js?v=0.3.3"></script>
+<script src="balloon-assets.js?v=0.3.3"></script>
+<script src="creation-story.js?v=0.3.3"></script>
+<script src="guided-practice.js?v=0.3.3"></script>
+<script src="tutorial.js?v=0.3.3"></script>
+<script src="menu-audio.js?v=0.3.3"></script>
 <!-- /BV-TETRIS-UI:BODY -->
 </body>
 </html>

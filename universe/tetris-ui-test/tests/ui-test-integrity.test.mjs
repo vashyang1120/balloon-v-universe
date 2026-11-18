@@ -72,10 +72,10 @@ const INJECTED = [
   /^<link rel="stylesheet" href="ui-brand\.css">$/,
   /^<link rel="stylesheet" href="desktop-ui\.css\?v=0\.3\.2-test-2">$/,
   /^<!-- \[UI 測試版\] 第二階段品牌視覺：上下式首頁、結算角色、同難度再玩一次 -->$/,
-  /^<script src="ui-brand\.js\?v=0\.3\.2-test-2"><\/script>$/,
+  /^<script src="ui-brand\.js\?v=0\.3\.3-test-1"><\/script>$/,
   /^<script src="balloon-assets\.js"><\/script>$/,
-  /^<script src="creation-story\.js\?v=0\.3\.2-test-1"><\/script>$/,
-  /^<link rel="stylesheet" href="creation-story\.css\?v=0\.3\.2-test-1">$/,
+  /^<script src="creation-story\.js\?v=0\.3\.3-test-1"><\/script>$/,
+  /^<link rel="stylesheet" href="creation-story\.css\?v=0\.3\.3-test-1">$/,
   /^<link rel="stylesheet" href="tutorial\.css\?v=0\.3\.2-test-1">$/,
   /^<script src="guided-practice\.js\?v=0\.3\.2-test-1"><\/script>$/,
   /^<script src="tutorial\.js\?v=0\.3\.2-test-1"><\/script>$/,
@@ -164,7 +164,7 @@ test("D4. Sandbox 衍生按鈕素材：只有三張，來源與處理紀錄完�
 test("E1. 頁面載入順序：sandbox-guard.js 在 SDK 之前；換殼層缺少防護就停止", () => {
   const iGuard = testHtml.indexOf('<script src="sandbox-guard.js"></script>');
   const iSdk = testHtml.indexOf('<script src="../shared/universe-sdk.js"></script>');
-  const iShell = testHtml.indexOf('<script src="universe-shell.js"></script>');
+  const iShell = testHtml.indexOf('<script src="universe-shell.js?v=0.3.3"></script>');
   assert.ok(iGuard > 0 && iGuard < iSdk && iSdk < iShell);
   assert.match(testShell, /if \(!window\.BVUiTestSandbox \|\| window\.BVUiTestSandbox\.forced !== true\) \{\n\s+throw new Error/);
   assert.match(testShell, /if \(S\.mode !== "sandbox" \|\| S\.isSandbox !== true\) \{\n\s+throw new Error/);

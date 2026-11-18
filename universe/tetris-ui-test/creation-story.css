@@ -12,3 +12,6 @@
 #s-story .story-photo-nav button:focus-visible,#s-story button:focus-visible{outline:3px solid #ffe392;outline-offset:3px}
 #s-story .story-swipe-hint{font-size:11px;text-align:center;color:#f6e6ff;margin:10px 0 0}
 #s-story.off{display:none!important}
+
+/* Same art, typography, height and press feedback as the other home actions. */
+html.uit-brand .bv-story-open.uit-pngbtn { --bh:46px; width:min(280px,100%); font-size:14.5px; }

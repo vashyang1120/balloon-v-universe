@@ -9,7 +9,7 @@ import re,sys
 ROOT=Path(__file__).resolve().parents[3]
 DEST=ROOT/'universe/tetris'
 SOURCE=ROOT/'universe/tetris-ui-test'
-VERSION='0.3.2'
+VERSION='0.3.3'
 JS=['ui-test.js','ui-brand.js','balloon-assets.js','creation-story.js','guided-practice.js','tutorial.js','menu-audio.js']
 CSS=['ui-test.css','ui-brand.css','desktop-ui.css','creation-story.css','tutorial.css']
 
@@ -30,7 +30,7 @@ def outputs():
     s=out['ui-test.js'].decode(); start=s.index('  var badgeBoard =');end=s.index('\n\n',start)
     s=s[:start]+"  if (window.UniverseTetris && UniverseTetris.session.isSandbox) {\n"+s[start:end]+"\n  }"+s[end:]
     out['ui-test.js']=s.encode()
-    s=out['ui-brand.js'].decode().replace('tetris-universe-ui-v0.3.2-test-2','tetris-universe-ui-v'+VERSION).replace('UI v0.3.2-test-2','UI v'+VERSION)
+    s=out['ui-brand.js'].decode().replace('tetris-universe-ui-v0.3.3-test-1','tetris-universe-ui-v'+VERSION).replace('UI v0.3.3-test-1','UI v'+VERSION)
     s=once(s,'  "use strict";', '  "use strict";\n  document.title = "氣球小V方塊派對 🎈｜遊戲宇宙";')
     out['ui-brand.js']=s.encode()
     # Copy exact approved assets, keeping release independent of future test-only edits.
