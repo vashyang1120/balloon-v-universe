@@ -18,6 +18,7 @@
 """
 import hashlib
 import os
+import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -111,6 +112,8 @@ def build_shell(src):
 def main():
     check = "--check" in sys.argv[1:]
     html_src, html_sha = read(os.path.join(PROD_DIR, "index.html"))
+    # The live entry may include a promoted presentation bundle; never import it twice.
+    html_src = re.sub(r'<!-- BV-TETRIS-UI:(HEAD|BODY) -->\n[\s\S]*?<!-- /BV-TETRIS-UI:\1 -->\n', '', html_src)
     shell_src, shell_sha = read(os.path.join(PROD_DIR, "universe-shell.js"))
     css_src, css_sha = read(os.path.join(PROD_DIR, "universe-shell.css"))
     outputs = {

@@ -1,0 +1,21 @@
+/* Approved R2 (6114a59): coach, real-control highlights, sequential progress. */
+
+
+.review-coach{position:fixed;z-index:500;left:calc(50% - 170px);top:var(--bv-coach-top,160px);width:340px;display:flex;align-items:center;gap:8px;pointer-events:none}.review-coach img{width:86px;height:114px;object-fit:contain;filter:drop-shadow(0 5px 5px #0005)}.review-speech{flex:1;position:relative;background:linear-gradient(135deg,#fff9e9,#f4e5ff);border:2px solid #e8c979;border-radius:18px;padding:12px 14px;box-shadow:0 7px 22px #10061b55;color:#422b60;font:700 14px/1.6 sans-serif}.review-speech small{display:block;color:#8960a9;font-size:10px;letter-spacing:.1em;margin-bottom:4px}.review-speech strong{color:#7e42b3}.review-speech:before{content:'';position:absolute;left:-9px;top:45%;width:14px;height:14px;background:#fff6ea;border-left:2px solid #e8c979;border-bottom:2px solid #e8c979;transform:rotate(45deg)}.review-highlight{outline:3px solid #ffde78!important;outline-offset:5px;box-shadow:0 0 0 9px #ffde7822,0 0 25px #ffde7877!important}.review-step-picker{position:fixed;left:50%;transform:translateX(-50%);bottom:92px;z-index:600;display:flex;gap:6px;background:#251541bb;border:1px solid #9a70c0;border-radius:20px;padding:5px}.review-step-picker button{font:700 11px sans-serif;background:transparent;border:0;color:#dccbf2;padding:7px}.review-step-picker .on{border-radius:12px;background:#ffd76b;color:#4c2e6a}
+@media(min-width:901px){.review-coach{left:calc(50% - 185px);top:var(--bv-coach-top,120px)}.review-step-picker{bottom:30px}}
+
+.review-locked{opacity:.22!important;filter:saturate(.3);pointer-events:none!important}.review-step-picker{display:flex;flex-direction:column;align-items:center;width:min(352px,calc(100% - 28px));border-radius:20px;gap:1px;padding:7px}.review-progress{font:700 10px sans-serif;color:#ffe392;letter-spacing:.25em}.review-teaching-actions{display:flex;align-items:center;justify-content:center;gap:6px;width:100%}.review-teaching-actions button{min-height:36px;font-size:11px;white-space:nowrap}.review-teaching-actions #review-next-step,.review-teaching-actions #review-restart{background:#ffd76b;color:#4c2e6a;border-radius:12px;font-weight:800}.review-teaching-actions button:disabled{opacity:.3}.review-teaching-actions button[hidden]{display:none!important}
+
+.review-coach[hidden],.review-step-picker[hidden]{display:none!important}
+.review-coach{width:min(340px,calc(100% - 24px));left:50%;transform:translateX(-50%)}
+.review-step-picker{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+html:not(.uit-m) .review-coach{left:50%}
+.review-note-live{font-size:10px;letter-spacing:0;color:#d4c2e8}
+.review-step-picker #review-play{background:#ffd76b;color:#4c2e6a;border-radius:12px}
+@media(min-width:901px){.review-step-picker{bottom:30px}}
+@media(max-height:500px) and (orientation:landscape){
+ .review-coach{width:250px;left:auto;right:8px;transform:none;top:100px}
+ .review-coach img{width:46px;height:64px}.review-speech{font-size:11px;padding:8px}
+ .review-step-picker{left:auto;right:8px;transform:none;width:250px;bottom:80px}
+ .review-teaching-actions{gap:1px}.review-teaching-actions button{font-size:10px;padding:5px}
+}
