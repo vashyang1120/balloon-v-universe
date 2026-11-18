@@ -1,4 +1,4 @@
-/* 方塊派對 menu-audio-v0.1.0-test-1
+/* 方塊派對 menu-audio-v0.1.1-test-1
    Reuses the rhythm menu-audio implementation and existing universe lobby BGM.
    UI click copied unchanged from balloon-v-rush/assets/audio/sfx/ui/ui_button_click.mp3.
    Menu BGM yields immediately to the ORIGINAL game/song player; no new gameplay SFX.
@@ -7,7 +7,7 @@
   "use strict";
 
   var CFG = {
-    version: "tetris-menu-audio-v0.1.0-test-1",
+    version: "tetris-menu-audio-v0.1.1-test-1",
     bgmSrc: "../../assets/audio/universe_lobby_bgm.mp3",
     bgmVolume: 0.22,          // 大廳 bgmVolume 0.25；節奏遊戲選單略低，不比正式歌曲大聲
     fadeInSec: 0.45,
@@ -39,32 +39,30 @@
      BGM
      ========================================================== */
   var bgm = { els: [], gains: [], graph: false, cur: 0, playing: false, unlocked: false, blocked: false,
-              generation: 0, loopTimer: 0, xfading: false, pauseTimers: [], leaving: false, attempts: 0 };
+              rampGeneration: [0, 0], generation: 0, loopTimer: 0, xfading: false, pauseTimers: [], leaving: false, attempts: 0 };
 
   function makeEl() {
     var el = new Audio();
     el.src = CFG.bgmSrc; el.preload = "auto"; el.loop = false; el.setAttribute("playsinline", "");
-    el.addEventListener("error", function () { note("bgm", "error"); });
+    el.addEventListener("error", function () { bgm.playing = false; bgm.blocked = true; note("bgm", "error"); renderToggle("載入失敗，點此重試"); });
     return el;
   }
   function ensureEls() {
     if (bgm.els.length) return;
     bgm.els = [makeEl(), makeEl()];
-    var c = getCtx();
-    if (c) {
-      try {
-        bgm.gains = bgm.els.map(function (el) { var s = c.createMediaElementSource(el), g = c.createGain(); g.gain.value = 0; s.connect(g); g.connect(master); return g; });
-        bgm.graph = true;
-      } catch (e) { bgm.graph = false; }
-    }
+    // BGM uses native media playback. UI SFX keeps its separate Web Audio graph.
+    // A suspended AudioContext must never leave an otherwise-playing BGM muted.
+
   }
   function ramp(i, v, sec) {
+    var token = ++bgm.rampGeneration[i];
     if (bgm.graph && ctx) {
       var g = bgm.gains[i].gain, now = ctx.currentTime;
       g.cancelScheduledValues(now); g.setValueAtTime(g.value, now); g.linearRampToValueAtTime(v, now + Math.max(0.01, sec));
     } else {
       var el = bgm.els[i], from = el.volume, t0 = performance.now();
       (function step() {
+        if (token !== bgm.rampGeneration[i]) return;
         var k = Math.min(1, (performance.now() - t0) / Math.max(10, sec * 1000));
         try { el.volume = Math.max(0, Math.min(1, from + (v - from) * k)); } catch (e) {}
         if (k < 1) requestAnimationFrame(step);
@@ -94,14 +92,13 @@
     if (bgm.playing) return;
     ensureEls();
     clearPauseTimers();
-    var el = bgm.els[bgm.cur], c = getCtx();
+    var el = bgm.els[bgm.cur];
     bgm.playing = true;
     var generation = ++bgm.generation;
     if (!bgm.graph) el.volume = 0;
-    var resume = (c && c.state !== "running") ? c.resume() : Promise.resolve();
     var p;
-    try { p = el.play(); } catch (e) { p = Promise.reject(e); }   // 在使用者手勢中同步呼叫 play()
-    Promise.all([resume, (p && p.then) ? p : Promise.resolve()]).then(function () {
+    try { if (el.error) el.load(); p = el.play(); } catch (e) { p = Promise.reject(e); }   // 在使用者手勢中同步呼叫 play()
+    ((p && p.then) ? p : Promise.resolve()).then(function () {
       if (generation !== bgm.generation) return;
       bgm.unlocked = true; bgm.blocked = false;
       if (!bgm.playing) { try { el.pause(); } catch (e) {} return; }
@@ -113,6 +110,7 @@
         ramp(bgm.cur, CFG.bgmVolume, CFG.fadeInSec);
         watchLoop();
         note("bgm", fromGesture ? "play-gesture" : "play");
+        renderToggle();
       }, fromGesture ? 120 : 0);
     }).catch(function (err) {
       if (generation !== bgm.generation) return;
@@ -124,6 +122,7 @@
       }
       bgm.blocked = true;                              // 被瀏覽器擋：不影響畫面，等下一次點擊
       note("bgm", "blocked");
+      renderToggle();
     });
   }
   function pausePlay(fadeSec) {
@@ -138,6 +137,7 @@
         ramp(i, 0, fadeSec);
         bgm.pauseTimers.push(setTimeout(function () { if (!bgm.playing) { try { el.pause(); } catch (e) {} } }, fadeSec * 1000 + 40));
       } else {
+        ++bgm.rampGeneration[i];
         if (bgm.graph) { try { bgm.gains[i].gain.cancelScheduledValues(0); bgm.gains[i].gain.value = 0; } catch (e) {} } else { try { el.volume = 0; } catch (e) {} }
         try { el.pause(); } catch (e) {}
       }
@@ -146,6 +146,7 @@
       bgm.xfading = false;
     }
     if (wasPlaying) note("bgm", fadeSec > 0 ? "fade-pause" : "pause");
+    renderToggle();
   }
   function watchLoop() {
     clearInterval(bgm.loopTimer);
@@ -187,6 +188,7 @@
 
   /* 第一次有效點擊：在手勢內解鎖 AudioContext 與 BGM（靜音播放），原事件跑完後再決定是否出聲 */
   function onGesture(e) {
+    if (e.target && e.target.closest && e.target.closest("#bv-home-bgm")) return;
     var c = getCtx();
     if (c && c.state === "suspended" && !document.hidden) { try { c.resume(); } catch (err) {} }
     decodeClick();
@@ -198,10 +200,46 @@
     }
   }
 
+  var toggle = null;
+  function renderToggle(message) {
+    if (!toggle) return;
+    var playing = bgm.playing && !bgm.blocked && bgm.unlocked;
+    toggle.textContent = "♫ 首頁音樂：" + (message || (!prefs.bgm ? "已關閉，點此開啟" : playing ? "播放中" : "點此播放"));
+    toggle.setAttribute("aria-pressed", String(playing));
+    toggle.setAttribute("title", CFG.version);
+  }
+  function toggleMusic() {
+    // A click on this control is an explicit recovery gesture, even if a prior
+    // play() promise has not settled. Invalidate that attempt before retrying.
+    if (prefs.bgm && bgm.playing && bgm.unlocked && !bgm.blocked) {
+      prefs.bgm = false;
+      pausePlay(0);
+    } else {
+      prefs.bgm = true;
+      bgm.blocked = false;
+      pausePlay(0);
+      if (shouldPlay()) startPlay(true);
+    }
+    // Session-only override: do not silently change the universe's saved settings.
+    renderToggle();
+  }
+  function mountToggle() {
+    var host = document.getElementById("s-title");
+    if (!host || !document.createElement) return;
+    toggle = document.createElement("button");
+    toggle.id = "bv-home-bgm";
+    toggle.type = "button";
+    toggle.style.cssText = "display:block;margin:8px auto;padding:7px 14px;border:1px solid #eac76b;border-radius:20px;background:#291740e6;color:#ffe8a1;font:inherit;font-size:13px;cursor:pointer";
+    toggle.addEventListener("click", toggleMusic);
+    var anchor = host.querySelector(".uit-z2") || host;
+    anchor.appendChild(toggle);
+    renderToggle();
+  }
+
   /* ==========================================================
      UI 按鈕音效（派對島 uiClick）
      ========================================================== */
-  var sfx = { raw: null, buffer: null, loading: false, pending: 0, voices: [], lastAt: -1e9, lastBtn: null, lastBtnAt: 0 };
+  var sfx = { raw: null, buffer: null, loading: false, pending: null, voices: [], lastAt: -1e9, lastBtn: null, lastBtnAt: 0 };
   /* 頁面載入時先下載音效檔（不建立 AudioContext）；第一次點擊建立 AudioContext 後再解碼 */
   function prefetchClick() {
     if (sfx.raw || sfx.loading) return;
@@ -219,7 +257,7 @@
     new Promise(function (res, rej) { var pr = c.decodeAudioData(ab, res, rej); if (pr && pr.then) pr.then(res, rej); })
       .then(function (buf) {
         sfx.buffer = buf; decoding = false; note("sfx", "decoded");
-        if (sfx.pending && performance.now() - sfx.pending < 250) { sfx.pending = 0; sfx.lastAt = -1e9; playClick(); }   // 第一次點擊在解碼完成前發生：補播一次
+        if (sfx.pending !== null && performance.now() - sfx.pending < 250) { sfx.pending = null; sfx.lastAt = -1e9; playClick(); }   // 第一次點擊在解碼完成前發生：補播一次
       })
       .catch(function () { decoding = false; sfx.buffer = false; note("sfx", "decode-failed"); });
   }
@@ -263,6 +301,7 @@
     if (mounted) return;          // 只註冊一次監聽器
     mounted = true;
     prefetchClick();
+    mountToggle();
     ["pointerdown", "touchend", "keydown", "click"].forEach(function (t) { document.addEventListener(t, onGesture, true); });
     document.addEventListener("pointerdown", function (e) { if (e.isPrimary !== false) uiPress(e); }, true);
     document.addEventListener("click", function (e) { if (e.detail === 0) uiPress(e); }, true);   // 鍵盤 Enter／空白鍵
@@ -289,6 +328,7 @@
     onGameStart: function () { pausePlay(0.15); },   // 開始歌曲／再玩一次：立即淡出
     stopAll: stopAll,               // 返回遊戲宇宙、離開頁面
     shouldPlay: shouldPlay,
+    toggleMusic: toggleMusic,
     debug: function () {
       var el = bgm.els[bgm.cur];
       return { playing: bgm.playing, unlocked: bgm.unlocked, blocked: bgm.blocked, graph: bgm.graph, els: bgm.els.length, cur: bgm.cur,
@@ -318,7 +358,7 @@
   var screens = ["s-title", "s-game", "s-result", "s-lb", "s-profile"];
   var observer = new MutationObserver(function () { update("screen"); });
   screens.forEach(function (id) { var el = document.getElementById(id); if (el) observer.observe(el, { attributes: true, attributeFilter: ["class"] }); });
-  window.addEventListener("storage", function (e) { if (e.key === PREF_KEY || e.key === null) { readPrefs(); update("prefs"); } });
+  window.addEventListener("storage", function (e) { if (e.key === PREF_KEY || e.key === null) { readPrefs(); update("prefs"); renderToggle(); } });
   window.addEventListener("pagehide", function () { if (typeof pauseSong === "function") pauseSong(); });
   mount();
   update("mount");

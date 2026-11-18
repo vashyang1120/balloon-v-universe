@@ -78,7 +78,7 @@ const INJECTED = [
   /^<link rel="stylesheet" href="tutorial\.css">$/,
   /^<script src="tutorial-engine\.js"><\/script>$/,
   /^<script src="tutorial\.js"><\/script>$/,
-  /^<script src="menu-audio\.js"><\/script>$/
+  /^<script src="menu-audio\.js\?v=0\.1\.1-test-1"><\/script>$/
 ];
 
 test("C. <style>、頁面 HTML 結構與正式宇宙版相同；拿掉插入的標籤後整份 HTML 逐字相同（只多了標題文字）", () => {

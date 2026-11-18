@@ -109,3 +109,10 @@ NODE_PATH=$(npm root -g) node universe/tetris-ui-test/tests/browser/ui-test-e2e.
 `node --test universe/tetris-ui-test/tests/menu-audio.test.cjs`
 
 13 項音訊測試使用模擬 Audio／AudioContext 驗證狀態及生命週期，不等同真人聽感或瀏覽器音訊驗收。包括：原檔雜湊、BGM 共用與播放位置、開局停止、遊戲暫停不播、試聽互斥、首個手勢直接開局、autoplay 拒絕後恢復、點擊去重、背景及離頁停止、宇宙靜音偏好、快速畫面切換的過期回呼、跨循環點淡化，以及淡化中離開／返回的舊計時器隔離。
+
+## 電腦首頁音樂修正 v0.3.1-test-2
+
+基準：PR #32 合併後。音訊模組版本 `tetris-menu-audio-v0.1.1-test-1`。
+BGM 改走原生 Audio，避免等待 UI 音效的 AudioContext.resume() 才解除靜音；音效仍使用 Web Audio。首頁標題區加入「首頁音樂」開關，可明確重試尚未完成／遭拒的播放，或在本分頁開啟原先靜音的背景音樂，不寫回宇宙偏好。保留開局／試聽互斥、循環及離頁停止，增加原生音量淡化取消保護。
+
+15 項音訊模擬測試通過（新增 AudioContext.resume 永不完成、已存 BGM-off 手動恢復）。尚待使用者電腦真人試聽；未取得該裝置播放錯誤，不能宣稱已實證定位唯一根因。範圍僅音訊模組與測試、文件；玩法、教學及故事不變。驗收：桌機首頁點擊開關出聲、開局停止／回首頁恢復、手機原有 BGM 與按鈕音效正常。
