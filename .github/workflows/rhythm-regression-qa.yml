@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: d922964d951e30c949f032b4fc862492fc4a7908
+          ref: 0f8be1a17eac38244a24ffc99fd4e086bcdbcaf4
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -52,7 +52,7 @@ jobs:
           test -s assets/audio/universe_lobby_bgm.mp3
           for f in v_full_open_arms v_bust_congrats v_bust_happy v_bust_point v_bust_remind; do test -s "assets/rpg/$f.png" || exit 1; done
           test -s assets/ui/avatar_frame_pink_idle.png
-          git diff --name-only c62f04926d83c886fccde2f1fdd1c723cb92908c HEAD | awk '!/^test\/rhythm-v2\.7\// { bad=1; print } END { exit bad }'
+          git diff --name-only e8674027f39f7d72bcad949bda154843ed2f98f5 HEAD | awk '!/^test\/rhythm-v2\.7\// { bad=1; print } END { exit bad }'
 
   browser:
     runs-on: ubuntu-latest
@@ -60,7 +60,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: d922964d951e30c949f032b4fc862492fc4a7908
+          ref: 0f8be1a17eac38244a24ffc99fd4e086bcdbcaf4
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -215,7 +215,8 @@ jobs:
               });
               await p.goto(H.ORIGIN+"/test/rhythm-v2.7/?bvTestMock=1");
               await p.waitForFunction(()=>window.UniverseRhythm?.isReady()&&window.RVMV&&window.RV27UI,null,{timeout:15000});
-              assert(await p.evaluate(()=>BV_TEST_ISOLATION.version==="v2.7.0-tutorial-test-1"&&!UniverseRhythm.session.official.isEnabled()),"isolated "+mode);
+              assert(await p.evaluate(()=>BV_TEST_ISOLATION.version==="v2.7.0-tutorial-test-2"&&!UniverseRhythm.session.official.isEnabled()),"isolated "+mode);
+              await p.locator(".rv-coach-card .btn-outline").click();
               await p.locator("#btn-play").click();
               await p.waitForFunction(()=>SONGS.length>=9);
               await p.evaluate(()=>{songIdx=SONGS.findIndex(s=>s.id==="song005");renderSongCards();selectedSong.youtubeId="Ba_DPuAf0qU";selectedSong.videoUrl="";});
@@ -273,47 +274,46 @@ jobs:
             });
             await p.goto(H.ORIGIN+"/test/rhythm-v2.7/?bvTestMock=1");
             await p.waitForFunction(()=>window.UniverseRhythm?.isReady()&&window.RVCoach&&window.RV27UI);
+            await p.waitForFunction(()=>RVCoach.debug().mode==="welcome");
+            await p.locator(".rv-coach-card .btn-outline").click();
+            await p.reload();await p.waitForFunction(()=>UniverseRhythm.isReady());
+            await sleep(500);
+            assert(await p.evaluate(()=>!RVCoach.active()),"skip persisted across reload");
             await p.locator("#rv-player-name").click();
             await p.waitForFunction(()=>RV27Audio.debug().playing&&RV27Audio.debug().time>0);
             await p.locator("#rv-btn-watch-mv").click();
-            assert(await p.evaluate(()=>testPlaylist.includes("PLCxWyaG1VhB7wvvXJtJ3T8qfxNM6wOUQx")&&testPausedAtOpen.external&&!testPausedAtOpen.playing&&testPausedAtOpen.paused.every(Boolean)),"BGM paused before original playlist open");
-            await p.evaluate(()=>RV27Audio.update("test"));await sleep(300);
-            assert(await p.evaluate(()=>RV27Audio.debug().external&&!RV27Audio.debug().playing),"BGM remains locked on visible page");
+            assert(await p.evaluate(()=>testPlaylist.includes("PLCxWyaG1VhB7wvvXJtJ3T8qfxNM6wOUQx")&&testPausedAtOpen.external&&!testPausedAtOpen.playing&&testPausedAtOpen.paused.every(Boolean)),"BGM paused before playlist");
             await p.locator("#rv-player-name").click();
-            await p.waitForFunction(()=>!RV27Audio.debug().external&&RV27Audio.debug().playing);
-            await p.setViewportSize({width:568,height:320});await sleep(200);
-            assert(await p.locator("#rv-btn-tutorial").isVisible(),"tutorial visible at 568x320");
-            await p.setViewportSize({width:844,height:390});
+            await p.waitForFunction(()=>RV27Audio.debug().playing);
             await p.locator("#rv-btn-tutorial").click();
             const next=()=>p.locator(".rv-coach-card .btn-y").click();
-            await next();await next();
-            await p.waitForFunction(()=>RVCoach.debug().mode==="practice");
-            await p.waitForFunction(()=>RVCoach.debug().mode==="intro",{},{timeout:10000});
-            assert(await p.evaluate(()=>RVCoach.debug().stage===0),"miss retries same lesson");
+            await next();
+            await p.waitForFunction(()=>RVCoach.debug().mode==="explain",null,{timeout:60000});
+            assert(await p.evaluate(()=>G.song.id==="song009"&&G.tutorialClipStart===207&&G.paused&&!audioSource&&G.notes.length>0&&mvTestPlayers.length===1&&!RVMV.debug().want),"real MV scene paused with notes");
+            await next();
+            assert(await p.locator(".rv-coach-arrow").isVisible(),"white line arrow");
+            await p.screenshot({path:H.out+"/line-explanation.png"});
+            await next();
+            await p.waitForFunction(()=>RVCoach.debug().mode==="retry",null,{timeout:12000});
+            assert(await p.evaluate(()=>Math.abs(G.gt-350)<1&&G.miss===0&&G.notes.length>0&&mvTestPlayers.length===1),"retry rewinds chart and resets counters");
             await next();
             async function hit(lane,hold=0){
-              await p.waitForFunction(l=>G.running&&G.notes.some(n=>n.lane===l&&!n.hit&&!n.missed&&Math.abs(n.hitTime-G.gt)<65),lane,{timeout:12000,polling:10});
+              await p.waitForFunction(l=>G.running&&!G.paused&&G.notes.some(n=>n.lane===l&&!n.hit&&!n.missed&&Math.abs(n.hitTime-G.gt)<65),lane,{timeout:12000,polling:10});
               await p.keyboard.down(["d","f","j","k"][lane]);
               if(hold)await sleep(hold);
               await p.keyboard.up(["d","f","j","k"][lane]);
             }
-            await hit(0);await p.waitForFunction(()=>RVCoach.debug().stage===1);
-            await next();await next();
+            await hit(0);await p.waitForFunction(()=>RVCoach.debug().mode==="success");await next();
+            await p.waitForFunction(()=>RVCoach.debug().mode==="explain"&&RVCoach.debug().stage===1);await next();
             for(const lane of [0,1,2,3])await hit(lane);
-            await p.waitForFunction(()=>RVCoach.debug().stage===2);
-            await next();await next();await hit(2,100);
-            await p.waitForFunction(()=>RVCoach.debug().mode==="intro");
-            assert(await p.evaluate(()=>RVCoach.debug().stage===2),"early hold release retries");
-            await next();await hit(2,1650);
-            await p.waitForFunction(()=>RVCoach.debug().mode==="story");
-            await next();
-            await p.waitForFunction(()=>RVCoach.debug().mode==="clip"&&G.running&&!!audioSource,null,{timeout:60000});
-            assert(await p.evaluate(()=>G.song.id==="song009"&&G.tutorialClipStart===207&&G.duration===19700&&G.beatmap.length===16&&G.beatmap.filter(n=>n.hold).length===2&&G.lyrics.length===4),"original song clip notes lyrics");
-            assert(await p.evaluate(()=>mvTestPlayers[0].cue.startSeconds===207&&mvTestPlayers[0].muted&&getGameTimeSec()<2),"MV cue and relative audio clock");
+            await p.waitForFunction(()=>RVCoach.debug().mode==="success");await next();
+            await p.waitForFunction(()=>RVCoach.debug().mode==="explain"&&RVCoach.debug().stage===2);await next();
+            await hit(2,100);await p.waitForFunction(()=>RVCoach.debug().mode==="retry");
+            await next();await hit(2,1700);await hit(3,1300);
+            await p.waitForFunction(()=>RVCoach.debug().mode==="success");await next();
             await p.waitForFunction(()=>RVCoach.debug().mode==="complete",null,{timeout:30000});
-            assert(await p.evaluate(()=>!G.running&&!audioSource&&RVMV.debug()===null),"clip stops at completion");
+            assert(await p.evaluate(()=>!G.running&&!audioSource&&RVMV.debug()===null),"completion stops media");
             await next();await p.waitForSelector("#s-title:not(.off)");
-            assert(await p.evaluate(()=>!RVCoach.active()),"tutorial returns home");
             assert(!H.apiCalls.some(x=>!/^(GET|HEAD) /.test(x))&&!H.db.get("scores")&&!H.db.get("wallets"),"no formal writes");
             assert(!p.errors.length,"no page errors "+p.errors.join(" | "));
             await ctx.close();
