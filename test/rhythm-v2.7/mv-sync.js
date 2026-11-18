@@ -79,6 +79,7 @@
     prepare:prepare,
     play:function(sec){var s=active;if(!s)return;s.want=true;start(s,sec);},
     pause:function(){var s=active;if(!s)return;s.want=false;if(s.video)s.video.pause();else call(s.player,"pauseVideo");},
+    seekPaused:function(sec){var s=active;if(!s||!s.ready)return;s.want=false;seek(s,sec,true);},
     stop:stop,
     debug:function(){var s=active;return s?{status:s.status,want:s.want,ready:s.ready,offset:s.offset,time:s.video?s.video.currentTime:call(s.player,"getCurrentTime"),audio:clock(),buffering:s.buffering}:null;}
   };

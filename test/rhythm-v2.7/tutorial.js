@@ -43,11 +43,14 @@ function freeze(){
 function restore(at){
  stopAudio();RVMV.pause();G.notes.forEach(function(n){if(n.el)n.el.remove();if(n.tailEl)n.tailEl.remove();});
  G.notes=[];G.nid=0;G.beatIdx=0;G.holding=[false,false,false,false];G.tutorialEarlyRelease=false;
- G.gt=at*1000;audioPauseOffset=at;
+ G.gt=at*1000;audioPauseOffset=at;RVMV.seekPaused(at);
  while(G.beatIdx<G.beatmap.length&&G.beatmap[G.beatIdx].t<at)G.beatIdx++;
  if(baseline){["score","combo","maxCombo","perf","good","miss"].forEach(function(k){G[k]=baseline[k];});}
  laneEls.forEach(function(l){l.classList.remove("pressing");});
- spawnNotes();moveNotes();lastLyricTxt="";updateLyrics();updateHUD();
+ spawnNotes();
+ // Include the first target even if it has not reached the left edge on a short viewport.
+ var next=G.beatmap[G.beatIdx];if(!G.notes.length&&next&&stage<lessons.length&&next.t===lessons[stage].notes[0].t){makeNote(next.lane,next.t*1000,(next.hold||0)*1000);G.beatIdx++;}
+ moveNotes();lastLyricTxt="";updateLyrics();updateHUD();
 }
 function resume(){
  clear();G.paused=false;G.running=true;
@@ -58,7 +61,7 @@ function explain(){
  freeze();mode="explain";
  var l=lessons[stage];baseline={};["score","combo","maxCombo","perf","good","miss"].forEach(function(k){baseline[k]=G[k];});
  // Spawn the actual target at this checkpoint even on a narrow screen.
- restore(l.at);if(!G.notes.length){var n=l.notes[0];makeNote(n.lane,n.t*1000,(n.hold||0)*1000);G.beatIdx++;moveNotes();}
+ restore(l.at);
  card(l.title,l.text,stage===0?lineExplanation:tryLesson,"繼續","v_full_point_right.png",stage===1?"line":"note");
 }
 function lineExplanation(){card("白色判定線","等音符移動到右側白色判定線時，按下對應軌道。PERFECT 分數最高，GOOD 是差一點點，MISS 是 0 分。",tryLesson,"開始試試看","v_full_point_right.png","line");}

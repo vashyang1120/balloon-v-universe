@@ -12,3 +12,7 @@
 @keyframes rvCoachGlow{to{filter:brightness(1.5);box-shadow:0 0 26px 9px #fff6a2;}}
 @keyframes rvCoachIn{from{transform:translateY(12px);opacity:0;}to{transform:translateY(0);opacity:1;}}
 @media(max-height:340px){.rv-coach-card{bottom:6%;gap:4px;}.rv-coach-card>div{padding:6px;gap:3px;}.rv-coach-card img{max-height:31vh;}.rv-coach-card p{font-size:11px;}}
+
+/* Home layout hides all direct children except its main panel. Explicitly expose the coach. */
+#s-title.rv-ui > .rv-coach-card{display:flex!important;}
+#s-title.rv-ui:has(> .rv-coach-card) > .rv-home{pointer-events:none;}
