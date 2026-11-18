@@ -114,3 +114,7 @@ Storage：傳給 SDK 的 localStorage／sessionStorage 都加上前綴 `vRhythmV
 
 ## v2.7.0-tutorial-test-2
 - One continuous song009 MV session 207–226.7s. Real lanes pause with audio/MV; checkpoint retry restores stats, note cursor and media time. Custom sparse lesson chart, no score submission. First prompt per player/device, skip or complete stored only in isolated browser namespace. V-13 full-body point, highlighted white lines. Preserve playlist BGM and formal v2.6.5.
+
+
+## v2.7.0-tutorial-test-3
+- V-13 stands immediately left of judgment line on line explanation; Space advances tutorial cards, Escape exits. Responsive checkpoints based on actual lane width and note speed, so first highlighted note is on screen before pausing; retry restores the same checkpoint. No production changes.

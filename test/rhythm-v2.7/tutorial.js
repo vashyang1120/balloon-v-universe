@@ -1,8 +1,10 @@
-/* v2.7.0-tutorial-test-2 — one real MV session, checkpoint retry, no submissions. */
+/* v2.7.0-tutorial-test-3 — one real MV session, checkpoint retry, no submissions. */
 (function(){
 "use strict";
 var mode="",stage=0,epoch=0,priorSong=null,overlay=null,marker=null,baseline=null,autoChecked=false;
-var START=207,END=226.7,asset="../../assets/rpg/";
+var START=207,END=226.7,asset="../../assets/rpg/",checkpoint=0;
+// Freeze when the actual note centre is at least 32% into its lane, never outside the viewport.
+function visibleCheckpoint(l){var hz=getHZpx(),w=laneEls[l.notes[0].lane].clientWidth;var x=Math.min(hz-65,Math.max(55,w*0.32));return Math.max(l.at,l.notes[0].t-(hz-x)/getNoteSpeed());}
 var lessons=[
  {at:0.35, end:3.6, notes:[{t:2.9,lane:0}], title:"圓形音符", text:"看到這顆圓形音符了嗎？這種音符只要點一下喔！"},
  {at:4.2,end:9.4,notes:[{t:5.5,lane:0},{t:6.6,lane:1},{t:7.7,lane:2},{t:8.8,lane:3}],title:"連擊 COMBO",text:"連續擊中音符就會累積 COMBO！如果 MISS，連擊就會重新開始。試試看連續打中四顆音符！"},
@@ -16,7 +18,7 @@ function clear(){if(overlay)overlay.remove();if(marker)marker.remove();overlay=m
 function halt(){G.running=false;G.paused=false;cancelAnimationFrame(G.raf);stopAudio();RVMV.stop();resumeCountdownToken++;isResumeCountingDown=false;G.holding=[false,false,false,false];}
 function card(title,text,action,label,pose,target,skip){
  clear();
- var panel=document.createElement("div");panel.className="rv-coach-card";
+ var panel=document.createElement("div");panel.className="rv-coach-card"+(target==="line"?" rv-coach-line":"");
  var img=document.createElement("img");img.src=asset+(pose||"v_full_point_right.png");img.alt="小V老師";panel.appendChild(img);
  var body=document.createElement("div"),heading=document.createElement("strong"),p=document.createElement("p"),btn=document.createElement("button"),quit=document.createElement("button"),row=document.createElement("div");
  heading.textContent=title;p.textContent=text;btn.textContent=label||"繼續";btn.className="btn btn-y";btn.onclick=action;
@@ -24,7 +26,12 @@ function card(title,text,action,label,pose,target,skip){
  row.className="rv-coach-actions";row.append(btn,quit);body.append(heading,p,row);panel.appendChild(body);
  var host=mode==="welcome"?$("s-title"):$("s-game");host.appendChild(panel);overlay=panel;
  if(target)highlight(target);
+ if(target==="line")positionLineCoach();
+ if(matchMedia("(pointer:fine)").matches){btn.textContent+="（Space）";quit.textContent+="（Esc）";}
 }
+function positionLineCoach(){if(!overlay||!overlay.classList.contains("rv-coach-line"))return;var line=document.querySelector("#lanes .hline");if(!line)return;var g=$("s-game").getBoundingClientRect(),r=line.getBoundingClientRect();overlay.style.right=Math.max(12,g.right-r.left+14)+"px";}
+window.addEventListener("resize",positionLineCoach);
+window.addEventListener("keydown",function(e){if(!mode||e.repeat)return;if(e.code==="Escape"){e.preventDefault();e.stopImmediatePropagation();if(mode!=="complete")remember("skipped");exit();}else if(e.code==="Space"&&overlay){e.preventDefault();e.stopImmediatePropagation();var b=overlay.querySelector(".btn-y");if(b)b.click();}},true);
 function highlight(target){
  if(target==="line"){
   document.querySelectorAll("#lanes .hline").forEach(function(el){el.classList.add("rv-coach-target");});
@@ -61,18 +68,18 @@ function explain(){
  freeze();mode="explain";
  var l=lessons[stage];baseline={};["score","combo","maxCombo","perf","good","miss"].forEach(function(k){baseline[k]=G[k];});
  // Spawn the actual target at this checkpoint even on a narrow screen.
- restore(l.at);
+ checkpoint=visibleCheckpoint(l);restore(checkpoint);
  card(l.title,l.text,stage===0?lineExplanation:tryLesson,"繼續","v_full_point_right.png",stage===1?"line":"note");
 }
 function lineExplanation(){card("白色判定線","等音符移動到右側白色判定線時，按下對應軌道。PERFECT 分數最高，GOOD 是差一點點，MISS 是 0 分。",tryLesson,"開始試試看","v_full_point_right.png","line");}
-function tryLesson(){mode="try";restore(lessons[stage].at);resume();}
-function retry(){freeze();mode="retry";restore(lessons[stage].at);card("再試一次","沒關係！"+(stage===2?"長音符要按到尾巴完全通過白線。":"等音符碰到白色判定線，記得按對軌道。"),tryLesson,"再練習","v_full_remind.png","line");}
+function tryLesson(){mode="try";restore(checkpoint);resume();}
+function retry(){freeze();mode="retry";restore(checkpoint);card("再試一次","沒關係！"+(stage===2?"長音符要按到尾巴完全通過白線。":"等音符碰到白色判定線，記得按對軌道。"),tryLesson,"再練習","v_full_remind.png","line");}
 function success(){
  freeze();mode="success";
  card("太棒了！",stage===2?"長音符也學會了！跟著音樂，把這段回憶好好玩完吧！":"你抓到節奏了！接著學習下一個技巧。",function(){stage++;mode=stage<lessons.length?"playing":"free";resume();},"繼續","v_bust_congrats.png");
 }
 function afterFrame(){
- if(mode==="playing"&&stage<lessons.length&&G.gt>=lessons[stage].at*1000){explain();return true;}
+ if(mode==="playing"&&stage<lessons.length&&G.gt>=visibleCheckpoint(lessons[stage])*1000){explain();return true;}
  if(mode==="try"){
   if(G.miss>baseline.miss||G.tutorialEarlyRelease){retry();return true;}
   if(G.perf+G.good-baseline.perf-baseline.good>=lessons[stage].notes.length){success();return true;}
@@ -101,9 +108,9 @@ async function clip(){
 }
 function complete(){if(!mode)return;freeze();halt();mode="complete";remember("completed");card("教學完成！","太棒了！你已經學會怎麼玩囉！還有好多首充滿故事的歌曲等著你一起探索呢！",exit,"回到首頁","v_bust_congrats.png");}
 function exit(){++epoch;halt();clear();mode="";G=mkG();selectedSong=priorSong;go("s-title");}
-function enter(){if(mode)return;priorSong=selectedSong;stage=0;baseline=null;mode="welcome";
+function enter(){if(mode)return;priorSong=selectedSong;stage=0;checkpoint=0;baseline=null;mode="welcome";
  card("歡迎來到魔法音樂派對！","今天小V老師帶你一起打節奏！這首《那間教室的氣球時光》，記錄了我和孩子們一起上氣球課的美好回憶。",clip,"開始教學","v_full_open_arms.png",null,true);}
 function maybeAuto(){if(autoChecked||!key()||!$("s-title")||$("s-title").classList.contains("off"))return;autoChecked=true;if(!seen())enter();}
 function interceptPause(){return mode==="explain"||mode==="retry"||mode==="success"||mode==="complete"||mode==="loading";}
-window.RVCoach={enter:enter,exit:exit,maybeAuto:maybeAuto,active:function(){return !!mode;},afterFrame:afterFrame,complete:complete,interceptPause:interceptPause,debug:function(){return {mode:mode,stage:stage,start:START,end:END,checkpoint:lessons[stage]&&lessons[stage].at};}};
+window.RVCoach={enter:enter,exit:exit,maybeAuto:maybeAuto,active:function(){return !!mode;},afterFrame:afterFrame,complete:complete,interceptPause:interceptPause,debug:function(){return {mode:mode,stage:stage,start:START,end:END,checkpoint:checkpoint};}};
 })();
