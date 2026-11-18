@@ -294,6 +294,32 @@ export function launchRoutes() {
       },
     },
 
+    // Historical local evidence requires explicit administrator review; never accept a public title list.
+    {
+      method: "POST", path: "/v1/admin/collections/:playerId/adventure-evidence", auth: "admin", summary: "派對島歷史成就人工補登",
+      handler: async (ctx) => {
+        const pid = playerParam(ctx);
+        const profile = await profileOf(ctx, pid);
+        const body = await readJson(ctx.request, 8192);
+        if (!body || !Array.isArray(body.evidence) || body.evidence.length > 60 || typeof body.note !== "string" || !body.note.trim()) throw new ApiError("VALIDATION_FAILED");
+        const keys = new Set();
+        const opponents = { scorpion: "adventure_volleyball_rookie", orange: "adventure_volleyball_expert", orangeKing: "adventure_volleyball_king" };
+        for (const e of body.evidence) {
+          if (!e || typeof e !== "object" || typeof e.id !== "string" || !e.id || e.id.length > 128) throw new ApiError("VALIDATION_FAILED");
+          if (e.kind === "volleyball" && Object.hasOwn(opponents, e.opponent) && e.playerScore === 7 && e.cpuScore === 0 && e.winner === "player") keys.add(opponents[e.opponent]);
+          else if (e.kind === "whack" && Number.isSafeInteger(e.score) && e.score >= 660) keys.add("adventure_whack_legend");
+          else if (e.kind === "continent" && e.complete === true && e.track && ["kills","damage","purchases"].every(k => Number.isSafeInteger(e.track[k]) && e.track[k] >= 0)) {
+            if (e.track.kills === 0) keys.add("adventure_kind_adventurer");
+            if (e.track.kills === 0 && e.track.damage === 0) keys.add("adventure_peace_ambassador");
+            if (e.track.purchases === 0) keys.add("adventure_super_thrifty");
+          } else throw new ApiError("VALIDATION_FAILED");
+        }
+        requireScores(ctx, pid);
+        const fresh = await svc(ctx).collections.grantKeys(pid, profile, { titles: [...keys] }, { type: "adventure_evidence_admin", note: body.note.slice(0, 500) });
+        return ok(ctx, { fresh, collection: await svc(ctx).collections.get(pid, profile) });
+      },
+    },
+
     /* ---------- 管理員 ---------- */
     {
       method: "GET", path: "/v1/admin/scores", auth: "admin", summary: "成績紀錄查詢",
