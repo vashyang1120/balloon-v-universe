@@ -157,6 +157,19 @@ test("legacy titles migrate per player and per title across devices without chan
   assert.equal(e.db.get("wallets/" + p), null);
 });
 
+test("test-2 continent records can be audited and migrated only on Staging", async () => {
+  const { legacyAdventureClaim } = await import("../src/launch/adventure-title-evidence.js");
+  const record = { gameId: "adventure", category: "adventure", source: "client", serverConfirmed: false,
+    titleKey: key("super_thrifty"), challengeId: "adv-history-abc", gameVersion: "adventure-v0.4.2-title-sync-test-2",
+    unlockedAt: 100 };
+  assert.equal(legacyAdventureClaim({ record }, 200), null);
+  assert.equal(legacyAdventureClaim({ record }, 200, true).evidenceLevel, "permanent_record");
+  const evidence = { id: record.challengeId, kind: "continent", complete: true, track: track(1, 1, 0) };
+  assert.equal(legacyAdventureClaim({ record, evidence }, 200, true).evidenceLevel, "settlement");
+  assert.equal(legacyAdventureClaim({ record, evidence: { ...evidence, track: track(1, 1, 1) } }, 200, true), null);
+  assert.equal(legacyAdventureClaim({ record: { ...record, titleKey: key("whack_legend"), via: "whack:660" } }, 200, true), null);
+});
+
 test("Staging refuses production Firebase project or database", async () => {
   const { readConfig } = await import("../src/config.js");
   const config = { SERVICE_ENV: "staging", FIREBASE_PROJECT_ID: "balloon-v-universe-staging",

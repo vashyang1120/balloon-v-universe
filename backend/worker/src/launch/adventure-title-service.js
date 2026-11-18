@@ -6,7 +6,7 @@ import { adventureTitleKeys, legacyAdventureClaim } from "./adventure-title-evid
 const minigames = new Set(["volleyball", "whack"]);
 export const validEvidenceId = (id) => typeof id === "string" && /^[A-Za-z0-9_-]{6,128}$/.test(id);
 
-export function createAdventureTitleService({ db, collections, now }) {
+export function createAdventureTitleService({ db, collections, now, staging }) {
   async function settle(profile, id, kind, evidence) {
     if (!validEvidenceId(id) || !minigames.has(kind)) throw new ApiError("VALIDATION_FAILED");
     const { playerId } = profile;
@@ -77,7 +77,7 @@ export function createAdventureTitleService({ db, collections, now }) {
         !Array.isArray(body.claims) || body.claims.length < 1 || body.claims.length > 7) throw new ApiError("VALIDATION_FAILED");
     const claims = body.claims.map((item) => {
       if (item?.evidence !== undefined && !validEvidenceId(item.evidence?.id)) throw new ApiError("VALIDATION_FAILED");
-      const claim = legacyAdventureClaim(item, now());
+      const claim = legacyAdventureClaim(item, now(), staging);
       if (!claim) throw new ApiError("VALIDATION_FAILED");
       return claim;
     });

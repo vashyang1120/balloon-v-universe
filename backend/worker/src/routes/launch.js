@@ -94,7 +94,8 @@ async function adventureTitleProfile(ctx, pid, body) {
   return profile;
 }
 function adventureTitleService(ctx) {
-  return createAdventureTitleService({ db: lazyDb(ctx), collections: svc(ctx).collections, now: ctx.now || Date.now });
+  return createAdventureTitleService({ db: lazyDb(ctx), collections: svc(ctx).collections,
+    now: ctx.now || Date.now, staging: ctx.cfg.serviceEnv === "staging" });
 }
 function playerParam(ctx) {
   const id = ctx.params.playerId;

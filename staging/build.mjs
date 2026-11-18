@@ -1,4 +1,5 @@
 import { cp, mkdir, readdir, readFile, realpath, writeFile } from "node:fs/promises";
+import { execFileSync } from "node:child_process";
 import { resolve, relative, extname, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -10,6 +11,7 @@ const hubFiles = ["index.html", "assets", "audio.js", "dialogue.js", "identity.j
   "main.js", "onboarding.js", "player-store.js", "rpg-actor.js", "rpg-text.js", "style.css", "zones.js",
   "universe/shared", ...games.slice(0, 3)];
 const rushFiles = ["rpg-continent1-universe", "minigames"];
+const adventureRepository = "https://github.com/vashyang1120/balloon-v-rush.git";
 
 function stagingOrigin(value, service) {
   const url = new URL(value);
@@ -65,5 +67,15 @@ export async function buildStaging({ universe, adventure, output, web, api }) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   const [universe, adventure, output, web, api] = process.argv.slice(2);
+  // The Pages checkout bootstraps Adventure. The Universe review branch pins the release to serve.
+  if (process.env.CF_PAGES === "1") {
+    const revision = (await readFile(resolve(universe, "staging/adventure-revision.txt"), "utf8")).trim();
+    if (!/^[a-f0-9]{40}$/.test(revision)) throw new Error("Expected a pinned Adventure commit.");
+    const current = execFileSync("git", ["-C", adventure, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+    if (current !== revision) {
+      execFileSync("git", ["-C", adventure, "fetch", "--depth=1", adventureRepository, revision], { stdio: "inherit" });
+      execFileSync("git", ["-C", adventure, "checkout", "--quiet", "--detach", revision], { stdio: "inherit" });
+    }
+  }
   await buildStaging({ universe, adventure, output, web, api });
 }

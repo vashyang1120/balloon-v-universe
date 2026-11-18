@@ -36,19 +36,22 @@ export function adventureTitleKeys(evidence) {
 
 const CONTINENT_TITLES = new Set(["adventure_kind_adventurer", "adventure_peace_ambassador", "adventure_super_thrifty"]);
 const LEGACY_BUILD = "adventure-v0.4.1-continent1-universe-test-1";
+const STAGING_TITLE_BUILD = "adventure-v0.4.2-title-sync-test-2";
 const LEGACY_VOLLEY = /^volleyball:(scorpion|orange|orange_king):7-0$/;
 const LEGACY_WHACK = /^whack:(\d{1,8})$/;
 const LEGACY_RUN = /^adv-[a-z0-9]+-[a-z0-9]{0,6}$/;
 
-export function legacyAdventureClaim(item, now) {
+export function legacyAdventureClaim(item, now, staging = false) {
   const { record, evidence } = item || {};
   if (!record || record.gameId !== "adventure" || record.category !== "adventure" ||
-      record.source !== "client" || record.serverConfirmed !== false || record.gameVersion !== LEGACY_BUILD ||
+      record.source !== "client" || record.serverConfirmed !== false ||
       !Number.isSafeInteger(record.unlockedAt) || record.unlockedAt <= 0 || record.unlockedAt > now) return null;
   const { titleKey, via, challengeId } = record;
   const volley = typeof via === "string" && via.match(LEGACY_VOLLEY);
   const whack = typeof via === "string" && via.match(LEGACY_WHACK);
   const continent = CONTINENT_TITLES.has(titleKey);
+  if (record.gameVersion !== LEGACY_BUILD &&
+      !(staging && continent && record.gameVersion === STAGING_TITLE_BUILD)) return null;
   if (continent) {
     if (via !== undefined || typeof challengeId !== "string" || !LEGACY_RUN.test(challengeId)) return null;
   } else if (volley) {
