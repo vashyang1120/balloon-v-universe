@@ -1,4 +1,4 @@
-name: Rhythm v2.7 MV sync and production regression (isolated QA)
+name: Rhythm v2.7 tutorial and MV regression (isolated QA)
 on:
   push:
     branches: [qa/rhythm-v2.6.5-regression]
@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: a8d7aeff872b797af9d58855163ffd57c4b09040
+          ref: d922964d951e30c949f032b4fc862492fc4a7908
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -52,7 +52,7 @@ jobs:
           test -s assets/audio/universe_lobby_bgm.mp3
           for f in v_full_open_arms v_bust_congrats v_bust_happy v_bust_point v_bust_remind; do test -s "assets/rpg/$f.png" || exit 1; done
           test -s assets/ui/avatar_frame_pink_idle.png
-          git diff --name-only 150908b64fb9da37ab4a37caa5616df7bbbe5681 HEAD | awk '!/^test\/rhythm-v2\.7\// { bad=1; print } END { exit bad }'
+          git diff --name-only c62f04926d83c886fccde2f1fdd1c723cb92908c HEAD | awk '!/^test\/rhythm-v2\.7\// { bad=1; print } END { exit bad }'
 
   browser:
     runs-on: ubuntu-latest
@@ -60,7 +60,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: a8d7aeff872b797af9d58855163ffd57c4b09040
+          ref: d922964d951e30c949f032b4fc862492fc4a7908
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -215,7 +215,7 @@ jobs:
               });
               await p.goto(H.ORIGIN+"/test/rhythm-v2.7/?bvTestMock=1");
               await p.waitForFunction(()=>window.UniverseRhythm?.isReady()&&window.RVMV&&window.RV27UI,null,{timeout:15000});
-              assert(await p.evaluate(()=>BV_TEST_ISOLATION.version==="v2.7.0-mv-sync-test-1"&&!UniverseRhythm.session.official.isEnabled()),"isolated "+mode);
+              assert(await p.evaluate(()=>BV_TEST_ISOLATION.version==="v2.7.0-tutorial-test-1"&&!UniverseRhythm.session.official.isEnabled()),"isolated "+mode);
               await p.locator("#btn-play").click();
               await p.waitForFunction(()=>SONGS.length>=9);
               await p.evaluate(()=>{songIdx=SONGS.findIndex(s=>s.id==="song005");renderSongCards();selectedSong.youtubeId="Ba_DPuAf0qU";selectedSong.videoUrl="";});
@@ -247,6 +247,80 @@ jobs:
           }finally{await H.finish("mv-qa");}
           JS
           node universe/tests/browser/mv-qa.mjs /tmp/bv-rhythm /tmp/bv-quiz /tmp/rhythm-qa/mv
+      - name: Tutorial real engine and external playlist BGM
+        run: |
+          cat > universe/tests/browser/tutorial-qa.mjs <<'JS'
+          import {createHarness,sleep} from "./harness.mjs";
+          const [R,Q,OUT]=process.argv.slice(2);
+          const H=await createHarness({clones:{tetris:R,rhythm:R,quiz:Q},out:OUT,flags:{SCORES_ENABLED:"on",REWARDS_ENABLED:"on"}});
+          const assert=(ok,m)=>{if(!ok)throw Error(m);console.log("PASS",m)};
+          try{
+            const {ctx,page:p}=await H.newPage({mobile:true,viewport:{width:844,height:390}});
+            await p.addInitScript(()=>{
+              window.open=(url)=>{window.testPlaylist=url;window.testPausedAtOpen=window.RV27Audio.debug();return null;};
+              window.mvTestPlayers=[];
+              window.YT={Player:class{
+                constructor(id,o){this.o=o;this.t=0;this.plays=0;this.pauses=0;this.seeks=[];window.mvTestPlayers.push(this);setTimeout(()=>o.events.onReady({target:this}),10);}
+                cueVideoById(o){this.t=o.startSeconds;this.cue=o;setTimeout(()=>this.o.events.onStateChange({data:5,target:this}),50);}
+                mute(){this.muted=true;}
+                playVideo(){this.plays++;this.o.events.onStateChange({data:1,target:this});}
+                pauseVideo(){this.pauses++;}
+                seekTo(t){this.t=t;this.seeks.push(t);}
+                getCurrentTime(){return this.t;}
+                getDuration(){return 392;}
+                destroy(){this.destroyed=true;}
+              }};
+            });
+            await p.goto(H.ORIGIN+"/test/rhythm-v2.7/?bvTestMock=1");
+            await p.waitForFunction(()=>window.UniverseRhythm?.isReady()&&window.RVCoach&&window.RV27UI);
+            await p.locator("#rv-player-name").click();
+            await p.waitForFunction(()=>RV27Audio.debug().playing&&RV27Audio.debug().time>0);
+            await p.locator("#rv-btn-watch-mv").click();
+            assert(await p.evaluate(()=>testPlaylist.includes("PLCxWyaG1VhB7wvvXJtJ3T8qfxNM6wOUQx")&&testPausedAtOpen.external&&!testPausedAtOpen.playing&&testPausedAtOpen.paused.every(Boolean)),"BGM paused before original playlist open");
+            await p.evaluate(()=>RV27Audio.update("test"));await sleep(300);
+            assert(await p.evaluate(()=>RV27Audio.debug().external&&!RV27Audio.debug().playing),"BGM remains locked on visible page");
+            await p.locator("#rv-player-name").click();
+            await p.waitForFunction(()=>!RV27Audio.debug().external&&RV27Audio.debug().playing);
+            await p.setViewportSize({width:568,height:320});await sleep(200);
+            assert(await p.locator("#rv-btn-tutorial").isVisible(),"tutorial visible at 568x320");
+            await p.setViewportSize({width:844,height:390});
+            await p.locator("#rv-btn-tutorial").click();
+            const next=()=>p.locator(".rv-coach-card .btn-y").click();
+            await next();await next();
+            await p.waitForFunction(()=>RVCoach.debug().mode==="practice");
+            await p.waitForFunction(()=>RVCoach.debug().mode==="intro",{},{timeout:10000});
+            assert(await p.evaluate(()=>RVCoach.debug().stage===0),"miss retries same lesson");
+            await next();
+            async function hit(lane,hold=0){
+              await p.waitForFunction(l=>G.running&&G.notes.some(n=>n.lane===l&&!n.hit&&!n.missed&&Math.abs(n.hitTime-G.gt)<65),lane,{timeout:12000,polling:10});
+              await p.keyboard.down(["d","f","j","k"][lane]);
+              if(hold)await sleep(hold);
+              await p.keyboard.up(["d","f","j","k"][lane]);
+            }
+            await hit(0);await p.waitForFunction(()=>RVCoach.debug().stage===1);
+            await next();await next();
+            for(const lane of [0,1,2,3])await hit(lane);
+            await p.waitForFunction(()=>RVCoach.debug().stage===2);
+            await next();await next();await hit(2,100);
+            await p.waitForFunction(()=>RVCoach.debug().mode==="intro");
+            assert(await p.evaluate(()=>RVCoach.debug().stage===2),"early hold release retries");
+            await next();await hit(2,1650);
+            await p.waitForFunction(()=>RVCoach.debug().mode==="story");
+            await next();
+            await p.waitForFunction(()=>RVCoach.debug().mode==="clip"&&G.running&&!!audioSource,null,{timeout:60000});
+            assert(await p.evaluate(()=>G.song.id==="song009"&&G.tutorialClipStart===207&&G.duration===19700&&G.beatmap.length===16&&G.beatmap.filter(n=>n.hold).length===2&&G.lyrics.length===4),"original song clip notes lyrics");
+            assert(await p.evaluate(()=>mvTestPlayers[0].cue.startSeconds===207&&mvTestPlayers[0].muted&&getGameTimeSec()<2),"MV cue and relative audio clock");
+            await p.waitForFunction(()=>RVCoach.debug().mode==="complete",null,{timeout:30000});
+            assert(await p.evaluate(()=>!G.running&&!audioSource&&RVMV.debug()===null),"clip stops at completion");
+            await next();await p.waitForSelector("#s-title:not(.off)");
+            assert(await p.evaluate(()=>!RVCoach.active()),"tutorial returns home");
+            assert(!H.apiCalls.some(x=>!/^(GET|HEAD) /.test(x))&&!H.db.get("scores")&&!H.db.get("wallets"),"no formal writes");
+            assert(!p.errors.length,"no page errors "+p.errors.join(" | "));
+            await ctx.close();
+          }finally{await H.finish("tutorial-qa");}
+          JS
+          export NODE_PATH="$(npm root -g)"
+          node universe/tests/browser/tutorial-qa.mjs /tmp/bv-rhythm /tmp/bv-quiz /tmp/rhythm-qa/tutorial
       - uses: actions/upload-artifact@v4
         if: always()
         with:
