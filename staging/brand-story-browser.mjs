@@ -45,7 +45,7 @@ async function openLobby(page, seed = true) {
     for (const p of sample) localStorage.setItem("bvUniverseSandbox_v2_lobbyTutorialDone__" + p.playerId, "1");
   });
   await page.goto(base, { waitUntil: "domcontentloaded" });
-  await page.waitForFunction(() => window.PlayerStore?.sandbox === true && document.getElementById("sandboxBanner")?.textContent.includes("Universe Brand Story v1.0-test-1"));
+  await page.waitForFunction(() => window.PlayerStore?.sandbox === true && document.getElementById("sandboxBanner")?.textContent.includes("Universe Brand Story v1.0-test-2"));
   assert.equal(new URL(page.url()).searchParams.get("sandbox"), "1");
   if (seed) await page.waitForFunction(() => window.BalloonUniverse?.getPlayer()?.id === "品牌故事試玩");
 }

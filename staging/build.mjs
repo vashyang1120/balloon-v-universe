@@ -58,7 +58,7 @@ export async function buildStaging({ universe, adventure, output, web, api, sand
           (sandboxPreview ? sandboxScript : ""));
         if (sandboxPreview && path === resolve(target, "index.html")) {
           body = body.replace('id="sandboxBanner" hidden>🧪 測試沙盒',
-            'id="sandboxBanner" hidden>🧪 Universe Brand Story v1.0-test-1 · 測試沙盒');
+            'id="sandboxBanner" hidden>🧪 Universe Brand Story v1.0-test-2 · 測試沙盒');
         }
       }
       await writeFile(path, body);

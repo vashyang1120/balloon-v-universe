@@ -56,5 +56,5 @@ test("all game pages and shared SDK are locked to the test Worker", async () => 
     assert.ok(!result.includes(api) && !result.includes(web));
   }
   const home = await readFile(join(preview, "index.html"), "utf8");
-  assert.ok(home.includes("Universe Brand Story v1.0-test-1"));
+  assert.ok(home.includes("Universe Brand Story v1.0-test-2"));
 });
