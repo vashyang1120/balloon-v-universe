@@ -1040,7 +1040,9 @@
     if (!guard("talk")) return;
     var z = zoneById[state.selected];
     if (!z) return;
-    window.RpgDialogue.play([{ speaker: CFG.dialogue.speakerName, text: z.vLine, actor: { mood: "happy" } }]);
+    window.RpgDialogue.play(z.introDialogue.map(function (line) {
+      return { speaker: CFG.dialogue.speakerName, text: line.text, actor: { mood: line.mood } };
+    }));
   });
 
   els.testOk.addEventListener("click", function () { els.testModal.hidden = true; });

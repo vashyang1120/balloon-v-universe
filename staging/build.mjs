@@ -27,7 +27,7 @@ function stagingOrigin(value, service) {
   return url.origin;
 }
 
-export async function buildStaging({ universe, adventure, output, web, api }) {
+export async function buildStaging({ universe, adventure, output, web, api, sandboxPreview = false }) {
   const site = stagingOrigin(web, false);
   const worker = stagingOrigin(api, true);
   if (site === worker) throw new Error("Use distinct site and Worker origins.");
@@ -42,17 +42,24 @@ export async function buildStaging({ universe, adventure, output, web, api }) {
   for (const path of rushFiles) await cp(resolve(roots[1], path), resolve(target, path), { recursive: true });
   await cp(resolve(roots[1], "assets"), resolve(target, "assets"), { recursive: true, force: false, errorOnExist: false });
 
-  const csp = "connect-src 'self' " + worker + "; form-action 'self'; base-uri 'self'";
+  const csp = (sandboxPreview ? "connect-src 'self'" : "connect-src 'self' " + worker) + "; form-action 'self'; base-uri 'self'";
+  const sitePath = sandboxPreview ? "/" : site + "/";
+  const sandboxScript = '<script>const previewUrl = new URL(location.href); previewUrl.searchParams.set("sandbox", "1"); history.replaceState(history.state, "", previewUrl);</script>';
   async function rewrite(dir) {
     for (const item of await readdir(dir, { withFileTypes: true })) {
       const path = resolve(dir, item.name);
       if (item.isDirectory()) { await rewrite(path); continue; }
       if (![".html", ".js", ".css", ".mjs"].includes(extname(item.name))) continue;
       let body = await readFile(path, "utf8");
-      body = body.replaceAll(productionApi, worker).replaceAll(productionHub, site + "/").replaceAll(productionAdventure, site + "/");
+      body = body.replaceAll(productionApi, worker).replaceAll(productionHub, sitePath).replaceAll(productionAdventure, sitePath);
       if (item.name.endsWith(".html")) {
         body = body.replace(/<head[^>]*>/i, (head) => head +
-          '\n<meta name="robots" content="noindex,nofollow"><meta http-equiv="Content-Security-Policy" content="' + csp + '">');
+          '\n<meta name="robots" content="noindex,nofollow"><meta http-equiv="Content-Security-Policy" content="' + csp + '">' +
+          (sandboxPreview ? sandboxScript : ""));
+        if (sandboxPreview && path === resolve(target, "index.html")) {
+          body = body.replace('id="sandboxBanner" hidden>🧪 測試沙盒',
+            'id="sandboxBanner" hidden>🧪 Universe Brand Story v1.0-test-2 · 測試沙盒');
+        }
       }
       await writeFile(path, body);
     }
@@ -79,5 +86,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
       execFileSync("git", ["-C", adventure, "checkout", "--quiet", "--detach", revision], { stdio: "inherit" });
     }
   }
-  await buildStaging({ universe, adventure, output, web, api });
+  const sandboxPreview = process.env.CF_PAGES_BRANCH === "dev/universe-brand-story-v1";
+  await buildStaging({ universe, adventure, output, web, api, sandboxPreview });
 }

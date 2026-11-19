@@ -18,7 +18,8 @@ test("all game pages and shared SDK are locked to the test Worker", async () => 
   };
   const prodApi = "https://balloon-v-universe-api.vashyang1120.workers.dev";
   const prodSDK = "https://vashyang1120.github.io/balloon-v-universe/universe/shared/universe-sdk.js";
-  const html = '<html><head><script src="' + prodSDK + '"></script></head></html>';
+  const html = '<html><head><script src="' + prodSDK + '"></script></head>' +
+    '<body><div id="sandboxBanner" hidden>🧪 測試沙盒</div></body></html>';
   const pages = ["index.html", "universe/tetris/index.html", "universe/rhythm/index.html", "universe/quiz/index.html"];
   for (const page of pages) await put(universe, page, html);
   for (const file of ["audio.js","dialogue.js","identity.js","lobby-launch.js","main.js","onboarding.js",
@@ -44,4 +45,16 @@ test("all game pages and shared SDK are locked to the test Worker", async () => 
     assert.ok(!result.includes("vashyang1120.github.io"));
   }
   for (const file of comicFiles) assert.equal(await readFile(join(output, file), "utf8"), file);
+
+  const preview = join(fixture, "preview");
+  await buildStaging({ ...opts, output: preview, sandboxPreview: true });
+  for (const page of [...pages, adventurePage, comicPage]) {
+    const result = await readFile(join(preview, page), "utf8");
+    assert.match(result, /connect-src 'self';/);
+    assert.match(result, /previewUrl\.searchParams\.set\("sandbox", "1"\)/);
+    assert.ok(result.includes('src="/universe/shared/universe-sdk.js"'));
+    assert.ok(!result.includes(api) && !result.includes(web));
+  }
+  const home = await readFile(join(preview, "index.html"), "utf8");
+  assert.ok(home.includes("Universe Brand Story v1.0-test-2"));
 });
