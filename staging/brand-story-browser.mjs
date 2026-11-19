@@ -153,6 +153,28 @@ try {
       await page.locator("#signPass").click();
       await page.locator("#passModal").waitFor({ state: "visible" });
       await page.locator("#passClose").click();
+      await page.locator('#avatarRow [data-key="p_bbbbbbbbbbbbbbbbbbbb"]').click();
+      await page.locator("#switchOk").click();
+      await page.waitForFunction(() => BalloonUniverse.getPlayer()?.id === "品牌故事試玩二");
+      await page.locator('#avatarRow [data-key="p_aaaaaaaaaaaaaaaaaaaa"]').click();
+      await page.locator("#switchOk").click();
+      await page.waitForFunction(() => BalloonUniverse.getPlayer()?.id === "品牌故事試玩");
+      await box("blocks");
+      await page.waitForFunction(() => {
+        const a = BVAudio.debug();
+        return a.state === "playing" && a.gains[a.cur] >= MAP_CONFIG.audio.bgmVolume - 0.015;
+      });
+      await page.locator("#talkBtn").click();
+      await page.waitForFunction(() => {
+        const a = BVAudio.debug();
+        return a.gains[a.cur] <= MAP_CONFIG.audio.bgmVolume * MAP_CONFIG.audio.duckRatio + 0.015 &&
+          a.log.some(e => e.kind === "sfx" && e.name === "type");
+      });
+      await page.locator("#rpgSkip").click();
+      await page.waitForFunction(() => {
+        const a = BVAudio.debug();
+        return a.gains[a.cur] >= MAP_CONFIG.audio.bgmVolume - 0.015;
+      });
       // Check the existing launch action without running a game or writing a result.
       await page.route("**/*", route => {
         const url = new URL(route.request().url());
@@ -175,10 +197,45 @@ try {
     await page.close();
     console.log(`PASS ${label}: four panels, four stories, colors, navigation and isolation`);
   }
-  const fresh = await browser.newPage();
+  const fresh = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" });
+  const external = [];
+  await fresh.route("**/*", route => {
+    if (new URL(route.request().url()).origin === origin) return route.continue();
+    external.push(route.request().url());
+    return route.abort();
+  });
   await openLobby(fresh, false);
-  assert.ok(await fresh.locator("#flow").isVisible() || await fresh.locator("#rpg").isVisible());
+  const advanceTo = async selector => {
+    const target = fresh.locator(selector);
+    for (let i = 0; i < 40 && !await target.isVisible(); i++) {
+      if (await fresh.locator("#rpg").isVisible()) await fresh.keyboard.press("Enter");
+      await fresh.waitForFunction(sel => {
+        const e = document.querySelector(sel);
+        return !!e?.getClientRects().length || document.querySelector("#rpg").classList.contains("rpg--ready");
+      }, selector, { timeout: 5000 });
+    }
+    await target.waitFor({ state: "visible" });
+    return target;
+  };
+  await (await advanceTo('#rpgChoices button.rpg__choice--primary')).click();
+  await (await advanceTo("#fId")).fill("品牌故事全新玩家");
+  await fresh.locator("#fNext").click();
+  await (await advanceTo('#flowCard .pick[data-key="cat1"]')).click();
+  await fresh.locator("#fNext").click();
+  await (await advanceTo('#rpgChoices button.rpg__choice--primary')).click();
+  await fresh.locator("#fEnter").waitFor({ state: "visible" });
+  assert.match(await fresh.locator("#flowCard").textContent(), /品牌故事全新玩家/);
+  // The pass narration keeps the underlying card interactive.
+  await fresh.locator("#fEnter").click();
+  await fresh.waitForFunction(() => document.body.classList.contains("tutorial-on"));
+  await fresh.locator("#rpgSkip").click();
+  await fresh.waitForFunction(() => !document.body.classList.contains("tutorial-on") &&
+    PlayerStore.tutorialDone(BalloonUniverse.getPlayer().playerId));
+  await fresh.locator('button.entry[data-zone="academy"]').click();
+  assert.equal(await fresh.locator("#infoIntro").textContent(), cases.find(c => c[0] === "academy")[1]);
+  assert.deepEqual(external, []);
   await fresh.close();
+  console.log("PASS sandbox onboarding, player switching, pass and audio regression");
 } finally {
   await browser.close();
 }
