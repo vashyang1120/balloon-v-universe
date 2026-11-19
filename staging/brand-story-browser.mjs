@@ -73,6 +73,7 @@ try {
     const box = async id => {
       await page.locator(`button.entry[data-zone="${id}"]`).click();
       await page.locator("#infoPanel.is-open").waitFor({ state: "visible" });
+      await page.locator("#infoArt img").evaluate(img => img.decode());
     };
     for (const [id, slogan, length] of cases) {
       await box(id);
@@ -225,7 +226,10 @@ try {
   await (await advanceTo('#rpgChoices button.rpg__choice--primary')).click();
   await fresh.locator("#fEnter").waitFor({ state: "visible" });
   assert.match(await fresh.locator("#flowCard").textContent(), /品牌故事全新玩家/);
-  // The pass narration keeps the underlying card interactive.
+  for (let i = 0; i < 20 && await fresh.locator("#rpg").isVisible(); i++) {
+    await fresh.keyboard.press("Enter");
+  }
+  await fresh.locator("#rpg").waitFor({ state: "hidden" });
   await fresh.locator("#fEnter").click();
   await fresh.waitForFunction(() => document.body.classList.contains("tutorial-on"));
   await fresh.locator("#rpgSkip").click();
