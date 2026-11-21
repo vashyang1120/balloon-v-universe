@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="preview.css">
+<title>氣球小V遊戲宇宙｜瀑布動畫樣本</title>
+<script src="waterfall.js" defer></script>
+<script src="preview.js" data-map="../../assets/universe_map_bg.png" defer></script>
+</head>
+<body>
+<main>
+  <header>
+    <p class="version">Living Lobby Art v1.0 · Batch 2-A Test 1</p>
+    <h1>方塊區瀑布</h1>
+    <p>看同一處瀑布的原圖與流水樣本。全圖對照可切換原圖與動態。</p>
+  </header>
+  <div class="controls">
+    <button id="local" type="button" aria-pressed="true">局部放大</button>
+    <button id="map" type="button" aria-pressed="false">全圖對照</button>
+    <button id="original" type="button" hidden aria-pressed="false">切換到原圖</button>
+    <button id="play" type="button" disabled>暫停</button>
+  </div>
+  <p id="status" role="status">載入驗收地圖…</p>
+  <section id="closeups" aria-label="局部對照" hidden>
+    <figure><figcaption>原始靜態</figcaption><canvas id="still" width="251" height="224" role="img" aria-label="原始瀑布局部"></canvas></figure>
+    <figure><figcaption>動態樣本</figcaption><canvas id="motion" width="251" height="224" role="img" aria-label="流水動畫局部"></canvas></figure>
+  </section>
+  <figure id="overview" hidden>
+    <figcaption id="map-caption">全圖 · 動態樣本</figcaption>
+    <canvas id="full" width="1536" height="1024" role="img" aria-label="完整地圖與瀑布對照"></canvas>
+  </figure>
+  <footer>基準為 2026-11-22 驗收的 Integration Preview Test 1。</footer>
+</main>
+</body>
+</html>

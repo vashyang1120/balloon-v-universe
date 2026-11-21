@@ -1,0 +1,56 @@
+{
+  "project": "氣球小V遊戲宇宙",
+  "planningVersion": "Universe Living Lobby v1.0",
+  "deliverable": "Living Lobby Art v1.0 | Batch 2-A Test 1",
+  "date": "2026-11-22",
+  "stage": "isolated-sample-pending-visual-acceptance",
+  "baseline": {
+    "name": "Universe Living Lobby v1.0 | Integration Preview Test 1",
+    "revision": "surprise",
+    "accepted": "2026-11-22",
+    "libraryId": "libfile_14cc95e5410481918888ef2444759e22",
+    "zip": "universe-living-lobby-v1.0-integration-preview-test-1.zip",
+    "zipSha256": "aad6336405e8d6cb8dd45ef09c34d5b8ca85ca2f9f8dcaeff5d35d6de4a97233",
+    "sourceMap": {
+      "path": "assets/universe_map_bg.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "78c4885e61f71b4cb5c63680eed97a04c0023aed81f2e58ae839ff3ff913953f",
+      "gitBlob": "9c3e05124b6c85e6a33d828f7d2e57879407a065"
+    }
+  },
+  "sample": {
+    "location": "方塊區主瀑布",
+    "mapWaterfallGroups": 9,
+    "animatedGroups": 1,
+    "previewCropXYWH": [
+      74,
+      592,
+      251,
+      224
+    ],
+    "mask": "waterfall.js",
+    "activeMaskPixels": 7173,
+    "loopSeconds": 4.8,
+    "features": [
+      "four downward flows",
+      "existing foam modulation",
+      "subtle connected-water ripples"
+    ]
+  },
+  "git": {
+    "repository": "vashyang1120/balloon-v-universe",
+    "branch": "dev/living-lobby-waterfall-batch2a",
+    "parent": "0a3a24459d87d48c2a3a8b83cb101049637d24e2",
+    "directory": "previews/living-lobby-waterfall-batch2a"
+  },
+  "preview": {
+    "offline": "open-in-chrome.html",
+    "source": "index.html",
+    "video": "waterfall-batch2a-test1.webm",
+    "tests": "chrome-results.json",
+    "baselineRegression": "baseline-regression.json"
+  }
+}

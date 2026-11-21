@@ -1,0 +1,24 @@
+:root {
+  color-scheme: light;
+  font: 16px/1.5 system-ui, sans-serif;
+  color: #28213c;
+  background: #f7f4ee;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+main { max-width: 1160px; margin: auto; padding: clamp(14px, 4vw, 48px); }
+header p { margin: .35rem 0 1rem; }
+h1 { margin: 0; font-size: clamp(1.65rem, 4vw, 2.6rem); }
+.version, footer { color: #514465; font-size: .9rem; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+button {
+  min-height: 44px; padding: 6px 13px; cursor: pointer; font: inherit; color: inherit;
+  border: 1px solid #a79bb3; border-radius: 8px; background: #fff;
+}
+button[aria-pressed="true"] { background: #513c76; color: #fff; border-color: #513c76; }
+button:focus-visible { outline: 3px solid #a16cd1; outline-offset: 2px; }
+#closeups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(5px, 2vw, 16px); }
+figure { margin: 0; }
+figcaption { margin-bottom: .4rem; font-weight: 650; }
+canvas { display: block; width: 100%; height: auto; border-radius: 8px; background: #e6ecf4; }
+footer { margin-top: 16px; }

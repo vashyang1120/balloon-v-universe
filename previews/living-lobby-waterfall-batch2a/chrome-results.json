@@ -1,0 +1,105 @@
+{
+  "chrome": "157.0.8103.51",
+  "profiles": [
+    {
+      "profile": "Desktop Chrome",
+      "viewport": 1440,
+      "documentWidth": 1440,
+      "staticComparison": {
+        "pixels": 0,
+        "maximum": 0,
+        "energy": 0
+      },
+      "cropMatchesOriginal": true,
+      "laps": [
+        0,
+        0,
+        0
+      ],
+      "frameDiff": {
+        "pixels": 5517,
+        "maximum": 20,
+        "energy": 25877
+      },
+      "transitions": [
+        {
+          "pixels": 2799,
+          "maximum": 20,
+          "energy": 5385
+        },
+        {
+          "pixels": 2854,
+          "maximum": 15,
+          "energy": 5791
+        },
+        {
+          "pixels": 2829,
+          "maximum": 16,
+          "energy": 5647
+        }
+      ],
+      "maxAdjustment": 21,
+      "outsideMaskChanges": 0,
+      "alphaChanges": 0,
+      "fullOutsideMaskChanges": 0,
+      "activeMaskPixels": 7173,
+      "timingMs": {
+        "median": 0.8000000715255737,
+        "p95": 1.100000023841858
+      },
+      "controls": true,
+      "reducedMotion": true,
+      "noErrors": true
+    },
+    {
+      "profile": "Pixel 7 emulation",
+      "viewport": 412,
+      "documentWidth": 412,
+      "staticComparison": {
+        "pixels": 0,
+        "maximum": 0,
+        "energy": 0
+      },
+      "cropMatchesOriginal": true,
+      "laps": [
+        0,
+        0,
+        0
+      ],
+      "frameDiff": {
+        "pixels": 5517,
+        "maximum": 20,
+        "energy": 25877
+      },
+      "transitions": [
+        {
+          "pixels": 2799,
+          "maximum": 20,
+          "energy": 5385
+        },
+        {
+          "pixels": 2854,
+          "maximum": 15,
+          "energy": 5791
+        },
+        {
+          "pixels": 2829,
+          "maximum": 16,
+          "energy": 5647
+        }
+      ],
+      "maxAdjustment": 21,
+      "outsideMaskChanges": 0,
+      "alphaChanges": 0,
+      "fullOutsideMaskChanges": 0,
+      "activeMaskPixels": 7173,
+      "timingMs": {
+        "median": 0.8000000715255737,
+        "p95": 1
+      },
+      "controls": true,
+      "reducedMotion": true,
+      "noErrors": true
+    }
+  ]
+}
