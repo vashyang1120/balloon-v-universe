@@ -1,0 +1,52 @@
+[
+  {
+    "file": "assets.js",
+    "sha256": "1b12b701bbc6ff3fe776663aae46bf9430f64698b8d2c301846761f916414853",
+    "exactMatch": true
+  },
+  {
+    "file": "assets/universe_map_bg.png",
+    "sha256": "78c4885e61f71b4cb5c63680eed97a04c0023aed81f2e58ae839ff3ff913953f",
+    "exactMatch": true
+  },
+  {
+    "file": "waterfall.js",
+    "sha256": "68f73d8d8c129f0a9f0dcee96e1498603936545c02ed69c9c219e6df38cede8a",
+    "exactMatch": true
+  },
+  {
+    "file": "waterfall-layouts.js",
+    "sha256": "f2a9a36dadc410ee162ae1bc4a2be3626006c81ec238c7106d11c901879aa29e",
+    "exactMatch": true
+  },
+  {
+    "file": "preview.js",
+    "sha256": "7b996371985d46da8ddb6cbc521d242876816cded4d1806bc29b3bbf3c90e888",
+    "exactMatch": true
+  },
+  {
+    "file": "check.cjs",
+    "sha256": "82b3484797196a9e3893ec39aad9178a5e3585d25a9b2ac8655f01bf46ea3682",
+    "exactMatch": true
+  },
+  {
+    "file": "speaker-assets/left-speaker-star.png",
+    "sha256": "be50da6860931fe71b283eaad2c14cb9b4f8a978fa8416ffc3b73bf0ebec18df",
+    "exactMatch": true
+  },
+  {
+    "file": "speaker-assets/right-speaker-star.png",
+    "sha256": "c25efc7da0136f6166b3eb9b1e94ddd7f29ae41efa144b15d6f16d241ea446ec",
+    "exactMatch": true
+  },
+  {
+    "file": "speaker-assets/left-background-repair.png",
+    "sha256": "59a3731fa1becb18c0d97f2d64964739991105a10e479a1b17d74efe370db6be",
+    "exactMatch": true
+  },
+  {
+    "file": "speaker-assets/right-background-repair.png",
+    "sha256": "d0b51041825e60d575b27ad6c0fd3e46769bb53d5f47ddd912f9a5004d1b7074",
+    "exactMatch": true
+  }
+]

@@ -1,0 +1,697 @@
+{
+  "chrome": "157.0.8103.51",
+  "profiles": [
+    {
+      "profile": "Desktop Chrome",
+      "frames": [
+        {
+          "time": 0,
+          "outside": 0,
+          "left": 0,
+          "right": 0,
+          "innerLeft": 0,
+          "innerRight": 0,
+          "innerCones": [
+            0,
+            0
+          ],
+          "stars": [
+            0,
+            0
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.025,
+          "outside": 0,
+          "left": 4231,
+          "right": 4549,
+          "innerLeft": 3006,
+          "innerRight": 2685,
+          "innerCones": [
+            920,
+            1207
+          ],
+          "stars": [
+            1615,
+            1778
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.05,
+          "outside": 0,
+          "left": 4326,
+          "right": 4649,
+          "innerLeft": 3063,
+          "innerRight": 2755,
+          "innerCones": [
+            924,
+            1217
+          ],
+          "stars": [
+            1651,
+            1817
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.09,
+          "outside": 0,
+          "left": 4233,
+          "right": 4555,
+          "innerLeft": 3007,
+          "innerRight": 2687,
+          "innerCones": [
+            920,
+            1207
+          ],
+          "stars": [
+            1616,
+            1782
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.142,
+          "outside": 0,
+          "left": 2652,
+          "right": 2502,
+          "innerLeft": 1680,
+          "innerRight": 1181,
+          "innerCones": [
+            531,
+            516
+          ],
+          "stars": [
+            1371,
+            1384
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.195,
+          "outside": 0,
+          "left": 4155,
+          "right": 4461,
+          "innerLeft": 2949,
+          "innerRight": 2612,
+          "innerCones": [
+            915,
+            1191
+          ],
+          "stars": [
+            1597,
+            1779
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.265,
+          "outside": 0,
+          "left": 0,
+          "right": 0,
+          "innerLeft": 0,
+          "innerRight": 0,
+          "innerCones": [
+            0,
+            0
+          ],
+          "stars": [
+            0,
+            0
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.32,
+          "outside": 0,
+          "left": 0,
+          "right": 0,
+          "innerLeft": 0,
+          "innerRight": 0,
+          "innerCones": [
+            0,
+            0
+          ],
+          "stars": [
+            0,
+            0
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.37,
+          "outside": 0,
+          "left": 4267,
+          "right": 4741,
+          "innerLeft": 3035,
+          "innerRight": 2773,
+          "innerCones": [
+            923,
+            1219
+          ],
+          "stars": [
+            1627,
+            1873
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.41,
+          "outside": 0,
+          "left": 4166,
+          "right": 4620,
+          "innerLeft": 2961,
+          "innerRight": 2735,
+          "innerCones": [
+            917,
+            1216
+          ],
+          "stars": [
+            1598,
+            1807
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.462,
+          "outside": 0,
+          "left": 2231,
+          "right": 2969,
+          "innerLeft": 1314,
+          "innerRight": 1448,
+          "innerCones": [
+            380,
+            658
+          ],
+          "stars": [
+            1243,
+            1510
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.515,
+          "outside": 0,
+          "left": 4052,
+          "right": 4544,
+          "innerLeft": 2872,
+          "innerRight": 2672,
+          "innerCones": [
+            906,
+            1207
+          ],
+          "stars": [
+            1591,
+            1780
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.76,
+          "outside": 0,
+          "left": 0,
+          "right": 0,
+          "innerLeft": 0,
+          "innerRight": 0,
+          "innerCones": [
+            0,
+            0
+          ],
+          "stars": [
+            0,
+            0
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.84,
+          "outside": 0,
+          "left": 0,
+          "right": 0,
+          "innerLeft": 0,
+          "innerRight": 0,
+          "innerCones": [
+            0,
+            0
+          ],
+          "stars": [
+            0,
+            0
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.89,
+          "outside": 0,
+          "left": 4326,
+          "right": 4648,
+          "innerLeft": 3063,
+          "innerRight": 2756,
+          "innerCones": [
+            924,
+            1217
+          ],
+          "stars": [
+            1651,
+            1817
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 2.57,
+          "outside": 0,
+          "left": 4326,
+          "right": 4648,
+          "innerLeft": 3063,
+          "innerRight": 2756,
+          "innerCones": [
+            924,
+            1217
+          ],
+          "stars": [
+            1651,
+            1817
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 4.57,
+          "outside": 0,
+          "left": 4268,
+          "right": 4741,
+          "innerLeft": 3035,
+          "innerRight": 2774,
+          "innerCones": [
+            923,
+            1219
+          ],
+          "stars": [
+            1627,
+            1873
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 7.93,
+          "outside": 0,
+          "left": 4268,
+          "right": 4741,
+          "innerLeft": 3035,
+          "innerRight": 2774,
+          "innerCones": [
+            923,
+            1219
+          ],
+          "stars": [
+            1627,
+            1873
+          ],
+          "alpha": 0
+        }
+      ],
+      "addInnerOnly": [
+        {
+          "time": 0.05,
+          "protectedDifferences": 0
+        },
+        {
+          "time": 0.37,
+          "protectedDifferences": 0
+        }
+      ],
+      "loopDelta": 0,
+      "elapsed": 35,
+      "differentPeaks": true,
+      "matchesWidth": true,
+      "period": 0.84,
+      "overlap": 0.32,
+      "leftPeak": {
+        "sx": 1.035,
+        "sy": 1.031,
+        "shear": 0.006,
+        "opacity": 1
+      },
+      "rightAtLeftPeak": {
+        "sx": 1.0238,
+        "sy": 1.02108,
+        "shear": -0.00408,
+        "opacity": 1
+      },
+      "rightPeak": {
+        "sx": 1.035,
+        "sy": 1.031,
+        "shear": -0.006,
+        "opacity": 1
+      },
+      "errors": []
+    },
+    {
+      "profile": "Pixel 7 emulation",
+      "frames": [
+        {
+          "time": 0,
+          "outside": 0,
+          "left": 0,
+          "right": 0,
+          "innerLeft": 0,
+          "innerRight": 0,
+          "innerCones": [
+            0,
+            0
+          ],
+          "stars": [
+            0,
+            0
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.025,
+          "outside": 0,
+          "left": 4231,
+          "right": 4549,
+          "innerLeft": 3005,
+          "innerRight": 2686,
+          "innerCones": [
+            920,
+            1207
+          ],
+          "stars": [
+            1615,
+            1779
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.05,
+          "outside": 0,
+          "left": 4326,
+          "right": 4649,
+          "innerLeft": 3063,
+          "innerRight": 2756,
+          "innerCones": [
+            924,
+            1217
+          ],
+          "stars": [
+            1651,
+            1817
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.09,
+          "outside": 0,
+          "left": 4233,
+          "right": 4555,
+          "innerLeft": 3007,
+          "innerRight": 2687,
+          "innerCones": [
+            920,
+            1207
+          ],
+          "stars": [
+            1616,
+            1782
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.142,
+          "outside": 0,
+          "left": 2652,
+          "right": 2502,
+          "innerLeft": 1680,
+          "innerRight": 1181,
+          "innerCones": [
+            531,
+            516
+          ],
+          "stars": [
+            1371,
+            1384
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.195,
+          "outside": 0,
+          "left": 4156,
+          "right": 4461,
+          "innerLeft": 2949,
+          "innerRight": 2612,
+          "innerCones": [
+            915,
+            1191
+          ],
+          "stars": [
+            1597,
+            1779
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.265,
+          "outside": 0,
+          "left": 0,
+          "right": 0,
+          "innerLeft": 0,
+          "innerRight": 0,
+          "innerCones": [
+            0,
+            0
+          ],
+          "stars": [
+            0,
+            0
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.32,
+          "outside": 0,
+          "left": 0,
+          "right": 0,
+          "innerLeft": 0,
+          "innerRight": 0,
+          "innerCones": [
+            0,
+            0
+          ],
+          "stars": [
+            0,
+            0
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.37,
+          "outside": 0,
+          "left": 4267,
+          "right": 4741,
+          "innerLeft": 3035,
+          "innerRight": 2774,
+          "innerCones": [
+            923,
+            1219
+          ],
+          "stars": [
+            1627,
+            1873
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.41,
+          "outside": 0,
+          "left": 4166,
+          "right": 4619,
+          "innerLeft": 2961,
+          "innerRight": 2736,
+          "innerCones": [
+            917,
+            1216
+          ],
+          "stars": [
+            1598,
+            1807
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.462,
+          "outside": 0,
+          "left": 2231,
+          "right": 2969,
+          "innerLeft": 1314,
+          "innerRight": 1449,
+          "innerCones": [
+            380,
+            658
+          ],
+          "stars": [
+            1243,
+            1510
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.515,
+          "outside": 0,
+          "left": 4053,
+          "right": 4544,
+          "innerLeft": 2872,
+          "innerRight": 2673,
+          "innerCones": [
+            906,
+            1207
+          ],
+          "stars": [
+            1591,
+            1780
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.76,
+          "outside": 0,
+          "left": 0,
+          "right": 0,
+          "innerLeft": 0,
+          "innerRight": 0,
+          "innerCones": [
+            0,
+            0
+          ],
+          "stars": [
+            0,
+            0
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.84,
+          "outside": 0,
+          "left": 0,
+          "right": 0,
+          "innerLeft": 0,
+          "innerRight": 0,
+          "innerCones": [
+            0,
+            0
+          ],
+          "stars": [
+            0,
+            0
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.89,
+          "outside": 0,
+          "left": 4326,
+          "right": 4648,
+          "innerLeft": 3063,
+          "innerRight": 2756,
+          "innerCones": [
+            924,
+            1217
+          ],
+          "stars": [
+            1651,
+            1817
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 2.57,
+          "outside": 0,
+          "left": 4326,
+          "right": 4648,
+          "innerLeft": 3063,
+          "innerRight": 2756,
+          "innerCones": [
+            924,
+            1217
+          ],
+          "stars": [
+            1651,
+            1817
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 4.57,
+          "outside": 0,
+          "left": 4268,
+          "right": 4741,
+          "innerLeft": 3035,
+          "innerRight": 2774,
+          "innerCones": [
+            923,
+            1219
+          ],
+          "stars": [
+            1627,
+            1873
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 7.93,
+          "outside": 0,
+          "left": 4268,
+          "right": 4741,
+          "innerLeft": 3035,
+          "innerRight": 2774,
+          "innerCones": [
+            923,
+            1219
+          ],
+          "stars": [
+            1627,
+            1873
+          ],
+          "alpha": 0
+        }
+      ],
+      "addInnerOnly": [
+        {
+          "time": 0.05,
+          "protectedDifferences": 0
+        },
+        {
+          "time": 0.37,
+          "protectedDifferences": 0
+        }
+      ],
+      "loopDelta": 0,
+      "elapsed": 35,
+      "differentPeaks": true,
+      "matchesWidth": true,
+      "period": 0.84,
+      "overlap": 0.32,
+      "leftPeak": {
+        "sx": 1.035,
+        "sy": 1.031,
+        "shear": 0.006,
+        "opacity": 1
+      },
+      "rightAtLeftPeak": {
+        "sx": 1.0238,
+        "sy": 1.02108,
+        "shear": -0.00408,
+        "opacity": 1
+      },
+      "rightPeak": {
+        "sx": 1.035,
+        "sy": 1.031,
+        "shear": -0.006,
+        "opacity": 1
+      },
+      "errors": []
+    }
+  ]
+}

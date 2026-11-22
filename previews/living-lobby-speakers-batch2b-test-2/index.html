@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>氣球小V遊戲宇宙｜Batch 2-B Test 2</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f8f5ee;color:#2b2440;font:16px/1.5 system-ui,sans-serif}
+main{max-width:1544px;margin:auto;padding:clamp(10px,2vw,26px)}
+header{margin-bottom:12px}
+h1{margin:0;font-size:clamp(22px,4vw,35px);line-height:1.2}
+header p{margin:5px 0 12px;color:#514665;font-size:14px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.controls label{display:flex;gap:6px;align-items:center;max-width:100%}
+button,select{font:inherit;color:inherit;background:white;border:1px solid #a89bb9;border-radius:8px;padding:7px 10px;min-height:44px}
+button{cursor:pointer}
+button:focus-visible,select:focus-visible{outline:3px solid #8457a5;outline-offset:2px}
+.stage{position:relative}
+#map{display:block;width:100%;height:auto;border-radius:10px;background:#e1ecf2}
+#status:empty{display:none}
+#art-hotspot{position:absolute;transform:translate(-50%,-50%);min-width:36px;min-height:36px;padding:0;border:0;background:transparent}
+#art-hotspot:hover,#art-hotspot:focus-visible{outline:2px solid white;box-shadow:0 0 0 4px #59347b;background:#fff2}
+#art-hotspot span{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);white-space:nowrap;background:#3f2657;color:white;border-radius:8px;padding:4px 9px;opacity:0;pointer-events:none}
+#art-hotspot:hover span,#art-hotspot:focus-visible span{opacity:1}
+#art-dialog{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:transparent;overflow:hidden}
+#art-dialog[open]{display:grid;place-items:center}
+#art-dialog::backdrop{background:#ffe7be29;backdrop-filter:blur(5px) saturate(.88)}
+#art-dialog-title{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.art-reveal{width:min(82vw,850px);display:grid;place-items:center;pointer-events:none}
+#art-detail{display:block;max-width:100%;max-height:80dvh;object-fit:contain;filter:drop-shadow(0 12px 19px #39254545);animation:reveal 220ms ease-out both}
+.art-dismiss{position:absolute;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));margin:0}
+.art-dismiss button{width:44px;border-radius:50%;padding:0;background:#fff5e3dd;font:26px/1 system-ui}
+@keyframes reveal{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){#art-detail{animation:none}}
+#character-layer,#flyover{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#art-hotspot{z-index:1}
+#flyover{z-index:2}
+.map-footer{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.map-footer p{margin:.55rem 0}
+.map-footer details{margin:.55rem 0}
+.map-footer .controls{margin-top:.55rem}
+#speaker-comparison{margin:12px 0}
+#speaker-comparison summary{width:fit-content;cursor:pointer;padding:8px 0}
+.speaker-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:12px}
+.speaker-pair figure{margin:0}
+.speaker-pair canvas{display:block;width:100%;height:auto;border-radius:8px;background:#e1ecf2}
+.speaker-pair figcaption{margin:4px 0}
+@media(max-width:700px){.speaker-pair{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>氣球小V遊戲宇宙</h1>
+<p>Living Lobby Art v1.0｜Batch 2-B Test 2</p>
+<p class="instruction">遇到小 V、蓬蓬和 Eric 時，點角色就能看大圖。</p>
+</header>
+<p id="status" role="status">載入預覽素材…</p>
+<details id="speaker-comparison">
+  <summary>放大比較音樂舞台</summary>
+  <div class="speaker-pair">
+    <figure><figcaption>原始靜態畫面</figcaption><canvas id="speaker-original" width="371" height="215" aria-label="音樂舞台原圖"></canvas></figure>
+    <figure><figcaption>音響與音符動畫</figcaption><canvas id="speaker-live" width="371" height="215" aria-label="音樂舞台動態預覽"></canvas></figure>
+  </div>
+</details>
+<div class="stage">
+<canvas id="map" width="3072" height="2048" aria-label="原始大廳地圖與已驗收動畫"></canvas>
+<canvas id="character-layer" width="3072" height="2048" aria-hidden="true"></canvas>
+<canvas id="flyover" width="1536" height="1024" aria-hidden="true"></canvas>
+<button id="art-hotspot" type="button" aria-haspopup="dialog" aria-label="查看目前場景的互動原圖" hidden><span aria-hidden="true">查看互動原圖</span></button>
+</div>
+<div class="map-footer">
+  <p id="visit-name"></p>
+  <button id="speakers" type="button" aria-pressed="true" disabled>音響動態：開</button>
+  <button id="waterfalls" type="button" aria-pressed="true" disabled>瀑布動態：開</button>
+  <details><summary>播放控制</summary><div class="controls">
+    <button id="play" type="button" disabled>播放</button>
+    <button id="reset" type="button" disabled>回原位</button>
+  </div></details>
+</div>
+</main>
+<dialog id="art-dialog" aria-labelledby="art-dialog-title">
+<h2 id="art-dialog-title"></h2>
+<form class="art-dismiss" method="dialog"><button autofocus aria-label="關閉互動圖">×</button></form>
+<div class="art-reveal"><canvas id="art-detail" aria-label="放大的互動原圖"></canvas></div>
+</dialog>
+<script src="assets.js"></script>
+<script src="waterfall.js"></script>
+<script src="waterfall-layouts.js"></script>
+<script src="speakers.js"></script>
+<script src="preview.js"></script>
+</body>
+</html>
+

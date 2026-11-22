@@ -1,0 +1,293 @@
+{
+  "chrome": "157.0.8103.51",
+  "profiles": [
+    {
+      "mobile": false,
+      "layout": {
+        "viewport": 1440,
+        "content": 1440,
+        "map": 1388
+      },
+      "counts": [
+        11,
+        12,
+        2,
+        5
+      ],
+      "neutralDiff": 0,
+      "sourceRestDiff": 44302,
+      "motionGroups": [
+        {
+          "id": "B01-01",
+          "changed": 10061
+        },
+        {
+          "id": "B01-02",
+          "changed": 85473
+        },
+        {
+          "id": "B01-03",
+          "changed": 46535
+        },
+        {
+          "id": "B01-04",
+          "changed": 12090
+        },
+        {
+          "id": "B01-05",
+          "changed": 10311
+        },
+        {
+          "id": "B01-06",
+          "changed": 59102
+        },
+        {
+          "id": "B01-07",
+          "changed": 13449
+        },
+        {
+          "id": "B01-08",
+          "changed": 59530
+        },
+        {
+          "id": "B01-09",
+          "changed": 15453
+        },
+        {
+          "id": "B01-10",
+          "changed": 205592
+        },
+        {
+          "id": "B01-11",
+          "changed": 12988
+        },
+        {
+          "id": "B05-01",
+          "changed": 6235
+        },
+        {
+          "id": "B05-02",
+          "changed": 8273
+        },
+        {
+          "id": "B05-03",
+          "changed": 4045
+        },
+        {
+          "id": "B05-04",
+          "changed": 6607
+        },
+        {
+          "id": "B05-05",
+          "changed": 6046
+        },
+        {
+          "id": "B05-06",
+          "changed": 5510
+        },
+        {
+          "id": "B05-07",
+          "changed": 6299
+        },
+        {
+          "id": "B05-08",
+          "changed": 6953
+        },
+        {
+          "id": "B05-09",
+          "changed": 10750
+        },
+        {
+          "id": "B05-10",
+          "changed": 12531
+        },
+        {
+          "id": "B05-11",
+          "changed": 10608
+        },
+        {
+          "id": "B05-12",
+          "changed": 9867
+        },
+        {
+          "id": "B06-01",
+          "changed": 53720
+        },
+        {
+          "id": "B07-12",
+          "changed": 72471
+        },
+        {
+          "id": "B07-03",
+          "changed": 63550
+        },
+        {
+          "id": "B07-01",
+          "changed": 51331
+        },
+        {
+          "id": "B07-10",
+          "changed": 34596
+        },
+        {
+          "id": "B07-11",
+          "changed": 39189
+        }
+      ],
+      "centralChanged": 0,
+      "renderMs": {
+        "median": 7,
+        "p95": 8.200000047683716
+      },
+      "sevenDialogs": true,
+      "twoSkuaFlybys": true,
+      "alternatingDepth": true,
+      "distinctDirections": true,
+      "noErrors": true
+    },
+    {
+      "mobile": true,
+      "layout": {
+        "viewport": 412,
+        "content": 412,
+        "map": 392
+      },
+      "counts": [
+        11,
+        12,
+        2,
+        5
+      ],
+      "neutralDiff": 0,
+      "sourceRestDiff": 44302,
+      "motionGroups": [
+        {
+          "id": "B01-01",
+          "changed": 10061
+        },
+        {
+          "id": "B01-02",
+          "changed": 85473
+        },
+        {
+          "id": "B01-03",
+          "changed": 46535
+        },
+        {
+          "id": "B01-04",
+          "changed": 12090
+        },
+        {
+          "id": "B01-05",
+          "changed": 10311
+        },
+        {
+          "id": "B01-06",
+          "changed": 59102
+        },
+        {
+          "id": "B01-07",
+          "changed": 13449
+        },
+        {
+          "id": "B01-08",
+          "changed": 59530
+        },
+        {
+          "id": "B01-09",
+          "changed": 15453
+        },
+        {
+          "id": "B01-10",
+          "changed": 205592
+        },
+        {
+          "id": "B01-11",
+          "changed": 12988
+        },
+        {
+          "id": "B05-01",
+          "changed": 6235
+        },
+        {
+          "id": "B05-02",
+          "changed": 8273
+        },
+        {
+          "id": "B05-03",
+          "changed": 4045
+        },
+        {
+          "id": "B05-04",
+          "changed": 6607
+        },
+        {
+          "id": "B05-05",
+          "changed": 6046
+        },
+        {
+          "id": "B05-06",
+          "changed": 5510
+        },
+        {
+          "id": "B05-07",
+          "changed": 6299
+        },
+        {
+          "id": "B05-08",
+          "changed": 6953
+        },
+        {
+          "id": "B05-09",
+          "changed": 10750
+        },
+        {
+          "id": "B05-10",
+          "changed": 12531
+        },
+        {
+          "id": "B05-11",
+          "changed": 10608
+        },
+        {
+          "id": "B05-12",
+          "changed": 9867
+        },
+        {
+          "id": "B06-01",
+          "changed": 53720
+        },
+        {
+          "id": "B07-12",
+          "changed": 72471
+        },
+        {
+          "id": "B07-03",
+          "changed": 63550
+        },
+        {
+          "id": "B07-01",
+          "changed": 51331
+        },
+        {
+          "id": "B07-10",
+          "changed": 34596
+        },
+        {
+          "id": "B07-11",
+          "changed": 39189
+        }
+      ],
+      "centralChanged": 0,
+      "renderMs": {
+        "median": 6.899999976158142,
+        "p95": 8.100000023841858
+      },
+      "sevenDialogs": true,
+      "twoSkuaFlybys": true,
+      "alternatingDepth": true,
+      "distinctDirections": true,
+      "noErrors": true
+    }
+  ]
+}
