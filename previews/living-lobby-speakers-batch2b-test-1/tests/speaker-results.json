@@ -1,0 +1,461 @@
+{
+  "chrome": "157.0.8103.51",
+  "profiles": [
+    {
+      "profile": "Desktop Chrome",
+      "frames": [
+        {
+          "time": 0,
+          "outside": 0,
+          "left": 0,
+          "right": 0,
+          "stars": [
+            0,
+            0
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.025,
+          "outside": 0,
+          "left": 4230,
+          "right": 4549,
+          "stars": [
+            1615,
+            1778
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.05,
+          "outside": 0,
+          "left": 4326,
+          "right": 4649,
+          "stars": [
+            1651,
+            1817
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.09,
+          "outside": 0,
+          "left": 4233,
+          "right": 4555,
+          "stars": [
+            1616,
+            1782
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.142,
+          "outside": 0,
+          "left": 2653,
+          "right": 2502,
+          "stars": [
+            1371,
+            1384
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.195,
+          "outside": 0,
+          "left": 4156,
+          "right": 4461,
+          "stars": [
+            1597,
+            1779
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.265,
+          "outside": 0,
+          "left": 0,
+          "right": 0,
+          "stars": [
+            0,
+            0
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.32,
+          "outside": 0,
+          "left": 0,
+          "right": 0,
+          "stars": [
+            0,
+            0
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.37,
+          "outside": 0,
+          "left": 4267,
+          "right": 4741,
+          "stars": [
+            1627,
+            1873
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.41,
+          "outside": 0,
+          "left": 4166,
+          "right": 4620,
+          "stars": [
+            1598,
+            1807
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.462,
+          "outside": 0,
+          "left": 2231,
+          "right": 2969,
+          "stars": [
+            1243,
+            1510
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.515,
+          "outside": 0,
+          "left": 4053,
+          "right": 4544,
+          "stars": [
+            1591,
+            1780
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.76,
+          "outside": 0,
+          "left": 0,
+          "right": 0,
+          "stars": [
+            0,
+            0
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.84,
+          "outside": 0,
+          "left": 0,
+          "right": 0,
+          "stars": [
+            0,
+            0
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.89,
+          "outside": 0,
+          "left": 4326,
+          "right": 4648,
+          "stars": [
+            1651,
+            1817
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 2.57,
+          "outside": 0,
+          "left": 4326,
+          "right": 4648,
+          "stars": [
+            1651,
+            1817
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 4.57,
+          "outside": 0,
+          "left": 4268,
+          "right": 4741,
+          "stars": [
+            1627,
+            1873
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 7.93,
+          "outside": 0,
+          "left": 4268,
+          "right": 4741,
+          "stars": [
+            1627,
+            1873
+          ],
+          "alpha": 0
+        }
+      ],
+      "loopDelta": 0,
+      "elapsed": 35,
+      "differentPeaks": true,
+      "matchesWidth": true,
+      "period": 0.84,
+      "overlap": 0.32,
+      "leftPeak": {
+        "sx": 1.035,
+        "sy": 1.031,
+        "shear": 0.006,
+        "opacity": 1
+      },
+      "rightAtLeftPeak": {
+        "sx": 1.0238,
+        "sy": 1.02108,
+        "shear": -0.00408,
+        "opacity": 1
+      },
+      "rightPeak": {
+        "sx": 1.035,
+        "sy": 1.031,
+        "shear": -0.006,
+        "opacity": 1
+      },
+      "errors": []
+    },
+    {
+      "profile": "Pixel 7 emulation",
+      "frames": [
+        {
+          "time": 0,
+          "outside": 0,
+          "left": 0,
+          "right": 0,
+          "stars": [
+            0,
+            0
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.025,
+          "outside": 0,
+          "left": 4230,
+          "right": 4549,
+          "stars": [
+            1615,
+            1778
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.05,
+          "outside": 0,
+          "left": 4326,
+          "right": 4649,
+          "stars": [
+            1651,
+            1817
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.09,
+          "outside": 0,
+          "left": 4233,
+          "right": 4555,
+          "stars": [
+            1616,
+            1782
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.142,
+          "outside": 0,
+          "left": 2653,
+          "right": 2502,
+          "stars": [
+            1371,
+            1384
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.195,
+          "outside": 0,
+          "left": 4156,
+          "right": 4461,
+          "stars": [
+            1597,
+            1779
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.265,
+          "outside": 0,
+          "left": 0,
+          "right": 0,
+          "stars": [
+            0,
+            0
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.32,
+          "outside": 0,
+          "left": 0,
+          "right": 0,
+          "stars": [
+            0,
+            0
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.37,
+          "outside": 0,
+          "left": 4267,
+          "right": 4741,
+          "stars": [
+            1627,
+            1873
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.41,
+          "outside": 0,
+          "left": 4166,
+          "right": 4620,
+          "stars": [
+            1598,
+            1807
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.462,
+          "outside": 0,
+          "left": 2231,
+          "right": 2969,
+          "stars": [
+            1243,
+            1510
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.515,
+          "outside": 0,
+          "left": 4053,
+          "right": 4544,
+          "stars": [
+            1591,
+            1780
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.76,
+          "outside": 0,
+          "left": 0,
+          "right": 0,
+          "stars": [
+            0,
+            0
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.84,
+          "outside": 0,
+          "left": 0,
+          "right": 0,
+          "stars": [
+            0,
+            0
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 0.89,
+          "outside": 0,
+          "left": 4326,
+          "right": 4648,
+          "stars": [
+            1651,
+            1817
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 2.57,
+          "outside": 0,
+          "left": 4326,
+          "right": 4648,
+          "stars": [
+            1651,
+            1817
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 4.57,
+          "outside": 0,
+          "left": 4268,
+          "right": 4741,
+          "stars": [
+            1627,
+            1873
+          ],
+          "alpha": 0
+        },
+        {
+          "time": 7.93,
+          "outside": 0,
+          "left": 4268,
+          "right": 4741,
+          "stars": [
+            1627,
+            1873
+          ],
+          "alpha": 0
+        }
+      ],
+      "loopDelta": 0,
+      "elapsed": 35,
+      "differentPeaks": true,
+      "matchesWidth": true,
+      "period": 0.84,
+      "overlap": 0.32,
+      "leftPeak": {
+        "sx": 1.035,
+        "sy": 1.031,
+        "shear": 0.006,
+        "opacity": 1
+      },
+      "rightAtLeftPeak": {
+        "sx": 1.0238,
+        "sy": 1.02108,
+        "shear": -0.00408,
+        "opacity": 1
+      },
+      "rightPeak": {
+        "sx": 1.035,
+        "sy": 1.031,
+        "shear": -0.006,
+        "opacity": 1
+      },
+      "errors": []
+    }
+  ]
+}

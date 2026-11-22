@@ -1,0 +1,381 @@
+{
+  "chrome": "157.0.8103.51",
+  "profiles": [
+    {
+      "profile": "Desktop Chrome",
+      "mapDisplayPx": 1388,
+      "viewport": 1440,
+      "documentWidth": 1440,
+      "frames": [
+        {
+          "seconds": 0,
+          "byPatch": [
+            5732,
+            497,
+            570,
+            582,
+            958,
+            279,
+            55,
+            130,
+            8594,
+            3052
+          ],
+          "outside": 0,
+          "alpha": 0
+        },
+        {
+          "seconds": 0.53,
+          "byPatch": [
+            5719,
+            481,
+            522,
+            565,
+            954,
+            281,
+            53,
+            153,
+            8675,
+            3026
+          ],
+          "outside": 0,
+          "alpha": 0
+        },
+        {
+          "seconds": 1.47,
+          "byPatch": [
+            5755,
+            473,
+            551,
+            574,
+            948,
+            285,
+            55,
+            153,
+            8676,
+            3040
+          ],
+          "outside": 0,
+          "alpha": 0
+        },
+        {
+          "seconds": 2.6,
+          "byPatch": [
+            5704,
+            476,
+            583,
+            577,
+            954,
+            287,
+            54,
+            147,
+            8709,
+            3041
+          ],
+          "outside": 0,
+          "alpha": 0
+        },
+        {
+          "seconds": 3.55,
+          "byPatch": [
+            5707,
+            501,
+            568,
+            573,
+            952,
+            278,
+            53,
+            144,
+            8658,
+            3016
+          ],
+          "outside": 0,
+          "alpha": 0
+        },
+        {
+          "seconds": 4.8,
+          "byPatch": [
+            5732,
+            497,
+            570,
+            582,
+            958,
+            279,
+            55,
+            130,
+            8594,
+            3052
+          ],
+          "outside": 0,
+          "alpha": 0
+        }
+      ],
+      "patches": [
+        {
+          "id": "block-main",
+          "maskPixels": 7173,
+          "minChanged": 5704,
+          "maxChanged": 5755,
+          "loopMismatch": 0
+        },
+        {
+          "id": "upper-left",
+          "maskPixels": 624,
+          "minChanged": 473,
+          "maxChanged": 501,
+          "loopMismatch": 0
+        },
+        {
+          "id": "castle",
+          "maskPixels": 781,
+          "minChanged": 522,
+          "maxChanged": 583,
+          "loopMismatch": 0
+        },
+        {
+          "id": "block-side",
+          "maskPixels": 718,
+          "minChanged": 565,
+          "maxChanged": 582,
+          "loopMismatch": 0
+        },
+        {
+          "id": "lower-left",
+          "maskPixels": 1280,
+          "minChanged": 948,
+          "maxChanged": 958,
+          "loopMismatch": 0
+        },
+        {
+          "id": "stage-west",
+          "maskPixels": 342,
+          "minChanged": 278,
+          "maxChanged": 287,
+          "loopMismatch": 0
+        },
+        {
+          "id": "stage-east",
+          "maskPixels": 73,
+          "minChanged": 53,
+          "maxChanged": 55,
+          "loopMismatch": 0
+        },
+        {
+          "id": "ship-rear",
+          "maskPixels": 196,
+          "minChanged": 130,
+          "maxChanged": 153,
+          "loopMismatch": 0
+        },
+        {
+          "id": "ship-main",
+          "maskPixels": 11179,
+          "minChanged": 8594,
+          "maxChanged": 8709,
+          "loopMismatch": 0
+        },
+        {
+          "id": "bridge-main",
+          "maskPixels": 4230,
+          "minChanged": 3016,
+          "maxChanged": 3052,
+          "loopMismatch": 0
+        }
+      ],
+      "originalSampleChannelMismatches": 0,
+      "renderMs": {
+        "median": 7.600000023841858,
+        "p95": 8
+      },
+      "inspectionMs": 692
+    },
+    {
+      "profile": "Pixel 7 emulation",
+      "mapDisplayPx": 392,
+      "viewport": 412,
+      "documentWidth": 412,
+      "frames": [
+        {
+          "seconds": 0,
+          "byPatch": [
+            5732,
+            497,
+            570,
+            582,
+            958,
+            279,
+            55,
+            130,
+            8594,
+            3052
+          ],
+          "outside": 0,
+          "alpha": 0
+        },
+        {
+          "seconds": 0.53,
+          "byPatch": [
+            5719,
+            481,
+            522,
+            565,
+            954,
+            281,
+            53,
+            153,
+            8675,
+            3026
+          ],
+          "outside": 0,
+          "alpha": 0
+        },
+        {
+          "seconds": 1.47,
+          "byPatch": [
+            5755,
+            473,
+            551,
+            574,
+            948,
+            285,
+            55,
+            153,
+            8676,
+            3040
+          ],
+          "outside": 0,
+          "alpha": 0
+        },
+        {
+          "seconds": 2.6,
+          "byPatch": [
+            5704,
+            476,
+            583,
+            577,
+            954,
+            287,
+            54,
+            147,
+            8709,
+            3041
+          ],
+          "outside": 0,
+          "alpha": 0
+        },
+        {
+          "seconds": 3.55,
+          "byPatch": [
+            5707,
+            501,
+            568,
+            573,
+            952,
+            278,
+            53,
+            144,
+            8658,
+            3016
+          ],
+          "outside": 0,
+          "alpha": 0
+        },
+        {
+          "seconds": 4.8,
+          "byPatch": [
+            5732,
+            497,
+            570,
+            582,
+            958,
+            279,
+            55,
+            130,
+            8594,
+            3052
+          ],
+          "outside": 0,
+          "alpha": 0
+        }
+      ],
+      "patches": [
+        {
+          "id": "block-main",
+          "maskPixels": 7173,
+          "minChanged": 5704,
+          "maxChanged": 5755,
+          "loopMismatch": 0
+        },
+        {
+          "id": "upper-left",
+          "maskPixels": 624,
+          "minChanged": 473,
+          "maxChanged": 501,
+          "loopMismatch": 0
+        },
+        {
+          "id": "castle",
+          "maskPixels": 781,
+          "minChanged": 522,
+          "maxChanged": 583,
+          "loopMismatch": 0
+        },
+        {
+          "id": "block-side",
+          "maskPixels": 718,
+          "minChanged": 565,
+          "maxChanged": 582,
+          "loopMismatch": 0
+        },
+        {
+          "id": "lower-left",
+          "maskPixels": 1280,
+          "minChanged": 948,
+          "maxChanged": 958,
+          "loopMismatch": 0
+        },
+        {
+          "id": "stage-west",
+          "maskPixels": 342,
+          "minChanged": 278,
+          "maxChanged": 287,
+          "loopMismatch": 0
+        },
+        {
+          "id": "stage-east",
+          "maskPixels": 73,
+          "minChanged": 53,
+          "maxChanged": 55,
+          "loopMismatch": 0
+        },
+        {
+          "id": "ship-rear",
+          "maskPixels": 196,
+          "minChanged": 130,
+          "maxChanged": 153,
+          "loopMismatch": 0
+        },
+        {
+          "id": "ship-main",
+          "maskPixels": 11179,
+          "minChanged": 8594,
+          "maxChanged": 8709,
+          "loopMismatch": 0
+        },
+        {
+          "id": "bridge-main",
+          "maskPixels": 4230,
+          "minChanged": 3016,
+          "maxChanged": 3052,
+          "loopMismatch": 0
+        }
+      ],
+      "originalSampleChannelMismatches": 0,
+      "renderMs": {
+        "median": 8,
+        "p95": 8.5
+      },
+      "inspectionMs": 722.0999999046326
+    }
+  ]
+}

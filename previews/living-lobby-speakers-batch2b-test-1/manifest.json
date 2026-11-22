@@ -1,0 +1,33 @@
+{
+  "project": "Universe Living Lobby v1.0",
+  "version": "Living Lobby Art v1.0 | Batch 2-B Test 1",
+  "date": "2026-11-22",
+  "status": "sample-pending-visual-acceptance",
+  "visualBaseline": {
+    "version": "Integration Preview Test 1",
+    "libraryId": "libfile_14cc95e5410481918888ef2444759e22"
+  },
+  "engineeringBaseline": {
+    "version": "Integration Preview Test 2",
+    "libraryId": "libfile_0a1b5cc77ec88191b1fe33fac5b99bf1",
+    "zipSha256": "f718c2e5d81a151ce1f04fd15ec5d96aa22315ea7ea7267c3a84771f1b6e107c",
+    "commit": "81802634c7a7d1c930add778498baa5dfcefddec",
+    "acceptedWaterfallSample": "Living Lobby Art v1.0 | Batch 2-A Test 2"
+  },
+  "map": {
+    "size": [1536, 1024],
+    "gitBlob": "9c3e05124b6c85e6a33d828f7d2e57879407a065"
+  },
+  "groups": [
+    {"id":"left","boundsXYWH":[1009,200,59,108],"anchorXY":[1039,302]},
+    {"id":"right","boundsXYWH":[1302,232,57,115],"anchorXY":[1329,340]}
+  ],
+  "motion": {"periodSeconds":0.84,"secondBeatSeconds":0.32,"peakScaleXY":[1.035,1.031],"crossBeatStrength":0.68},
+  "git": {
+    "repository": "vashyang1120/balloon-v-universe",
+    "branch": "dev/living-lobby-speakers-batch2b",
+    "directory": "previews/living-lobby-speakers-batch2b-test-1"
+  },
+  "preview": "index.html",
+  "tests": ["tests/speaker-results.json","tests/baseline-regression.json","tests/waterfall-regression.json","tests/protected-files.json"]
+}
