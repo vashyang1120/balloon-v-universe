@@ -1161,3 +1161,10 @@ html.page-hidden .actor, html.page-hidden .actor * { animation-play-state: pause
 .pass-copy-msg.is-fail { color: #b3261e; }
 .lb-note--trial { background: #efe7fb !important; color: var(--purple-dark) !important; }
 @media (max-width: 420px) { .pass-code code { font-size: 12px; } }
+
+/* Keep the production map visible until the complete animated scene is ready. */
+.map-svg .living-lobby-layer { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .map-svg.living-lobby-ready .living-lobby-layer { display: block; }
+  .map-svg.living-lobby-ready .character-layer { display: none; }
+}
