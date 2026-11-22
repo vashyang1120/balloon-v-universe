@@ -2,6 +2,10 @@
 
 (() => {
   const svg = document.getElementById("mapSvg");
+  const hotspot = document.getElementById("art-hotspot");
+  const detailDialog = document.getElementById("art-dialog");
+  const detailTitle = document.getElementById("art-dialog-title");
+  const detailCanvas = document.getElementById("art-detail");
   const assetBase = new URL(".", document.currentScript.src);
   const motion = matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -278,6 +282,8 @@ function measure(sheet,splitFraction){
     const flyover = near.getContext("2d");
 
 
+  let selectedArt;
+
   function paintInteraction(scene) {
     const ctx = characterContext;
     const ratio = 1, left = 0, top = 0, layered = true;
@@ -291,6 +297,12 @@ function measure(sheet,splitFraction){
     const sheet=pose>=5?venueArt:pose===4?angleArt:pose<2?previousArt:nextArt;
     const artLeft=anchorX-(boyFootX-sx)*scale;
     const artTop=anchorY-(boyFootY-sy)*scale;
+    hotspot.style.left = ((artLeft + width / 2) / 1536 * 100) + "%";
+    hotspot.style.top = ((artTop + size / 2) / 1024 * 100) + "%";
+    hotspot.style.width = (width / 1536 * 100) + "%";
+    hotspot.style.height = (size / 1024 * 100) + "%";
+    selectedArt = {sheet, sx, sy, sw, sh, name: scene.name};
+    hotspot.hidden = false;
     {
       // Feet and seated body contact points in the source art.
       const contacts=[
@@ -344,6 +356,8 @@ function measure(sheet,splitFraction){
   function updateCharacter() {
     if (characterKey === characterMode) return;
     characterKey = characterMode;
+    selectedArt = null;
+    hotspot.hidden = true;
     characterContext.setTransform(1,0,0,1,0,0);
     characterContext.clearRect(0,0,3072,2048);
     if (characterMode === "none") return;
@@ -423,6 +437,7 @@ function measure(sheet,splitFraction){
   let remaining = Object.keys(scenes).filter(id => id !== currentVisit);
 
   function advanceVisitClock(delta) {
+    if (detailDialog.open) return;
     visitTime += delta;
     if (visitTime >= visitStart + visitLength + visitGap) {
       visitStart += visitLength + visitGap;
@@ -441,6 +456,8 @@ function measure(sheet,splitFraction){
   function showVisit(id,opacity = 1) {
     characterMode = id;
     characterLayer.style.opacity = opacity;
+    hotspot.style.opacity = opacity;
+    hotspot.disabled = opacity < .3;
   }
 
 
@@ -465,6 +482,22 @@ function measure(sheet,splitFraction){
       if (!motion.matches) render(elapsed);
       if (!document.hidden) animation = requestAnimationFrame(tick);
     }
+
+    hotspot.addEventListener("click", () => {
+      if (!selectedArt || detailDialog.open) return;
+      const {sheet, sx, sy, sw, sh, name} = selectedArt;
+      detailCanvas.width = sw;
+      detailCanvas.height = sh;
+      detailCanvas.getContext("2d").drawImage(sheet, sx, sy, sw, sh, 0, 0, sw, sh);
+      detailTitle.textContent = name;
+      detailDialog.showModal();
+    });
+    detailDialog.addEventListener("keydown", event => {
+      if (event.key === "Escape") event.stopPropagation();
+    });
+    detailDialog.addEventListener("click", event => {
+      if (event.target === detailDialog) detailDialog.close();
+    });
 
     showVisit(characterMode);
     updatePlayback();
