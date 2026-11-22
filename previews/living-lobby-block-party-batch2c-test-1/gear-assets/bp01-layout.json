@@ -1,0 +1,42 @@
+{
+  "mapSha256": "78c4885e61f71b4cb5c63680eed97a04c0023aed81f2e58ae839ff3ff913953f",
+  "rectXYWH": [
+    396,
+    284,
+    76,
+    74
+  ],
+  "unionBBoxXYXY": [
+    404,
+    294,
+    461,
+    351
+  ],
+  "unionPixels": 2219,
+  "maskPixels": 3057,
+  "hubCircleXYR": [
+    423.25,
+    331.8,
+    17.3
+  ],
+  "hubPivotXY": [
+    417.6,
+    332.0
+  ],
+  "gearPivotXY": [
+    437.0,
+    320.0
+  ],
+  "maxRadiusPx": {
+    "gear": 28.5,
+    "hub": 23.17
+  },
+  "underHubExtensionPixels": 139,
+  "staticRimPixels": 57,
+  "assets": {
+    "gear-assets/bp01-plate.png": "4c886be36c9bf6310192fbe4bd6c79224708f76bde5c7b5cb7960e09f7f02fde",
+    "gear-assets/bp01-gear.png": "ecabdef6347755f0e3a4bed98a796fe4f3320b148b9daa3c679faced94286e8b",
+    "gear-assets/bp01-hub.png": "d8d99f63e50c7435b37045f3d1d34ad09cda958c916580e065a3523b27757d01",
+    "gear-assets/bp01-mask.png": "74911a18f4fc7452cfa73eb53809281818816de81caa26edb7e0adf0a3cb9e58"
+  }
+}

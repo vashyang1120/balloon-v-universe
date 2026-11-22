@@ -1,0 +1,114 @@
+{
+  "project": "Universe Living Lobby v1.0",
+  "version": "Living Lobby Art v1.0 | Batch 2-C Test 1",
+  "date": "2026-11-22",
+  "status": "sample-pending-visual-acceptance",
+  "scope": "BP-01 only (no BP-02, no balloon bouquets, no audio)",
+  "baseline": {
+    "animation": {
+      "version": "Living Lobby Art v1.0 | Batch 2-B Test 2",
+      "branch": "dev/living-lobby-speakers-batch2b",
+      "commit": "3dc75c2be2676f3a6360ec339c8ff1f76e0d65e4"
+    },
+    "survey": {
+      "version": "Batch 2-C Survey 1",
+      "branch": "dev/living-lobby-block-party-batch2c-survey-1",
+      "commit": "1f4f42ebebab87767bd73f1cd4dea37709187277"
+    },
+    "map": {
+      "path": "assets/universe_map_bg.png",
+      "sha256": "78c4885e61f71b4cb5c63680eed97a04c0023aed81f2e58ae839ff3ff913953f"
+    },
+    "fullLobbyAssets": {
+      "file": "assets.js",
+      "sha256": "1b12b701bbc6ff3fe776663aae46bf9430f64698b8d2c301846761f916414853",
+      "available": false
+    }
+  },
+  "acceptedBouquetsNotReworked": [
+    "BP-03",
+    "BP-04",
+    "BP-13",
+    "BP-14",
+    "BP-16"
+  ],
+  "motion": {
+    "type": "reciprocating-rotation",
+    "formula": "A*sin(2*pi*t/P)",
+    "defaultAmplitudeDegrees": 4,
+    "testedAmplitudes": [
+      3,
+      4,
+      5
+    ],
+    "periodSeconds": 2.8,
+    "hubFollows": true,
+    "gearPivotXY": [
+      437.0,
+      320.0
+    ],
+    "hubPivotXY": [
+      417.6,
+      332.0
+    ],
+    "rectXYWH": [
+      396,
+      284,
+      76,
+      74
+    ],
+    "maskPixels": 3057
+  },
+  "integration": {
+    "script": "build.cjs",
+    "drawOrder": "after LobbySpeakers.paint, before balloons",
+    "edits": 7,
+    "check": "check-integration.py",
+    "status": "pending-assets.js"
+  },
+  "tests": "tests/gear-results.json",
+  "chrome": "153.0.8010.12",
+  "previews": {
+    "html": "index.html",
+    "videos": [
+      "videos/bp01-zoom.mp4",
+      "videos/bp01-lobby.mp4",
+      "videos/bp01-phone.mp4"
+    ]
+  },
+  "zipOnly": [
+    "map-asset.js"
+  ],
+  "files": {
+    ".gitignore": "31759be8e034cb04a26e9578f890999643e6a58b531af74ef1eca1dac9f626d8",
+    "HANDOFF.md": "bac4777d72a4ef9bdce92eae385b6dd193528b01f464c5f73aed9d11f3021bf2",
+    "README.md": "3f6e1093e4de225abde53aaf8f3aeaccc4db2b0b0044088a1366c833d718722e",
+    "baseline-fingerprints.json": "ee8f1bde823f0361eeacb390ef0541ae9636aee01b7d231707676e99877c329c",
+    "build.cjs": "2681b6c12c7f0aaf8f2ecbd853a3b3120368a510390d6c19c5a98110e1a48bf8",
+    "check-gear.py": "554837603ec844bfc26870ad94ca0e06bf2d6dc4fe57b80851443f8c13db0ae2",
+    "check-integration.py": "9b23e23e97a6e3a4bd36bf907f61a121e93523f7cbb9509351c5a5b2902808a4",
+    "gear-assets.js": "f4e005713ee673ed2fcf1f1fc3ce3e22cd85d5f04c6c1f176281b78a3672f443",
+    "gear-assets/bp01-gear.png": "ecabdef6347755f0e3a4bed98a796fe4f3320b148b9daa3c679faced94286e8b",
+    "gear-assets/bp01-hub.png": "d8d99f63e50c7435b37045f3d1d34ad09cda958c916580e065a3523b27757d01",
+    "gear-assets/bp01-layout.json": "fae6dc72d01e0f169568dba6325b91e272bf322e35878a77ac3461b80110d83f",
+    "gear-assets/bp01-mask.png": "74911a18f4fc7452cfa73eb53809281818816de81caa26edb7e0adf0a3cb9e58",
+    "gear-assets/bp01-plate.png": "4c886be36c9bf6310192fbe4bd6c79224708f76bde5c7b5cb7960e09f7f02fde",
+    "gear.js": "8669dca6cc2f946e65df4d46e58f2e45fda085c318be8e23ead3b41a86d3da16",
+    "index.html": "619ac38a26de0f4ee6a01bba491fc92aafc0f8903e2a8b93da5735992d86e822",
+    "local-preview.js": "2742341d42550a690729be4c65118d42c3209bebed5710b6e87d2e246e563d3a",
+    "map-asset.js": "6f9b33feee8821a5df0ab75e8554600db9eeb0ee9d7a657a0388983a0874f138",
+    "scripts/build_gear_assets.py": "0354f23726731d95e873e755921bbad880106523bb45b86d8984b3d69991839a",
+    "scripts/record.py": "e26cf5040267d0f1ac07eaa497b1224b3ec636133a89c528a2b5ef931cd31174",
+    "tests/frames/joint-peak-minus.png": "42daa77f8dbab510c026b8ba3450060ec399489c5c3df9a59dc5ea3fb29d326d",
+    "tests/frames/joint-peak-plus.png": "48c8a618a620b14b77b069f3ab866eb794928b03b87764301a6a6de9a98bbeda",
+    "tests/frames/joint-rest.png": "35eac925c08ce5dfc755da154c559333bcc04a2945957dd65bf2c74c95bd3b79",
+    "tests/frames/page-desktop.png": "7de10b7392fb04f67a5d9ea53c4af658a76f11335a13ec511eeea3b219845487",
+    "tests/frames/page-pixel7.png": "18442cc3de076e50aec42da2d7b582821a418b345399f2c6752c12d6267a4bc5",
+    "tests/gear-results.json": "ea4a44e609c7c30714b8bdfaffcc62670f41077c73775499c06bec509992e142",
+    "videos/bp01-lobby.mp4": "8e0be6b79168639f8513ed237172bf49af3291b223ea0c022257d5c0327e8e7b",
+    "videos/bp01-phone.mp4": "948f01a6ce79c542b6a64173b00e23e2b8a5cf08f49b15673fc9244401dae32c",
+    "videos/bp01-zoom.mp4": "386bb3dd502f9c0977f5aa33716e3273e891bf9b6a135a776a342669f2ef0ffa",
+    "waterfall-layouts.js": "f2a9a36dadc410ee162ae1bc4a2be3626006c81ec238c7106d11c901879aa29e",
+    "waterfall.js": "68f73d8d8c129f0a9f0dcee96e1498603936545c02ed69c9c219e6df38cede8a"
+  }
+}

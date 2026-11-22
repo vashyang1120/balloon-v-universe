@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>氣球小V遊戲宇宙｜Batch 2-C Test 1｜BP-01 齒輪</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f8f5ee;color:#2b2440;font:16px/1.5 system-ui,sans-serif}
+main{max-width:1440px;margin:auto;padding:clamp(10px,2vw,26px)}
+h1{margin:0;font-size:clamp(22px,4vw,34px);line-height:1.2}
+h2{font-size:20px;margin:26px 0 6px}
+header p,.note{margin:4px 0;color:#514665;font-size:14px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0;position:sticky;top:0;background:#f8f5eef0;padding:8px 0;z-index:3}
+button,select{font:inherit;color:inherit;background:white;border:1px solid #a89bb9;border-radius:8px;padding:7px 10px;min-height:44px;cursor:pointer}
+button[aria-pressed="false"]{background:#ece6f2}
+button:focus-visible,select:focus-visible{outline:3px solid #8457a5;outline-offset:2px}
+.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+figure{margin:0}
+figcaption{font-size:14px;margin:4px 0;color:#514665}
+.zoom{position:relative}
+.zoom canvas{display:block;width:100%;height:auto;border-radius:8px;background:#e1ecf2}
+.pixel canvas{image-rendering:pixelated}
+.zoom canvas.overlay{position:absolute;inset:0;height:100%;background:transparent;pointer-events:none}
+.native{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-end}
+.native canvas{display:block;border-radius:4px}
+#lobby{display:block;width:100%;max-width:1388px;height:auto;border-radius:10px}
+#phone{display:block;width:392px;max-width:100%;height:auto;border-radius:8px}
+@media(max-width:700px){.pair{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>BP-01 黃色齒輪狀關節</h1>
+<p>Living Lobby Art v1.0｜Batch 2-C Test 1｜小角度往復旋轉樣本</p>
+<p class="note">所有畫面都直接取自原始地圖。粉紅機械手臂 BP-02 沒有任何動畫，形狀、位置、角度維持原樣。</p>
+</header>
+<p id="status" role="status">載入原始地圖…</p>
+<div class="controls">
+  <button id="play" type="button" aria-pressed="true" disabled>暫停</button>
+  <label>幅度
+    <select id="amplitude" disabled>
+      <option value="3">±3°</option>
+      <option value="4" selected>±4°（預設）</option>
+      <option value="5">±5°</option>
+    </select>
+  </label>
+  <label>前方輪轂
+    <select id="hub" disabled>
+      <option value="follow" selected>與齒輪同軸一起轉（預設）</option>
+      <option value="fixed">固定，只轉後方齒輪</option>
+    </select>
+  </label>
+  <button id="gear-toggle" type="button" aria-pressed="true" disabled>齒輪動態：開</button>
+  <button id="joint" type="button" aria-pressed="false" disabled>顯示接點標記</button>
+  <button id="pixel" type="button" aria-pressed="true" disabled>像素格放大</button>
+</div>
+
+<h2>1. 局部放大（約 5 倍）</h2>
+<p class="note">左邊是原圖靜止畫面，右邊是動畫。可以看齒輪轉動、手臂接點、周圍背景與循環銜接。接點標記：粉紅虛線是手臂末端，藍色十字是旋轉中心。</p>
+<div class="pair pixel" id="zoom-pair">
+  <figure><figcaption>原始靜態畫面</figcaption><div class="zoom"><canvas id="zoom-original" width="190" height="150"></canvas><canvas class="overlay" id="overlay-original" width="950" height="750"></canvas></div></figure>
+  <figure><figcaption>BP-01 動畫</figcaption><div class="zoom"><canvas id="zoom-live" width="190" height="150"></canvas><canvas class="overlay" id="overlay-live" width="950" height="750"></canvas></div></figure>
+</div>
+
+<h2>2. 原始尺寸（1:1 原圖像素）</h2>
+<div class="native">
+  <figure><figcaption>原始靜態</figcaption><canvas id="native-original" width="190" height="150"></canvas></figure>
+  <figure><figcaption>動畫</figcaption><canvas id="native-live" width="190" height="150"></canvas></figure>
+</div>
+
+<h2>3. 大廳比例</h2>
+<p class="note">原始地圖＋BP-01＋已驗收的瀑布流水（取自 Batch 2-A／2-B 分支程式）。熱氣球、旗幟、氣球束、角色、賊鷗、音響需要工程包內的 assets.js，這頁沒有載入，完整大廳整合見 README。</p>
+<canvas id="lobby" width="1536" height="1024" aria-label="大廳比例預覽"></canvas>
+<h2>4. 手機大廳寬度（392 px）</h2>
+<canvas id="phone" width="1536" height="1024" aria-label="手機寬度預覽"></canvas>
+</main>
+<script src="map-asset.js"></script>
+<script src="gear-assets.js"></script>
+<script src="waterfall.js"></script>
+<script src="waterfall-layouts.js"></script>
+<script src="gear.js"></script>
+<script src="local-preview.js"></script>
+</body>
+</html>

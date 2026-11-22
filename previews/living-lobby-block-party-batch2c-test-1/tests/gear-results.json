@@ -1,0 +1,1197 @@
+{
+  "chrome": "153.0.8010.12",
+  "date": "2026-11-22",
+  "runs": [
+    {
+      "profile": "desktop-1440",
+      "layout": {
+        "lobby": 1388,
+        "phone": 392,
+        "overflow": false
+      },
+      "errors": [],
+      "checks": [
+        {
+          "amplitude": 4,
+          "hubFollows": true,
+          "periodSeconds": 2.8,
+          "samples": [
+            {
+              "t": 0,
+              "angleDegrees": 0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.1167,
+              "angleDegrees": 1.035,
+              "changed": 2160,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.2333,
+              "angleDegrees": 2,
+              "changed": 2370,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.35,
+              "angleDegrees": 2.828,
+              "changed": 2414,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.4667,
+              "angleDegrees": 3.464,
+              "changed": 2450,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.5833,
+              "angleDegrees": 3.864,
+              "changed": 2467,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.7,
+              "angleDegrees": 4,
+              "changed": 2469,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.8167,
+              "angleDegrees": 3.864,
+              "changed": 2467,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.9333,
+              "angleDegrees": 3.464,
+              "changed": 2450,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.05,
+              "angleDegrees": 2.828,
+              "changed": 2414,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.1667,
+              "angleDegrees": 2,
+              "changed": 2370,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.2833,
+              "angleDegrees": 1.035,
+              "changed": 2160,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.4,
+              "angleDegrees": 0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.5167,
+              "angleDegrees": -1.035,
+              "changed": 2153,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.6333,
+              "angleDegrees": -2,
+              "changed": 2353,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.75,
+              "angleDegrees": -2.828,
+              "changed": 2400,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.8667,
+              "angleDegrees": -3.464,
+              "changed": 2428,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.9833,
+              "angleDegrees": -3.864,
+              "changed": 2436,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.1,
+              "angleDegrees": -4,
+              "changed": 2437,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.2167,
+              "angleDegrees": -3.864,
+              "changed": 2436,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.3333,
+              "angleDegrees": -3.464,
+              "changed": 2428,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.45,
+              "angleDegrees": -2.828,
+              "changed": 2400,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.5667,
+              "angleDegrees": -2,
+              "changed": 2353,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.6833,
+              "angleDegrees": -1.035,
+              "changed": 2153,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.8,
+              "angleDegrees": -0.0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 5.6,
+              "angleDegrees": -0.0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 8.523,
+              "angleDegrees": 1.09,
+              "changed": 2191,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 21,
+              "angleDegrees": -0.0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            }
+          ],
+          "restExact": true,
+          "outsideMaskMax": 0,
+          "alphaChangedMax": 0,
+          "changedPixelsMax": 2469,
+          "foreignColorMaxDistance": 43.6,
+          "foreignColorPixelsOver30": 114,
+          "armPixels": {
+            "outsideMaskChanged": 0,
+            "insideMaskChangedTotal": 588,
+            "peakLost": 17,
+            "peakGained": 19
+          },
+          "loopExact": true,
+          "sameAngleExact": true,
+          "frameStep60fps": {
+            "max": 10,
+            "meanPerPixel": 0.415
+          },
+          "paintMsPerFrame": 0.183
+        },
+        {
+          "amplitude": 3,
+          "hubFollows": true,
+          "periodSeconds": 2.8,
+          "samples": [
+            {
+              "t": 0,
+              "angleDegrees": 0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.1167,
+              "angleDegrees": 0.776,
+              "changed": 2046,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.2333,
+              "angleDegrees": 1.5,
+              "changed": 2310,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.35,
+              "angleDegrees": 2.121,
+              "changed": 2371,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.4667,
+              "angleDegrees": 2.598,
+              "changed": 2403,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.5833,
+              "angleDegrees": 2.898,
+              "changed": 2418,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.7,
+              "angleDegrees": 3,
+              "changed": 2423,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.8167,
+              "angleDegrees": 2.898,
+              "changed": 2418,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.9333,
+              "angleDegrees": 2.598,
+              "changed": 2403,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.05,
+              "angleDegrees": 2.121,
+              "changed": 2371,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.1667,
+              "angleDegrees": 1.5,
+              "changed": 2310,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.2833,
+              "angleDegrees": 0.776,
+              "changed": 2046,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.4,
+              "angleDegrees": 0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.5167,
+              "angleDegrees": -0.776,
+              "changed": 2025,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.6333,
+              "angleDegrees": -1.5,
+              "changed": 2291,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.75,
+              "angleDegrees": -2.121,
+              "changed": 2358,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.8667,
+              "angleDegrees": -2.598,
+              "changed": 2383,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.9833,
+              "angleDegrees": -2.898,
+              "changed": 2401,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.1,
+              "angleDegrees": -3,
+              "changed": 2404,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.2167,
+              "angleDegrees": -2.898,
+              "changed": 2401,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.3333,
+              "angleDegrees": -2.598,
+              "changed": 2383,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.45,
+              "angleDegrees": -2.121,
+              "changed": 2358,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.5667,
+              "angleDegrees": -1.5,
+              "changed": 2291,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.6833,
+              "angleDegrees": -0.776,
+              "changed": 2025,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.8,
+              "angleDegrees": -0.0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 5.6,
+              "angleDegrees": -0.0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 8.523,
+              "angleDegrees": 0.818,
+              "changed": 2063,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 21,
+              "angleDegrees": -0.0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            }
+          ],
+          "restExact": true,
+          "outsideMaskMax": 0,
+          "alphaChangedMax": 0,
+          "changedPixelsMax": 2423,
+          "foreignColorMaxDistance": 43.7,
+          "foreignColorPixelsOver30": 77,
+          "armPixels": {
+            "outsideMaskChanged": 0,
+            "insideMaskChangedTotal": 584,
+            "peakLost": 12,
+            "peakGained": 18
+          },
+          "loopExact": true,
+          "sameAngleExact": true,
+          "frameStep60fps": {
+            "max": 7,
+            "meanPerPixel": 0.335
+          },
+          "paintMsPerFrame": 0.18
+        },
+        {
+          "amplitude": 5,
+          "hubFollows": true,
+          "periodSeconds": 2.8,
+          "samples": [
+            {
+              "t": 0,
+              "angleDegrees": 0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.1167,
+              "angleDegrees": 1.294,
+              "changed": 2257,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.2333,
+              "angleDegrees": 2.5,
+              "changed": 2402,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.35,
+              "angleDegrees": 3.536,
+              "changed": 2454,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.4667,
+              "angleDegrees": 4.33,
+              "changed": 2476,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.5833,
+              "angleDegrees": 4.83,
+              "changed": 2485,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.7,
+              "angleDegrees": 5,
+              "changed": 2487,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.8167,
+              "angleDegrees": 4.83,
+              "changed": 2485,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.9333,
+              "angleDegrees": 4.33,
+              "changed": 2476,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.05,
+              "angleDegrees": 3.536,
+              "changed": 2454,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.1667,
+              "angleDegrees": 2.5,
+              "changed": 2402,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.2833,
+              "angleDegrees": 1.294,
+              "changed": 2257,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.4,
+              "angleDegrees": 0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.5167,
+              "angleDegrees": -1.294,
+              "changed": 2239,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.6333,
+              "angleDegrees": -2.5,
+              "changed": 2379,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.75,
+              "angleDegrees": -3.536,
+              "changed": 2433,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.8667,
+              "angleDegrees": -4.33,
+              "changed": 2443,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.9833,
+              "angleDegrees": -4.83,
+              "changed": 2453,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.1,
+              "angleDegrees": -5,
+              "changed": 2455,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.2167,
+              "angleDegrees": -4.83,
+              "changed": 2453,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.3333,
+              "angleDegrees": -4.33,
+              "changed": 2443,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.45,
+              "angleDegrees": -3.536,
+              "changed": 2433,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.5667,
+              "angleDegrees": -2.5,
+              "changed": 2379,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.6833,
+              "angleDegrees": -1.294,
+              "changed": 2239,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.8,
+              "angleDegrees": -0.0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 5.6,
+              "angleDegrees": -0.0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 8.523,
+              "angleDegrees": 1.363,
+              "changed": 2274,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 21,
+              "angleDegrees": -0.0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            }
+          ],
+          "restExact": true,
+          "outsideMaskMax": 0,
+          "alphaChangedMax": 0,
+          "changedPixelsMax": 2487,
+          "foreignColorMaxDistance": 50.9,
+          "foreignColorPixelsOver30": 157,
+          "armPixels": {
+            "outsideMaskChanged": 0,
+            "insideMaskChangedTotal": 604,
+            "peakLost": 21,
+            "peakGained": 20
+          },
+          "loopExact": true,
+          "sameAngleExact": true,
+          "frameStep60fps": {
+            "max": 12,
+            "meanPerPixel": 0.494
+          },
+          "paintMsPerFrame": 0.197
+        },
+        {
+          "amplitude": 4,
+          "hubFollows": false,
+          "periodSeconds": 2.8,
+          "samples": [
+            {
+              "t": 0,
+              "angleDegrees": 0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.1167,
+              "angleDegrees": 1.035,
+              "changed": 1346,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.2333,
+              "angleDegrees": 2,
+              "changed": 1421,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.35,
+              "angleDegrees": 2.828,
+              "changed": 1436,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.4667,
+              "angleDegrees": 3.464,
+              "changed": 1454,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.5833,
+              "angleDegrees": 3.864,
+              "changed": 1462,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.7,
+              "angleDegrees": 4,
+              "changed": 1463,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.8167,
+              "angleDegrees": 3.864,
+              "changed": 1462,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.9333,
+              "angleDegrees": 3.464,
+              "changed": 1454,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.05,
+              "angleDegrees": 2.828,
+              "changed": 1436,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.1667,
+              "angleDegrees": 2,
+              "changed": 1421,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.2833,
+              "angleDegrees": 1.035,
+              "changed": 1346,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.4,
+              "angleDegrees": 0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.5167,
+              "angleDegrees": -1.035,
+              "changed": 1352,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.6333,
+              "angleDegrees": -2,
+              "changed": 1419,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.75,
+              "angleDegrees": -2.828,
+              "changed": 1438,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.8667,
+              "angleDegrees": -3.464,
+              "changed": 1448,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.9833,
+              "angleDegrees": -3.864,
+              "changed": 1453,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.1,
+              "angleDegrees": -4,
+              "changed": 1454,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.2167,
+              "angleDegrees": -3.864,
+              "changed": 1453,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.3333,
+              "angleDegrees": -3.464,
+              "changed": 1448,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.45,
+              "angleDegrees": -2.828,
+              "changed": 1438,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.5667,
+              "angleDegrees": -2,
+              "changed": 1419,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.6833,
+              "angleDegrees": -1.035,
+              "changed": 1352,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.8,
+              "angleDegrees": -0.0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 5.6,
+              "angleDegrees": -0.0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 8.523,
+              "angleDegrees": 1.09,
+              "changed": 1353,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 21,
+              "angleDegrees": -0.0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            }
+          ],
+          "restExact": true,
+          "outsideMaskMax": 0,
+          "alphaChangedMax": 0,
+          "changedPixelsMax": 1463,
+          "foreignColorMaxDistance": 43.6,
+          "foreignColorPixelsOver30": 78,
+          "armPixels": {
+            "outsideMaskChanged": 0,
+            "insideMaskChangedTotal": 465,
+            "peakLost": 16,
+            "peakGained": 13
+          },
+          "loopExact": true,
+          "sameAngleExact": true,
+          "frameStep60fps": {
+            "max": 10,
+            "meanPerPixel": 0.282
+          },
+          "paintMsPerFrame": 0.182
+        }
+      ]
+    },
+    {
+      "profile": "pixel7-412",
+      "layout": {
+        "lobby": 392,
+        "phone": 392,
+        "overflow": false
+      },
+      "errors": [],
+      "checks": [
+        {
+          "amplitude": 4,
+          "hubFollows": true,
+          "periodSeconds": 2.8,
+          "samples": [
+            {
+              "t": 0,
+              "angleDegrees": 0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.1167,
+              "angleDegrees": 1.035,
+              "changed": 2160,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.2333,
+              "angleDegrees": 2,
+              "changed": 2370,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.35,
+              "angleDegrees": 2.828,
+              "changed": 2414,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.4667,
+              "angleDegrees": 3.464,
+              "changed": 2450,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.5833,
+              "angleDegrees": 3.864,
+              "changed": 2467,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.7,
+              "angleDegrees": 4,
+              "changed": 2469,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.8167,
+              "angleDegrees": 3.864,
+              "changed": 2467,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 0.9333,
+              "angleDegrees": 3.464,
+              "changed": 2450,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.05,
+              "angleDegrees": 2.828,
+              "changed": 2414,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.1667,
+              "angleDegrees": 2,
+              "changed": 2370,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.2833,
+              "angleDegrees": 1.035,
+              "changed": 2160,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.4,
+              "angleDegrees": 0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.5167,
+              "angleDegrees": -1.035,
+              "changed": 2153,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.6333,
+              "angleDegrees": -2,
+              "changed": 2353,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.75,
+              "angleDegrees": -2.828,
+              "changed": 2400,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.8667,
+              "angleDegrees": -3.464,
+              "changed": 2428,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 1.9833,
+              "angleDegrees": -3.864,
+              "changed": 2436,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.1,
+              "angleDegrees": -4,
+              "changed": 2437,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.2167,
+              "angleDegrees": -3.864,
+              "changed": 2436,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.3333,
+              "angleDegrees": -3.464,
+              "changed": 2428,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.45,
+              "angleDegrees": -2.828,
+              "changed": 2400,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.5667,
+              "angleDegrees": -2,
+              "changed": 2353,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.6833,
+              "angleDegrees": -1.035,
+              "changed": 2153,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 2.8,
+              "angleDegrees": -0.0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 5.6,
+              "angleDegrees": -0.0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 8.523,
+              "angleDegrees": 1.09,
+              "changed": 2191,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            },
+            {
+              "t": 21,
+              "angleDegrees": -0.0,
+              "changed": 0,
+              "outsideMask": 0,
+              "alphaChanged": 0
+            }
+          ],
+          "restExact": true,
+          "outsideMaskMax": 0,
+          "alphaChangedMax": 0,
+          "changedPixelsMax": 2469,
+          "foreignColorMaxDistance": 43.6,
+          "foreignColorPixelsOver30": 114,
+          "armPixels": {
+            "outsideMaskChanged": 0,
+            "insideMaskChangedTotal": 588,
+            "peakLost": 17,
+            "peakGained": 19
+          },
+          "loopExact": true,
+          "sameAngleExact": true,
+          "frameStep60fps": {
+            "max": 10,
+            "meanPerPixel": 0.415
+          },
+          "paintMsPerFrame": 0.173
+        }
+      ]
+    }
+  ],
+  "layout": {
+    "mapSha256": "78c4885e61f71b4cb5c63680eed97a04c0023aed81f2e58ae839ff3ff913953f",
+    "rectXYWH": [
+      396,
+      284,
+      76,
+      74
+    ],
+    "unionBBoxXYXY": [
+      404,
+      294,
+      461,
+      351
+    ],
+    "unionPixels": 2219,
+    "maskPixels": 3057,
+    "hubCircleXYR": [
+      423.25,
+      331.8,
+      17.3
+    ],
+    "hubPivotXY": [
+      417.6,
+      332.0
+    ],
+    "gearPivotXY": [
+      437.0,
+      320.0
+    ],
+    "maxRadiusPx": {
+      "gear": 28.5,
+      "hub": 23.17
+    },
+    "underHubExtensionPixels": 139,
+    "staticRimPixels": 57,
+    "assets": {
+      "gear-assets/bp01-plate.png": "4c886be36c9bf6310192fbe4bd6c79224708f76bde5c7b5cb7960e09f7f02fde",
+      "gear-assets/bp01-gear.png": "ecabdef6347755f0e3a4bed98a796fe4f3320b148b9daa3c679faced94286e8b",
+      "gear-assets/bp01-hub.png": "d8d99f63e50c7435b37045f3d1d34ad09cda958c916580e065a3523b27757d01",
+      "gear-assets/bp01-mask.png": "74911a18f4fc7452cfa73eb53809281818816de81caa26edb7e0adf0a3cb9e58"
+    }
+  },
+  "visibility": {
+    "±3°": {
+      "mapPx": 1.49,
+      "desktop1388Px": 1.35,
+      "phone392Px": 0.38
+    },
+    "±4°": {
+      "mapPx": 1.99,
+      "desktop1388Px": 1.8,
+      "phone392Px": 0.51
+    },
+    "±5°": {
+      "mapPx": 2.49,
+      "desktop1388Px": 2.25,
+      "phone392Px": 0.63
+    }
+  }
+}
