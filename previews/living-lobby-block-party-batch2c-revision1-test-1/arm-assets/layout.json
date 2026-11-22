@@ -1,0 +1,59 @@
+{
+  "mapSha256": "78c4885e61f71b4cb5c63680eed97a04c0023aed81f2e58ae839ff3ff913953f",
+  "rectXYWH": [
+    296,
+    262,
+    188,
+    146
+  ],
+  "shoulderXY": [
+    327.8,
+    367.5
+  ],
+  "elbowXY": [
+    389.6,
+    305.0
+  ],
+  "pinXY": [
+    418.35,
+    308.81
+  ],
+  "gearPivotXY": [
+    437.0,
+    320.0
+  ],
+  "hubPivotXY": [
+    417.6,
+    332.0
+  ],
+  "bp04TieXY": [
+    410.0,
+    296.0
+  ],
+  "boomLength": 87.89,
+  "forearmLength": 29.0,
+  "gearPinRadius": 21.75,
+  "pixels": {
+    "boom": 2482,
+    "coupler": 1223,
+    "torus": 688,
+    "gear": 1375,
+    "hub": 975,
+    "boomUnderKnuckle": 749,
+    "boomUnderTorus": 474,
+    "forearmUnderGear": 370,
+    "gearUnderHub": 139,
+    "plateRepaired": 6028,
+    "bp04StringProtected": 108,
+    "mask": 13081
+  },
+  "assets": {
+    "arm-assets/plate.png": "3cac3619a68156c48832e7ad121704880e0a4d75b90dfe3119f42d300150c715",
+    "arm-assets/boom.png": "969e441818a2c92d5f752edd43c5a839029a08a84369396196d480a6b48aedb9",
+    "arm-assets/coupler.png": "13b0b039c82da57f63cb9d80b3040d4201f3a90a7c6eec78d82a7e59535d127f",
+    "arm-assets/torus.png": "f186530f376e171047625ebbf9791cbef62de62c8f49680661d8d6271ffa6a8e",
+    "arm-assets/gear.png": "5152a00d1c73f47f307ba3f247f8cb614ef67fea0b0960cada8686b6b0471c37",
+    "arm-assets/hub.png": "e9fa1bbf79c3dc0e4291fca58ac2032d7d38a79ae6e4c3f1e43a2dcf250fda4a",
+    "arm-assets/mask.png": "5f0af9244932a4ef708e7a15fb8fd97fdae1c203004c92ea8fcdd1cb15c80370"
+  }
+}

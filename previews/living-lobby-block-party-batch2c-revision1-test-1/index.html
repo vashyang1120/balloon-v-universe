@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>氣球小V遊戲宇宙｜Batch 2-C Revision 1 Test 1｜機械手臂雙方案</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f8f5ee;color:#2b2440;font:16px/1.5 system-ui,sans-serif}
+main{max-width:1440px;margin:auto;padding:clamp(10px,2vw,26px)}
+h1{margin:0;font-size:clamp(22px,4vw,34px);line-height:1.2}
+h2{font-size:20px;margin:28px 0 6px}
+header p,.note{margin:4px 0;color:#514665;font-size:14px}
+.warn{background:#fff3d6;border:1px solid #e3c27a;border-radius:8px;padding:8px 12px;font-size:14px;margin:10px 0}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0;position:sticky;top:0;background:#f8f5eef2;padding:8px 0;z-index:3}
+button{font:inherit;color:inherit;background:white;border:1px solid #a89bb9;border-radius:8px;padding:7px 12px;min-height:44px;cursor:pointer}
+button[aria-pressed="true"]{background:#2b2440;color:white;border-color:#2b2440}
+button:focus-visible{outline:3px solid #8457a5;outline-offset:2px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+figure{margin:0}
+figcaption{font-size:14px;margin:4px 0;color:#514665;font-weight:600}
+.zoom{position:relative}
+.zoom canvas{display:block;width:100%;height:auto;border-radius:8px}
+.pixel .zoom canvas.view{image-rendering:pixelated}
+.zoom canvas.overlay{position:absolute;inset:0;height:100%;pointer-events:none}
+canvas.lobby{display:block;width:100%;max-width:1388px;height:auto;border-radius:10px}
+.phones{display:flex;gap:14px;flex-wrap:wrap}
+.phones canvas{display:block;width:392px;max-width:100%;height:auto;border-radius:8px}
+table{border-collapse:collapse;font-size:14px;margin:6px 0;width:100%;max-width:900px}
+th,td{border:1px solid #d6cde2;padding:6px 8px;text-align:left;vertical-align:top}
+th{background:#efe9f5}
+@media(max-width:760px){.grid3,.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>方塊派對機械手臂｜方案 A 與方案 B</h1>
+<p>Living Lobby Art v1.0｜Batch 2-C Revision 1 Test 1</p>
+<p class="note">所有畫面都直接取自原始地圖像素。每個零件只做旋轉或移動，沒有伸縮、重繪，也沒有新增零件。</p>
+</header>
+<p class="warn"><strong>非完整動態大廳整合預覽。</strong>大廳比例畫面是「原始地圖＋本次手臂動畫＋已驗收瀑布」。熱氣球、旗幟、氣球束（含緊鄰手臂的 BP-04）、角色、賊鷗、音響需要工程包內的 assets.js，這頁沒有載入，所以畫面中的這些物件是靜止的原圖。</p>
+<p id="status" role="status">載入原始地圖…</p>
+<div class="controls">
+  <button id="play" type="button" aria-pressed="false" disabled>暫停</button>
+  <button id="replay" type="button" disabled>重新播放</button>
+  <button id="marks" type="button" aria-pressed="false" disabled>顯示結構標記</button>
+  <button id="pixel" type="button" aria-pressed="true" disabled>像素格放大</button>
+</div>
+
+<h2>1. 局部放大（約 4 倍）</h2>
+<p class="note">結構標記：藍色十字是轉軸（肩部圓環軸孔、肘部藍色鉚釘、齒輪中心），粉紅點是前臂末端的銷釘，綠點是 BP-04 氣球束繩尾所在的位置。方案 A 的灰色虛線是隱藏在齒輪後方的滑槽方向。</p>
+<div class="grid3 pixel" id="zoom-grid">
+  <figure><figcaption>原始靜態畫面</figcaption><div class="zoom"><canvas class="view" id="zoom-original" width="190" height="160"></canvas></div></figure>
+  <figure><figcaption>方案 A｜手臂擺動（齒輪不動）</figcaption><div class="zoom"><canvas class="view" id="zoom-A" width="190" height="160"></canvas><canvas class="overlay" id="overlay-A" width="760" height="640"></canvas></div></figure>
+  <figure><figcaption>方案 B｜齒輪驅動連桿</figcaption><div class="zoom"><canvas class="view" id="zoom-B" width="190" height="160"></canvas><canvas class="overlay" id="overlay-B" width="760" height="640"></canvas></div></figure>
+</div>
+
+<h2>2. 正常大廳比例（電腦，1388 px）</h2>
+<div class="grid2">
+  <figure><figcaption>方案 A</figcaption><canvas class="lobby" id="lobby-A" width="1536" height="1024"></canvas></figure>
+  <figure><figcaption>方案 B</figcaption><canvas class="lobby" id="lobby-B" width="1536" height="1024"></canvas></figure>
+</div>
+<p class="note">在寬螢幕上，兩張圖並排會各自縮小。要看 1388 px 的實際大廳尺寸，請把視窗縮窄到單欄，或觀看 videos/ 裡的大廳影片。</p>
+
+<h2>3. 手機大廳寬度（392 px）</h2>
+<div class="phones">
+  <figure><figcaption>原始靜態</figcaption><canvas id="phone-original" width="1536" height="1024"></canvas></figure>
+  <figure><figcaption>方案 A</figcaption><canvas id="phone-A" width="1536" height="1024"></canvas></figure>
+  <figure><figcaption>方案 B</figcaption><canvas id="phone-B" width="1536" height="1024"></canvas></figure>
+</div>
+
+<h2>4. 兩種方案的參數</h2>
+<table>
+<thead><tr><th></th><th>方案 A｜手臂擺動</th><th>方案 B｜齒輪驅動連桿</th></tr></thead>
+<tbody>
+<tr><th>主動件</th><td>粉紅主臂繞肩部圓環軸孔擺動</td><td>黃色齒輪繞中心轉動</td></tr>
+<tr><th>齒輪</th><td>不動</td><td>0 → 18° → 0</td></tr>
+<tr><th>主臂</th><td>±4.5°（上下雙向）</td><td>被帶動 0 → 約 4.7° → 0</td></tr>
+<tr><th>前臂末端</th><td>沿齒輪後方的隱藏滑槽滑動</td><td>銷釘固定在齒輪上，跟著齒輪走</td></tr>
+<tr><th>節奏</th><td>正弦，一個來回 3.6 秒</td><td>餘弦緩入緩出，一個來回 3.2 秒</td></tr>
+</tbody>
+</table>
+</main>
+<script src="map-asset.js"></script>
+<script src="arm-assets.js"></script>
+<script src="waterfall.js"></script>
+<script src="waterfall-layouts.js"></script>
+<script src="arm.js"></script>
+<script src="compare.js"></script>
+</body>
+</html>

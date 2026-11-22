@@ -1,0 +1,186 @@
+{
+  "project": "Universe Living Lobby v1.0",
+  "version": "Living Lobby Art v1.0 | Batch 2-C Revision 1 Test 1",
+  "date": "2026-11-22",
+  "status": "two-schemes-pending-user-choice",
+  "scope": "BP-02 arm (primary) + BP-01 gear linkage; no bouquets, no audio",
+  "baseline": {
+    "animation": {
+      "branch": "dev/living-lobby-speakers-batch2b",
+      "commit": "3dc75c2be2676f3a6360ec339c8ff1f76e0d65e4"
+    },
+    "survey": {
+      "branch": "dev/living-lobby-block-party-batch2c-survey-1",
+      "commit": "1f4f42ebebab87767bd73f1cd4dea37709187277"
+    },
+    "previousSample": {
+      "branch": "dev/living-lobby-block-party-batch2c-test1",
+      "commit": "03752b7e1e84faf80931b700176595732cf27e7a",
+      "accepted": false
+    },
+    "map": {
+      "path": "assets/universe_map_bg.png",
+      "sha256": "78c4885e61f71b4cb5c63680eed97a04c0023aed81f2e58ae839ff3ff913953f"
+    },
+    "fullLobbyAssets": {
+      "file": "assets.js",
+      "sha256": "1b12b701bbc6ff3fe776663aae46bf9430f64698b8d2c301846761f916414853",
+      "available": false
+    }
+  },
+  "fullLobbyIntegration": "not-done (non-integration preview only)",
+  "acceptedBouquetsNotReworked": [
+    "BP-03",
+    "BP-04",
+    "BP-13",
+    "BP-14",
+    "BP-16"
+  ],
+  "structure": {
+    "shoulderPivotXY": [
+      327.8,
+      367.5
+    ],
+    "elbowRivetXY": [
+      389.6,
+      305.0
+    ],
+    "hiddenPinOrSlotXY": [
+      418.35,
+      308.81
+    ],
+    "gearPivotXY": [
+      437.0,
+      320.0
+    ],
+    "boomLength": 87.89,
+    "forearmLength": 29.0,
+    "gearPinRadius": 21.75,
+    "bp04TieXY": [
+      410.0,
+      296.0
+    ]
+  },
+  "schemes": {
+    "A": {
+      "name": "手臂擺動",
+      "driver": "boom",
+      "boomDegrees": 4.5,
+      "profile": "sine (two-sided)",
+      "periodSeconds": 3.6,
+      "gear": "static",
+      "forearmEnd": "hidden slot, -20 deg",
+      "peaks": {
+        "boomDeg": 4.5,
+        "couplerDeg": 14.785,
+        "gearDeg": 0,
+        "elbowPx": 6.9,
+        "pinPx": 7.47,
+        "bp04TiePx": 3.57
+      }
+    },
+    "B": {
+      "name": "齒輪驅動連桿",
+      "driver": "gear",
+      "gearDegrees": 18,
+      "profile": "(1-cos)/2 (one-sided, linkage near toggle at rest)",
+      "periodSeconds": 3.2,
+      "forearmEnd": "hidden pin on gear",
+      "peaks": {
+        "boomDeg": 4.68,
+        "couplerDeg": 20.818,
+        "gearDeg": 18,
+        "elbowPx": 7.18,
+        "pinPx": 6.8,
+        "bp04TiePx": 1.6
+      }
+    }
+  },
+  "visibility": {
+    "A": {
+      "peakDisplacementMapPx": 7.47,
+      "travelPeakToPeakMapPx": 14.94,
+      "desktop1388Px": 13.5,
+      "phone392Px": 3.81
+    },
+    "B": {
+      "peakDisplacementMapPx": 8.8,
+      "travelPeakToPeakMapPx": 8.8,
+      "desktop1388Px": 7.95,
+      "phone392Px": 2.24
+    }
+  },
+  "pixels": {
+    "boom": 2482,
+    "coupler": 1223,
+    "torus": 688,
+    "gear": 1375,
+    "hub": 975,
+    "boomUnderKnuckle": 749,
+    "boomUnderTorus": 474,
+    "forearmUnderGear": 370,
+    "gearUnderHub": 139,
+    "plateRepaired": 6028,
+    "bp04StringProtected": 108,
+    "mask": 13081
+  },
+  "integration": {
+    "script": "build.cjs",
+    "drawOrder": "after LobbySpeakers.paint, before balloons",
+    "edits": 7,
+    "check": "check-integration.py"
+  },
+  "tests": "tests/arm-results.json",
+  "chrome": "153.0.8010.12",
+  "previews": {
+    "html": "index.html",
+    "videos": [
+      "videos/compare-zoom.mp4",
+      "videos/lobby-A.mp4",
+      "videos/lobby-B.mp4",
+      "videos/phone-A.mp4",
+      "videos/phone-B.mp4"
+    ]
+  },
+  "zipOnly": [
+    "map-asset.js"
+  ],
+  "files": {
+    ".gitignore": "31759be8e034cb04a26e9578f890999643e6a58b531af74ef1eca1dac9f626d8",
+    "HANDOFF.md": "f03a549e8e1807dafaff08cf9fca4098bce39475d171cb7c85bd95f83e8307f5",
+    "README.md": "2660856057c06dd02fdedb444cf05779bce77a91d6092d0a2c23819c1c919fef",
+    "arm-assets.js": "02c8f765d491028ecb95040ff3c032a49361e73a59661f6375811b39b526bda4",
+    "arm-assets/boom.png": "969e441818a2c92d5f752edd43c5a839029a08a84369396196d480a6b48aedb9",
+    "arm-assets/coupler.png": "13b0b039c82da57f63cb9d80b3040d4201f3a90a7c6eec78d82a7e59535d127f",
+    "arm-assets/gear.png": "5152a00d1c73f47f307ba3f247f8cb614ef67fea0b0960cada8686b6b0471c37",
+    "arm-assets/hub.png": "e9fa1bbf79c3dc0e4291fca58ac2032d7d38a79ae6e4c3f1e43a2dcf250fda4a",
+    "arm-assets/layout.json": "d42720bffcc7c818e1c1aef47e16ff443b3b43de40383d863a56725ec4a2ebe2",
+    "arm-assets/mask.png": "5f0af9244932a4ef708e7a15fb8fd97fdae1c203004c92ea8fcdd1cb15c80370",
+    "arm-assets/plate.png": "3cac3619a68156c48832e7ad121704880e0a4d75b90dfe3119f42d300150c715",
+    "arm-assets/torus.png": "f186530f376e171047625ebbf9791cbef62de62c8f49680661d8d6271ffa6a8e",
+    "arm.js": "51e07bec0ae2a25a7818af176e8543890218e094f7b51234a419ff11d224fcf6",
+    "baseline-fingerprints.json": "ee8f1bde823f0361eeacb390ef0541ae9636aee01b7d231707676e99877c329c",
+    "build.cjs": "91b00dd33a30cc94712f6507b1556abd565633814075a9b3bf1669ef3fe875df",
+    "check-arm.py": "42887db4bf97d987c38e6e7800ae8179fea69f0123b0043eb6ff4e1faff828f3",
+    "check-integration.py": "75ee5c9fb216d0219f2c3cdb4c07731cfbf9e8f022e31fbe0739a294cc0f60cb",
+    "compare.js": "d73ef246af7caafeb31466d8e7abba807e646710eb8555c171d0787b5c93d236",
+    "index.html": "316ebd56a75a12d030f81c3b3fe6ae9f89ddd68b43930700788713d49b426179",
+    "map-asset.js": "6f9b33feee8821a5df0ab75e8554600db9eeb0ee9d7a657a0388983a0874f138",
+    "scripts/build_arm_assets.py": "239386c12413ba4de9e12afdd6d19c1d76ea9f1583ade993c0bc2e13450b9160",
+    "scripts/record.py": "04c9c6a2624c81b2c4533a73578b8c5f242ac93bb3452f672e566e6f290f6e06",
+    "tests/arm-results.json": "c763284d5f7dc1cd9cd642c8ba4e19bfeefd6f742edfa83953398f20fcab26b5",
+    "tests/frames/joint-A-down.png": "7b4232d239c8014f00482374e632e4b41333c211420d32ad796c7fc34e4bb67e",
+    "tests/frames/joint-A-up.png": "f86bc5e03fa4d134d5f43a620f85a0413505398ac64e720879f0f14085ecc81f",
+    "tests/frames/joint-B-peak.png": "f7dedd8878bb9a70f90cdb8aad9d5d5e31f5473b9338ecd9a50d107a92fc7e8d",
+    "tests/frames/joint-rest.png": "11112a9c161ca171b88a1faec0e4473f2e6f7ecc57b6c0d52405071be10fcb6b",
+    "tests/frames/page-desktop.png": "dc5d80052cf117a44e60dca43f94c4bebfa067e6e57c0dcd88e34fa4b19775dd",
+    "tests/frames/page-pixel7.png": "c20de55a702a59b2f83fd9956b14ce46b6ef5e80c96a2c89aaafc7c336057310",
+    "videos/compare-zoom.mp4": "bd2f96b96a6a2c3ed8cd00f360d53172eda0a6c3c9949939e0d0260b2e35c831",
+    "videos/lobby-A.mp4": "98e40f79b3e0aec86d8e10911e3a2a065862eb7d984bada407d2bee027184a63",
+    "videos/lobby-B.mp4": "7c615e1b86bce7bf82e3785a4dbbc7b285e21643a03446fdef70caa46d41aa46",
+    "videos/phone-A.mp4": "16d84bc8fddcb5cef28c8688694193386c62a3bb19684f128a060b0cdaf901e1",
+    "videos/phone-B.mp4": "06faa9926146df2f479ed30bd864a5d82c9ea2709a6da3b6a8a47b697de8eb63",
+    "waterfall-layouts.js": "f2a9a36dadc410ee162ae1bc4a2be3626006c81ec238c7106d11c901879aa29e",
+    "waterfall.js": "68f73d8d8c129f0a9f0dcee96e1498603936545c02ed69c9c219e6df38cede8a"
+  }
+}
