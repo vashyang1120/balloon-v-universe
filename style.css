@@ -1168,3 +1168,17 @@ html.page-hidden .actor, html.page-hidden .actor * { animation-play-state: pause
   .map-svg.living-lobby-ready .living-lobby-layer { display: block; }
   .map-svg.living-lobby-ready .character-layer { display: none; }
 }
+
+
+/* Near flyovers cross the map signs without taking over their pointer targets. */
+.living-lobby-flyover {
+  display: none; position: absolute; inset: 0 0 auto;
+  width: 100%; aspect-ratio: var(--map-ratio); z-index: 10;
+  overflow: hidden; border-radius: 26px; pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .living-lobby-flyover:not([hidden]) { display: block; }
+}
+@media (max-width: 899px), (max-aspect-ratio: 1/1) {
+  .living-lobby-flyover { border-radius: 16px 16px 0 0; }
+}

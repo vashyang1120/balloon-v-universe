@@ -5,7 +5,7 @@
   const assetBase = new URL(".", document.currentScript.src);
   const motion = matchMedia("(prefers-reduced-motion: reduce)");
 
-  function canvas(width, height, before) {
+  function canvas(width, height, parent, before = null) {
     const layer = document.createElementNS(svg.namespaceURI, "foreignObject");
     layer.setAttribute("width", "1536");
     layer.setAttribute("height", "1024");
@@ -17,7 +17,7 @@
     surface.height = height;
     surface.style.cssText = "width:100%;height:100%;display:block;pointer-events:none";
     layer.append(surface);
-    svg.insertBefore(layer, before);
+    parent.insertBefore(layer, before);
     return surface;
   }
 
@@ -182,8 +182,8 @@ function measure(sheet,splitFraction){
   async function start() {
     const focus = svg.querySelector(".focus-layer");
     const originalCharacter = svg.querySelector(".character-layer");
-    const hitLayer = svg.querySelector(".hit-layer");
-    if (!focus || !originalCharacter || !hitLayer || svg.getAttribute("viewBox") !== "0 0 1536 1024") return;
+    const flyoverSvg = document.getElementById("livingLobbyFlyover");
+    if (!focus || !originalCharacter || !flyoverSvg || svg.getAttribute("viewBox") !== "0 0 1536 1024") return;
 
     const scene = document.createElement("canvas");
     scene.width = 1536;
@@ -270,11 +270,11 @@ function measure(sheet,splitFraction){
   }
 
 
-    const view = canvas(3072, 2048, focus);
+    const view = canvas(3072, 2048, svg, focus);
     const display = view.getContext("2d");
-    const characterLayer = canvas(3072, 2048, originalCharacter.nextSibling);
+    const characterLayer = canvas(3072, 2048, svg, originalCharacter.nextSibling);
     const characterContext = characterLayer.getContext("2d");
-    const near = canvas(1536, 1024, hitLayer);
+    const near = canvas(1536, 1024, flyoverSvg);
     const flyover = near.getContext("2d");
 
 
@@ -469,6 +469,7 @@ function measure(sheet,splitFraction){
     showVisit(characterMode);
     updatePlayback();
     svg.classList.add("living-lobby-ready");
+    flyoverSvg.removeAttribute("hidden");
     document.addEventListener("visibilitychange", updatePlayback);
   }
 

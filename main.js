@@ -737,11 +737,21 @@
     els.avatarRow.appendChild(add);
   }
 
+  var greetedPlayerId = null;
+  var welcomeUntil = 0;
+  var welcomeTimer;
+
   function renderBubble() {
     var d = current();
-    var show = !!d && !state.player.loading && (isDesktop() || CFG.welcomeBubble.showOnMobile);
-    els.bubble.hidden = !show;
-    if (show) els.bubbleText.textContent = d.id + "，歡迎來玩！";
+    var eligible = !!d && !state.player.loading && (isDesktop() || CFG.welcomeBubble.showOnMobile);
+    if (eligible && greetedPlayerId !== d.playerId) {
+      greetedPlayerId = d.playerId;
+      welcomeUntil = Date.now() + 3000;
+      clearTimeout(welcomeTimer);
+      welcomeTimer = setTimeout(renderBubble, 3000);
+      els.bubbleText.textContent = d.id + "，歡迎來玩！";
+    }
+    els.bubble.hidden = !eligible || Date.now() >= welcomeUntil;
   }
 
   function renderAll() {
