@@ -6,7 +6,7 @@
   <meta name="version" content="balloon-v-universe-v0.3.3-production-launch-test-1">
   <title>氣球小V遊戲宇宙</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="style.css?v=1.0-living-lobby-foreground">
+  <link rel="stylesheet" href="style.css?v=1.0-living-lobby-hotfix-1">
 </head>
 <body class="is-booting">
 
@@ -44,6 +44,7 @@
           <span class="welcome-bubble__text" id="welcomeText"></span>
         </div>
 
+        <button id="art-hotspot" type="button" aria-haspopup="dialog" aria-label="查看目前場景的互動原圖" hidden><span aria-hidden="true">查看互動原圖</span></button>
         <div class="map-status" id="mapStatus">地圖載入中…</div>
         <div class="asset-warning" id="assetWarning" hidden></div>
         <div class="debug-box" id="debugBox" hidden></div>
@@ -185,6 +186,12 @@
     </div>
   </div>
 
+  <dialog id="art-dialog" aria-labelledby="art-dialog-title">
+  <h2 id="art-dialog-title"></h2>
+  <form class="art-dismiss" method="dialog"><button autofocus aria-label="關閉互動圖">×</button></form>
+  <div class="art-reveal"><canvas id="art-detail" aria-label="放大的互動原圖"></canvas></div>
+  </dialog>
+
   <div class="toast" id="toast" role="status" hidden></div>
 
   <script src="zones.js?v=0.3.1-trial-1"></script>
@@ -199,7 +206,7 @@
   <script defer src="assets/living-lobby/waterfall.js"></script>
   <script defer src="assets/living-lobby/waterfall-layouts.js"></script>
   <script defer src="assets/living-lobby/speakers.js"></script>
-  <script defer src="assets/living-lobby/engine.js?v=foreground"></script>
+  <script defer src="assets/living-lobby/engine.js?v=character-enlarge"></script>
   <script src="lobby-launch.js?v=0.3.1-trial-1"></script>
   <script src="onboarding.js?v=0.3.4-3"></script>
 </body>
