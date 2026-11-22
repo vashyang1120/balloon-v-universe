@@ -199,6 +199,7 @@
       makeGrayscale(img, W, H);
       loadCharacter();
       applyModeParams();
+      els.svg.dispatchEvent(new Event("lobby-map-ready"));
       els.status.hidden = true;
     };
     img.onerror = function () {
