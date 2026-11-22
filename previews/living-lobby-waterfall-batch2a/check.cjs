@@ -112,6 +112,10 @@ async function check(browser, file, mobile) {
   });
   assert(correctFull);
   await page.locator('#original').click();
+  await page.locator('#previous').click();
+  assert.equal(await page.locator('#map-caption').textContent(), '全圖 · 動態樣本 Test 1');
+  await page.locator('#previous').click();
+  assert.equal(await page.locator('#map-caption').textContent(), '全圖 · 動態樣本 Test 2');
   await page.locator('#local').click();
   assert(await page.locator('#closeups').isVisible());
   assert.deepEqual(errors,[]);
@@ -154,7 +158,7 @@ async function exportVideo(browser, file, output) {
       sampleCtx.putImageData(effect.render(t),0,0);
       ctx.drawImage(sample,532,56,width*2,height*2);
       ctx.font = '14px system-ui, "Microsoft JhengHei", sans-serif';
-      ctx.fillText('Living Lobby Art v1.0 · Batch 2-A Test 1',14,524);
+      ctx.fillText('Living Lobby Art v1.0 · Batch 2-A Test 2',14,524);
     }
     paint(0);
     recorder.start();

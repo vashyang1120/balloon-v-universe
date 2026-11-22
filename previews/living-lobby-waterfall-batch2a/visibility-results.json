@@ -1,0 +1,20 @@
+{
+  "foamChanges": 0,
+  "test1Mismatches": 0,
+  "sizes": [
+    {
+      "mapWidth": 392,
+      "waterfallPatchWidth": 64,
+      "test1Rms": 5.994781104603549,
+      "test2Rms": 7.908398719058694,
+      "ratio": 1.3192139264243743
+    },
+    {
+      "mapWidth": 1388,
+      "waterfallPatchWidth": 227,
+      "test1Rms": 5.812048121240048,
+      "test2Rms": 7.577575658186668,
+      "ratio": 1.3037702889097778
+    }
+  ]
+}

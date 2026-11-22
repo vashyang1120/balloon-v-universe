@@ -1,6 +1,7 @@
 const localButton = document.querySelector('#local');
 const mapButton = document.querySelector('#map');
 const originalButton = document.querySelector('#original');
+const previousButton = document.querySelector('#previous');
 const playButton = document.querySelector('#play');
 const closeups = document.querySelector('#closeups');
 const overview = document.querySelector('#overview');
@@ -13,6 +14,7 @@ const mapImage = new Image();
 let waterfall;
 let mapMode = false;
 let original = false;
+let previous = false;
 let playing = !matchMedia('(prefers-reduced-motion: reduce)').matches;
 let elapsed = 0;
 let lastTime = null;
@@ -20,7 +22,7 @@ let animation = null;
 
 function paint(seconds) {
   if (mapMode && original) return;
-  const animated = waterfall.render(seconds);
+  const animated = waterfall.render(seconds, !mapMode || !previous);
   if (mapMode) {
     const { x, y } = LobbyWaterfall.region;
     full.putImageData(animated, x, y);
@@ -52,9 +54,11 @@ function showMode(isMap) {
   localButton.setAttribute('aria-pressed', String(!mapMode));
   mapButton.setAttribute('aria-pressed', String(mapMode));
   originalButton.hidden = !mapMode;
+  previousButton.hidden = !mapMode || original;
   closeups.hidden = mapMode;
   overview.hidden = !mapMode;
   if (mapMode) {
+    mapCaption.textContent = original ? '全圖 · 原始地圖' : `全圖 · 動態樣本 Test ${previous ? 1 : 2}`;
     full.clearRect(0, 0, full.canvas.width, full.canvas.height);
     full.drawImage(mapImage, 0, 0);
   }
@@ -73,7 +77,12 @@ mapImage.onload = () => {
       original = !original;
       originalButton.setAttribute('aria-pressed', String(original));
       originalButton.textContent = original ? '切換到動態' : '切換到原圖';
-      mapCaption.textContent = original ? '全圖 · 原始地圖' : '全圖 · 動態樣本';
+      showMode(true);
+    };
+    previousButton.onclick = () => {
+      previous = !previous;
+      previousButton.setAttribute('aria-pressed', String(previous));
+      previousButton.textContent = previous ? '回到 Test 2' : '對照 Test 1';
       showMode(true);
     };
     playButton.onclick = () => { playing = !playing; syncPlayback(); };

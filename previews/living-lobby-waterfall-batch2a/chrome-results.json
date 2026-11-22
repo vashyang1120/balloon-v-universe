@@ -17,35 +17,35 @@
         0
       ],
       "frameDiff": {
-        "pixels": 5517,
-        "maximum": 20,
-        "energy": 25877
+        "pixels": 5694,
+        "maximum": 37,
+        "energy": 42595
       },
       "transitions": [
         {
-          "pixels": 2799,
-          "maximum": 20,
-          "energy": 5385
+          "pixels": 3139,
+          "maximum": 21,
+          "energy": 6304
         },
         {
-          "pixels": 2854,
-          "maximum": 15,
-          "energy": 5791
-        },
-        {
-          "pixels": 2829,
+          "pixels": 3235,
           "maximum": 16,
-          "energy": 5647
+          "energy": 6746
+        },
+        {
+          "pixels": 3240,
+          "maximum": 16,
+          "energy": 6661
         }
       ],
-      "maxAdjustment": 21,
+      "maxAdjustment": 38,
       "outsideMaskChanges": 0,
       "alphaChanges": 0,
       "fullOutsideMaskChanges": 0,
       "activeMaskPixels": 7173,
       "timingMs": {
         "median": 0.8000000715255737,
-        "p95": 1.100000023841858
+        "p95": 1
       },
       "controls": true,
       "reducedMotion": true,
@@ -67,35 +67,35 @@
         0
       ],
       "frameDiff": {
-        "pixels": 5517,
-        "maximum": 20,
-        "energy": 25877
+        "pixels": 5694,
+        "maximum": 37,
+        "energy": 42595
       },
       "transitions": [
         {
-          "pixels": 2799,
-          "maximum": 20,
-          "energy": 5385
+          "pixels": 3139,
+          "maximum": 21,
+          "energy": 6304
         },
         {
-          "pixels": 2854,
-          "maximum": 15,
-          "energy": 5791
-        },
-        {
-          "pixels": 2829,
+          "pixels": 3235,
           "maximum": 16,
-          "energy": 5647
+          "energy": 6746
+        },
+        {
+          "pixels": 3240,
+          "maximum": 16,
+          "energy": 6661
         }
       ],
-      "maxAdjustment": 21,
+      "maxAdjustment": 38,
       "outsideMaskChanges": 0,
       "alphaChanges": 0,
       "fullOutsideMaskChanges": 0,
       "activeMaskPixels": 7173,
       "timingMs": {
         "median": 0.8000000715255737,
-        "p95": 1
+        "p95": 0.9000000953674316
       },
       "controls": true,
       "reducedMotion": true,

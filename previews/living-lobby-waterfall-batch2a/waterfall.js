@@ -88,13 +88,15 @@ const LobbyWaterfall = (() => {
         const rippleWeight = smooth(edgeDistance(mapX, mapY, ripples) / 5) * water;
         if (!streamWeights.some(Boolean) && !foamWeight && !rippleWeight) continue;
         mask[pixel] = 1;
-        active.push({pixel, streamWeights, foamWeight, rippleWeight, row, col});
+        // Taper the stronger highlights before the original splash and ripple areas.
+        const highlightStrength = 18 * smooth((710 - mapY) / 19);
+        active.push({pixel, streamWeights, foamWeight, rippleWeight, highlightStrength, row, col});
       }
     }
 
-    function render(seconds) {
+    function render(seconds, enhanced = true) {
       const cycle = ((seconds / loopSeconds) % 1 + 1) % 1;
-      for (const { pixel, streamWeights, foamWeight, rippleWeight, row, col } of active) {
+      for (const { pixel, streamWeights, foamWeight, rippleWeight, highlightStrength, row, col } of active) {
         let change = 0;
         for (let lane = 0; lane < streams.length; lane++) {
           const weight = streamWeights[lane];
@@ -111,6 +113,8 @@ const LobbyWaterfall = (() => {
           const shimmer = Math.sin(tau * (row / (travel * .5) - 2 * progress) + col * .32);
           change += weight * (Math.max(-13, Math.min(13, (shifted - detail[pixel] * .36) * .67)) +
             (5.4 * streak + 2.5 * shimmer) * (.64 + .36 * Math.sin(col * .71) ** 2));
+          // Boost the broad moving pattern so it survives downscaling, using the same phase and speed.
+          if (enhanced) change += weight * highlightStrength * streak;
         }
         change += foamWeight * (4.8 * Math.sin(tau * (cycle * 3 - row / 11) + col * .23) +
           2.2 * Math.sin(tau * cycle * 5 + col * .47 + row * .27));

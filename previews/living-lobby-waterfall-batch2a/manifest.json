@@ -1,7 +1,7 @@
 {
   "project": "氣球小V遊戲宇宙",
   "planningVersion": "Universe Living Lobby v1.0",
-  "deliverable": "Living Lobby Art v1.0 | Batch 2-A Test 1",
+  "deliverable": "Living Lobby Art v1.0 | Batch 2-A Test 2",
   "date": "2026-11-22",
   "stage": "isolated-sample-pending-visual-acceptance",
   "baseline": {
@@ -49,8 +49,15 @@
   "preview": {
     "offline": "open-in-chrome.html",
     "source": "index.html",
-    "video": "waterfall-batch2a-test1.webm",
+    "video": "waterfall-batch2a-test2.webm",
     "tests": "chrome-results.json",
-    "baselineRegression": "baseline-regression.json"
+    "baselineRegression": "baseline-regression.json",
+    "visibilityResults": "visibility-results.json"
+  },
+  "revision": {
+    "previousSample": "Batch 2-A Test 1",
+    "gitParent": "fa77cb87dd66cae6071c8ed73fdc547522147eff",
+    "scope": "Water-column highlight visibility at lobby display size",
+    "quietBelowY": 710
   }
 }
