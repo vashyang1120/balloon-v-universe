@@ -6,7 +6,7 @@
   <meta name="version" content="balloon-v-universe-v0.3.3-production-launch-test-1">
   <title>氣球小V遊戲宇宙</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="style.css?v=1.0-living-lobby-r1">
+  <link rel="stylesheet" href="style.css?v=1.0-living-lobby-foreground">
 </head>
 <body class="is-booting">
 
@@ -66,6 +66,7 @@
 
       <!-- 四個遊戲入口（桌機：在地圖上；手機：地圖下方一排） -->
       <nav class="entries" id="entries" aria-label="遊戲入口"></nav>
+      <svg id="livingLobbyFlyover" class="living-lobby-flyover" viewBox="0 0 1536 1024" aria-hidden="true" hidden></svg>
 
       <!-- 下方：排行榜木牌（v0.3.0；原「選擇玩家」）、玩家頭像列、我的通行證木牌
            手機：放在遊樂園前景區（foreground）上；木牌只露出牌面與上半段腳柱 -->
@@ -193,12 +194,12 @@
   <script src="rpg-text.js?v=0.3.4"></script>
   <script src="rpg-actor.js?v=0.3.4"></script>
   <script src="dialogue.js?v=0.3.4"></script>
-  <script src="main.js?v=1.0-living-lobby-r1"></script>
+  <script src="main.js?v=1.0-living-lobby-foreground"></script>
   <script defer src="assets/living-lobby/assets.js"></script>
   <script defer src="assets/living-lobby/waterfall.js"></script>
   <script defer src="assets/living-lobby/waterfall-layouts.js"></script>
   <script defer src="assets/living-lobby/speakers.js"></script>
-  <script defer src="assets/living-lobby/engine.js"></script>
+  <script defer src="assets/living-lobby/engine.js?v=foreground"></script>
   <script src="lobby-launch.js?v=0.3.1-trial-1"></script>
   <script src="onboarding.js?v=0.3.4-3"></script>
 </body>
