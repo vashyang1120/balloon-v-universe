@@ -1,0 +1,329 @@
+{
+  "project": "Universe Living Lobby v1.0",
+  "version": "Living Lobby Art v1.0 | Batch 2-C Survey 1",
+  "date": "2026-11-22",
+  "status": "survey-pending-pm-review",
+  "type": "survey-only-no-animation",
+  "zone": {
+    "mapName": "方塊工坊",
+    "game": "氣球小V方塊派對",
+    "hotspotApproxXYXY": [
+      30,
+      245,
+      510,
+      600
+    ],
+    "markerCropXYXY": [
+      0,
+      200,
+      620,
+      800
+    ]
+  },
+  "baseline": {
+    "visual": {
+      "version": "Integration Preview Test 1",
+      "libraryId": "libfile_14cc95e5410481918888ef2444759e22",
+      "available": false
+    },
+    "engineering": {
+      "branch": "dev/living-lobby-speakers-batch2b",
+      "commit": "3dc75c2be2676f3a6360ec339c8ff1f76e0d65e4"
+    },
+    "main": {
+      "commit": "0a3a24459d87d48c2a3a8b83cb101049637d24e2",
+      "containsLivingLobby": false
+    },
+    "map": {
+      "path": "assets/universe_map_bg.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "78c4885e61f71b4cb5c63680eed97a04c0023aed81f2e58ae839ff3ff913953f",
+      "gitBlob": "9c3e05124b6c85e6a33d828f7d2e57879407a065"
+    }
+  },
+  "missing": [
+    "universe-living-lobby-v1.0-integration-preview-test-1.zip",
+    "assets.js (sha256 1b12b701bbc6ff3fe776663aae46bf9430f64698b8d2c301846761f916414853)"
+  ],
+  "items": [
+    {
+      "id": "BP-01",
+      "name": "黃色齒輪狀關節",
+      "category": "A",
+      "boundsXYWH": [
+        402,
+        288,
+        64,
+        64
+      ],
+      "existingAnimation": "none",
+      "crop": "crops/BP-01.png"
+    },
+    {
+      "id": "BP-02",
+      "name": "粉紅機械手臂",
+      "category": "D",
+      "boundsXYWH": [
+        314,
+        282,
+        108,
+        102
+      ],
+      "existingAnimation": "none",
+      "crop": "crops/BP-02.png"
+    },
+    {
+      "id": "BP-03",
+      "name": "左塔頂氣球束",
+      "category": "A",
+      "boundsXYWH": [
+        46,
+        336,
+        56,
+        58
+      ],
+      "existingAnimation": "pending-verification",
+      "crop": "crops/BP-03.png"
+    },
+    {
+      "id": "BP-04",
+      "name": "手臂上方粉色小氣球束",
+      "category": "A",
+      "boundsXYWH": [
+        389,
+        244,
+        40,
+        42
+      ],
+      "existingAnimation": "pending-verification",
+      "crop": "crops/BP-04.png"
+    },
+    {
+      "id": "BP-05",
+      "name": "左側三角旗串",
+      "category": "B",
+      "boundsXYWH": [
+        104,
+        334,
+        100,
+        66
+      ],
+      "existingAnimation": "none",
+      "crop": "crops/BP-05.png"
+    },
+    {
+      "id": "BP-06",
+      "name": "屋頂右側三角旗串",
+      "category": "B",
+      "boundsXYWH": [
+        287,
+        304,
+        84,
+        34
+      ],
+      "existingAnimation": "none",
+      "crop": "crops/BP-06.png"
+    },
+    {
+      "id": "BP-07",
+      "name": "屋頂藍色氣球雕塑",
+      "category": "C",
+      "boundsXYWH": [
+        216,
+        260,
+        76,
+        67
+      ],
+      "existingAnimation": "none",
+      "crop": "crops/BP-07.png"
+    },
+    {
+      "id": "BP-08",
+      "name": "屋頂橘色花形氣球",
+      "category": "B",
+      "boundsXYWH": [
+        232,
+        247,
+        34,
+        30
+      ],
+      "existingAnimation": "none",
+      "crop": "crops/BP-08.png"
+    },
+    {
+      "id": "BP-09",
+      "name": "屋頂左側橘粉氣球",
+      "category": "B",
+      "boundsXYWH": [
+        184,
+        274,
+        44,
+        46
+      ],
+      "existingAnimation": "none",
+      "crop": "crops/BP-09.png"
+    },
+    {
+      "id": "BP-10",
+      "name": "方塊建築主體",
+      "category": "C",
+      "boundsXYWH": [
+        36,
+        300,
+        450,
+        250
+      ],
+      "existingAnimation": "none",
+      "crop": "crops/BP-10.png"
+    },
+    {
+      "id": "BP-11",
+      "name": "方塊窗內彩色球",
+      "category": "B",
+      "boundsXYWH": [
+        52,
+        424,
+        46,
+        28
+      ],
+      "existingAnimation": "none",
+      "crop": "crops/BP-11.png"
+    },
+    {
+      "id": "BP-12",
+      "name": "地面氣球堆",
+      "category": "C",
+      "boundsXYWH": [
+        134,
+        488,
+        156,
+        62
+      ],
+      "existingAnimation": "none",
+      "crop": "crops/BP-12.png"
+    },
+    {
+      "id": "BP-13",
+      "name": "石柱氣球束",
+      "category": "A",
+      "boundsXYWH": [
+        133,
+        514,
+        58,
+        48
+      ],
+      "existingAnimation": "pending-verification",
+      "crop": "crops/BP-13.png"
+    },
+    {
+      "id": "BP-14",
+      "name": "右側立柱氣球束",
+      "category": "A",
+      "boundsXYWH": [
+        519,
+        372,
+        48,
+        52
+      ],
+      "existingAnimation": "pending-verification",
+      "crop": "crops/BP-14.png"
+    },
+    {
+      "id": "BP-15",
+      "name": "區域右緣路燈",
+      "category": "B",
+      "boundsXYWH": [
+        566,
+        384,
+        26,
+        50
+      ],
+      "existingAnimation": "none",
+      "crop": "crops/BP-15.png"
+    },
+    {
+      "id": "BP-16",
+      "name": "右下廣場氣球束與紫旗",
+      "category": "D",
+      "boundsXYWH": [
+        424,
+        618,
+        74,
+        164
+      ],
+      "existingAnimation": "pending-verification",
+      "crop": "crops/BP-16.png"
+    },
+    {
+      "id": "BP-17",
+      "name": "平台、圍欄、木柱、崖面",
+      "category": "C",
+      "boundsXYWH": [
+        20,
+        540,
+        470,
+        90
+      ],
+      "existingAnimation": "none",
+      "crop": "crops/BP-17.png"
+    }
+  ],
+  "locked": [
+    {
+      "id": "L-W1",
+      "name": "方塊區主瀑布（Batch 2-A）",
+      "boundsXYWH": [
+        155,
+        624,
+        111,
+        122
+      ]
+    },
+    {
+      "id": "L-W2",
+      "name": "方塊區外側細瀑布",
+      "boundsXYWH": [
+        93,
+        601,
+        23,
+        109
+      ]
+    }
+  ],
+  "recommendedFirstSample": [
+    "BP-01",
+    "BP-04",
+    "BP-03 (if not already animated)"
+  ],
+  "files": {
+    "BATCH-2C-CONSTRUCTION-PLAN.md": "0024b92e1f2b33e0f042bd6fd13515972dd12e4843b8ef5c6b7d364bfe94ec4b",
+    "BATCH-2C-SURVEY-1.md": "64f410976c7317ba7c588f31ce2c116446e9e787d097af924d2c6be6c3f560ec",
+    "HANDOFF.md": "a1bf08a1659f975276fa20c137b21ed13aa39cda0b2ada2b294203374836c7e5",
+    "README.md": "740f466cc23306ac68f7994340f7d1ede447b16913379d12df91a79993d3bab1",
+    "crops/BP-01.png": "cade1dca6ae18b7dfaf4d27c95cb068f1be50725e53a6f18a15b5cfa914140e9",
+    "crops/BP-02.png": "b78fcf918e4ab9d2a49f9da826a2b8067b4e265ab57fa90f8265c2b06a4ba6bc",
+    "crops/BP-03.png": "ad5efe962a8ddfb0176ae9d17475003f2ca2f27d61aa1e80f821b2cf370b57a1",
+    "crops/BP-04.png": "ac14b63fcd8e0a5df39bde5d0606abdffcfa2fe3237ddb555fcca02118e739a6",
+    "crops/BP-05.png": "fbe80326a17904449c98bcfea5ee01dae93c9c1f3e8dfb8bcc2f64253b19774c",
+    "crops/BP-06.png": "bc9c1543ce3029e396f16d88e332a6ffafbe3810dc145facbb963d594e83e219",
+    "crops/BP-07.png": "c09bf131725da6b269342d418a7370b70fa523e29f430717b15e34ad9795b854",
+    "crops/BP-08.png": "d3c71617e05a7411b020a209e0fd74c78037db09afbdb9425038c911513d37a2",
+    "crops/BP-09.png": "d99fed707f1e90008ccbba247f4049700b696ae87fb560105324ff201552bc86",
+    "crops/BP-10.png": "f583340bb442a2b96f67586bf11df98dc60a979455eb5a1acb738f369d1967b2",
+    "crops/BP-11.png": "db0bc66c5dec631b099703ce02b916898dbe7e5f65c73986d9c76622d7879bc2",
+    "crops/BP-12.png": "65a566129a81299a596f0e66a1937c707659740c81418ce89c7734e3825a580b",
+    "crops/BP-13.png": "391d08b1a08e9f92d1a8c952cc7fca9baf613508ef2b30f0af19263b924e971c",
+    "crops/BP-14.png": "2155e6e47e122bc5ff123d9e4530f3274b64818389b69f8563639f82747ce479",
+    "crops/BP-15.png": "f2715bcc5b185154ac05928fda6df376c02a0be053f5af8ffa9d9b45346ff0d4",
+    "crops/BP-16.png": "dc3b2aade1d01eec1d05c11f238ee0c40e45571bf0305b632403c3113d412885",
+    "crops/BP-17.png": "4a8d0837ef0abb4082a9522568a0de1b7415fc05230565f1ad922ca92ac27c7c",
+    "markers/block-zone-clean.png": "a9e0c582eae79085681d21b41ed4320fe8779d5656b61ac763c8ee3a0bff73f4",
+    "markers/block-zone-markers.png": "0a95504a80be2220a5c36627bc23b4a35f5106f35ca55aa6e22dfed3d50c682c",
+    "scripts/items.py": "eb5e03a4c320baa32d0abcc6c50226cc25c856351b8fd2e8080470507abef3e1",
+    "scripts/make_survey.py": "665ff7972d30412a766468a313bd116c50898a52debf33465570d521a6224124",
+    "survey-metrics.json": "41631da81d4a6fea74cba90a6cd3bb91f6f3abbb9dc24c63aea422510cba1da0"
+  }
+}

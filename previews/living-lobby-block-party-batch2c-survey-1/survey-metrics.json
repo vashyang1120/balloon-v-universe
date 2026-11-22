@@ -1,0 +1,215 @@
+{
+  "mapSha256": "78c4885e61f71b4cb5c63680eed97a04c0023aed81f2e58ae839ff3ff913953f",
+  "zoneCropXYXY": [
+    0,
+    200,
+    620,
+    800
+  ],
+  "items": [
+    {
+      "id": "BP-01",
+      "boxXYWH": [
+        402,
+        288,
+        64,
+        64
+      ],
+      "cropScale": 3,
+      "regionSha256": "9219e625d37a66999abcfcf9b3bf31400b273624706e599fb82a950396d0c57c",
+      "edgeRingComplexity": 30.48
+    },
+    {
+      "id": "BP-02",
+      "boxXYWH": [
+        314,
+        282,
+        108,
+        102
+      ],
+      "cropScale": 3,
+      "regionSha256": "450784e551662a865c1881263d16b3842bd273a02f429426a855311dcd48ce0e",
+      "edgeRingComplexity": 33.49
+    },
+    {
+      "id": "BP-03",
+      "boxXYWH": [
+        46,
+        336,
+        56,
+        58
+      ],
+      "cropScale": 3,
+      "regionSha256": "86d259dd0c5caee1709209de5d414501bd51e1a4fad1bbe75f8c267d3cceba93",
+      "edgeRingComplexity": 26.23
+    },
+    {
+      "id": "BP-04",
+      "boxXYWH": [
+        389,
+        244,
+        40,
+        42
+      ],
+      "cropScale": 3,
+      "regionSha256": "16c41bbebb4a7923f8725e1ad68e81ccb65914d44999cb97c35aa751b10b3ef4",
+      "edgeRingComplexity": 32.09
+    },
+    {
+      "id": "BP-05",
+      "boxXYWH": [
+        104,
+        334,
+        100,
+        66
+      ],
+      "cropScale": 3,
+      "regionSha256": "25a2b9a3944c3785a5b9f992ba25af6bf8de13001a69943e3a16d3329dd0a72a",
+      "edgeRingComplexity": 31.8
+    },
+    {
+      "id": "BP-06",
+      "boxXYWH": [
+        287,
+        304,
+        84,
+        34
+      ],
+      "cropScale": 3,
+      "regionSha256": "954d6c30ffe68fdf692fa33d250606f7594f6e089e1c947537392cb9f8e8cbb3",
+      "edgeRingComplexity": 30.34
+    },
+    {
+      "id": "BP-07",
+      "boxXYWH": [
+        216,
+        260,
+        76,
+        67
+      ],
+      "cropScale": 3,
+      "regionSha256": "4edbca1ff3aef1f99e549e4a0cdafe8a65b4db3289742c09e10d8635465ab2c6",
+      "edgeRingComplexity": 18.09
+    },
+    {
+      "id": "BP-08",
+      "boxXYWH": [
+        232,
+        247,
+        34,
+        30
+      ],
+      "cropScale": 3,
+      "regionSha256": "4574b847c42164e4becbc7d92e82e7546636a21f9eefaaa25d6378bac2239a97",
+      "edgeRingComplexity": 19.23
+    },
+    {
+      "id": "BP-09",
+      "boxXYWH": [
+        184,
+        274,
+        44,
+        46
+      ],
+      "cropScale": 3,
+      "regionSha256": "245ddcb763299ed34e98113ed76b83ee7251108ba1b8cdb2bd45a92007226aab",
+      "edgeRingComplexity": 15.85
+    },
+    {
+      "id": "BP-10",
+      "boxXYWH": [
+        36,
+        300,
+        450,
+        250
+      ],
+      "cropScale": 1,
+      "regionSha256": "0d9b0c854df54149d87536a67ef4da9d2d7fe529c9c21a53ec60e3700d9e538a",
+      "edgeRingComplexity": 28.31
+    },
+    {
+      "id": "BP-11",
+      "boxXYWH": [
+        52,
+        424,
+        46,
+        28
+      ],
+      "cropScale": 3,
+      "regionSha256": "31fa1ca5d82d021d17b63da048e7df60a82c2a3cb125e9a32907a07735908298",
+      "edgeRingComplexity": 16.83
+    },
+    {
+      "id": "BP-12",
+      "boxXYWH": [
+        134,
+        488,
+        156,
+        62
+      ],
+      "cropScale": 3,
+      "regionSha256": "679e44e61acc6d799b465d44f18681cd2e051ac169e8256e7ccf5880f9c95127",
+      "edgeRingComplexity": 21.33
+    },
+    {
+      "id": "BP-13",
+      "boxXYWH": [
+        133,
+        514,
+        58,
+        48
+      ],
+      "cropScale": 3,
+      "regionSha256": "93a3eb0a4d69ebd2e49c38e6367c1df59c614645c307a1725910d8a2dacfd1b1",
+      "edgeRingComplexity": 29.83
+    },
+    {
+      "id": "BP-14",
+      "boxXYWH": [
+        519,
+        372,
+        48,
+        52
+      ],
+      "cropScale": 3,
+      "regionSha256": "fe4c4367e1dce3c45b3b221bcd4c91ce35d518cb1747b3e6b994d060992bb1d7",
+      "edgeRingComplexity": 41.24
+    },
+    {
+      "id": "BP-15",
+      "boxXYWH": [
+        566,
+        384,
+        26,
+        50
+      ],
+      "cropScale": 3,
+      "regionSha256": "a021cb20a5594c31becf4d5223df1af57a6df8b3339dcec214b4c0d338da25dc",
+      "edgeRingComplexity": 36.27
+    },
+    {
+      "id": "BP-16",
+      "boxXYWH": [
+        424,
+        618,
+        74,
+        164
+      ],
+      "cropScale": 3,
+      "regionSha256": "86796f36bb3c328152d9a9609b268ebcf075740b0dde9db8017fc3da5f7e138e",
+      "edgeRingComplexity": 36.36
+    },
+    {
+      "id": "BP-17",
+      "boxXYWH": [
+        20,
+        540,
+        470,
+        90
+      ],
+      "cropScale": 1,
+      "regionSha256": "27d4e78181ec63c96d8ec5c9a315ad7c4cd55a7b4a5e70bfe3c0ea4a2023427c",
+      "edgeRingComplexity": 28.3
+    }
+  ]
+}
