@@ -49,8 +49,36 @@
 - `full-lobby-desktop.mp4`：桌面 1440×1000 完整大廳
 - `full-lobby-phone.mp4`：手機 412 寬（地圖區）
 
-## 尚未完成
+## 獨立預覽部署（2026-11-24）
 
-- **獨立預覽部署**：施工通知在第四節之後被截斷，部署方式需要確認。GitHub Pages 目前只從 main 發布；不合併 main，就無法在 github.io 上產生預覽網址。
-- 最終採用的吊起高度（10／12／15 px）待使用者決定。目前預設 12 px。
-- 實機效能待量測。
+**部署方式**：使用專案原有的 Cloudflare Pages 測試專案 `balloon-v-universe-staging`。這個專案已連接本 repo，非 main 分支推送時會自動建置分支預覽（使用 `staging/build.mjs`）。部署過程中**沒有修改**任何發布設定、權限或憑證，也沒有動到 main 或正式 GitHub Pages。
+
+- 分支固定網址（永遠指向本分支最新 commit）：https://dev-living-lobby-block-party-53if.balloon-v-universe-staging.pages.dev/
+- `4b458c6` 的部署：https://ec8ec033.balloon-v-universe-staging.pages.dev/（GitHub check「Cloudflare Pages」：Deploy successful）
+
+在線上預覽站實際確認到的測試站保護：
+- 頁面帶有 `noindex,nofollow`，`robots.txt` 禁止收錄。
+- Content-Security-Policy 的 `connect-src` 只允許本站與**測試後端** `https://balloon-v-universe-api-staging.vashyang1120.workers.dev`，瀏覽器無法連到正式後端與正式玩家資料。
+
+## 部署後驗證
+
+| 項目 | 結果 | 測試環境 |
+| --- | --- | --- |
+| 線上預覽站載入完整動態大廳 | 通過（素材約 1.6 秒載入完成，`living-lobby-ready`） | **線上預覽站**，使用者電腦上的 Claude 內建瀏覽器，1440×1000 |
+| 預設吊起高度 | 實測 12 px，曲線為停住 → 上升 → 停在高處 → 放下 | 線上預覽站 |
+| `?craneLift=10`／`?craneLift=15` | 實測 10 px／15 px | 線上預覽站 |
+| `?craneLift=0` | 吊臂區域像素變化最大 1/255（無動作） | 線上預覽站 |
+| 其他動畫不受影響、無新增圖層錯誤 | 吊臂遮罩外 0 像素變化 | 本機 Chrome 153，同一 commit 逐像素比對 |
+| 小V、蓬蓬、Eric 前景點擊放大 | 通過，整合版與正式版 `c6ec0d3` 行為相同（桌面點擊、手機觸控都會開啟放大圖） | 本機 Chrome 153，同一 commit |
+| 熱區、遊戲入口 | DOM 結構與正式版相同（academy／stage／blocks／island） | 本機 Chrome 153 |
+| 手機版面比例 | 正常（Pixel 7 模擬 412×915） | 本機 Chrome 153 |
+
+線上預覽站的桌面測試做到一半時，使用者電腦和這個對話的連線中斷了，所以線上預覽站的畫面截圖、手機版與前景點擊，改在本機以**同一個 commit** 測試。
+
+## 尚未驗證
+
+- **實機效能**：未在有 GPU 的電腦或實體手機上量測。headless Chrome（無 GPU）每幀多 5–7 ms。線上預覽站測試時，瀏覽器面板在背景執行，幀率數字不能代表實際效能。
+- **實體手機瀏覽**：只做過模擬（Pixel 7 412×915），沒有用真的手機開啟線上預覽站。
+- **玩家資料 API**：線上預覽站連的是測試後端。測試後端是否正常運作、登入與玩家資料流程都沒有驗證，也沒有用正式玩家資料測試。
+- **實際點擊熱區進入遊戲**：只確認了熱區結構相同，沒有點進各遊戲。
+- **線上預覽站的前景點擊放大**：只在本機以同一 commit 驗證過。
