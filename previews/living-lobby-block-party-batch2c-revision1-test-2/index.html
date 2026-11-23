@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>氣球小V遊戲宇宙｜Batch 2-C Revision 1 Test 2｜吊臂搬運</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f8f5ee;color:#2b2440;font:16px/1.5 system-ui,sans-serif}
+main{max-width:1440px;margin:auto;padding:clamp(10px,2vw,26px)}
+h1{margin:0;font-size:clamp(22px,4vw,34px);line-height:1.2}
+h2{font-size:20px;margin:28px 0 6px}
+header p,.note{margin:4px 0;color:#514665;font-size:14px}
+.warn{background:#fff3d6;border:1px solid #e3c27a;border-radius:8px;padding:8px 12px;font-size:14px;margin:10px 0}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0;position:sticky;top:0;background:#f8f5eef2;padding:8px 0;z-index:3}
+button{font:inherit;color:inherit;background:white;border:1px solid #a89bb9;border-radius:8px;padding:7px 12px;min-height:44px;cursor:pointer}
+button[aria-pressed="true"]{background:#2b2440;color:white;border-color:#2b2440}
+button:focus-visible{outline:3px solid #8457a5;outline-offset:2px}
+.group{display:flex;gap:4px;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+figure{margin:0}
+figcaption{font-size:14px;margin:4px 0;color:#514665;font-weight:600}
+.zoom{position:relative}
+.zoom canvas{display:block;width:100%;height:auto;border-radius:8px}
+.pixel .zoom canvas.view{image-rendering:pixelated}
+.zoom canvas.overlay{position:absolute;inset:0;height:100%;pointer-events:none}
+canvas.lobby{display:block;width:100%;max-width:1388px;height:auto;border-radius:10px}
+.phones{display:flex;gap:14px;flex-wrap:wrap}
+.phones canvas{display:block;width:392px;max-width:100%;height:auto;border-radius:8px}
+table{border-collapse:collapse;font-size:14px;margin:6px 0;width:100%;max-width:760px}
+th,td{border:1px solid #d6cde2;padding:6px 8px;text-align:left;vertical-align:top}
+th{background:#efe9f5;width:32%}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>方塊派對｜吊臂搬運</h1>
+<p>Living Lobby Art v1.0｜Batch 2-C Revision 1 Test 2（方案 A＋B 合併）</p>
+<p class="note">粉紅機械手臂把「黃色齒輪＋黃色支柱塔＋粉紅大方塊」整組吊起再放下，吊起時齒輪同時轉動。所有畫面都直接取自原始地圖像素，零件只做旋轉或移動，沒有伸縮或重繪。</p>
+</header>
+<p class="warn"><strong>非完整動態大廳整合預覽。</strong>大廳畫面是「原始地圖＋吊臂動畫＋已驗收瀑布」。熱氣球、旗幟、氣球束、角色、賊鷗、音響需要工程包內的 assets.js，這頁沒有載入，所以畫面中的這些物件是靜止的原圖。</p>
+<p id="status" role="status">載入原始地圖…</p>
+<div class="controls">
+  <button id="play" type="button" aria-pressed="false" disabled>暫停</button>
+  <button id="replay" type="button" disabled>重新播放</button>
+  <span class="group" role="group" aria-label="吊起高度">吊起高度
+    <button type="button" class="lift" data-lift="10" aria-pressed="false" disabled>10 px</button>
+    <button type="button" class="lift" data-lift="12" aria-pressed="true" disabled>12 px</button>
+    <button type="button" class="lift" data-lift="15" aria-pressed="false" disabled>15 px</button>
+  </span>
+  <button id="marks" type="button" aria-pressed="false" disabled>顯示結構標記</button>
+  <button id="pixel" type="button" aria-pressed="true" disabled>像素格放大</button>
+</div>
+
+<h2>1. 局部放大（約 3 倍）</h2>
+<p class="note">結構標記：藍色十字是轉軸（肩部圓環軸孔、肘部藍色鉚釘、齒輪中心），粉紅點是前臂末端固定在齒輪上的銷釘。</p>
+<div class="grid2 pixel" id="zoom-grid">
+  <figure><figcaption>原始靜態畫面</figcaption><div class="zoom"><canvas class="view" id="zoom-original" width="206" height="296"></canvas></div></figure>
+  <figure><figcaption>吊臂搬運</figcaption><div class="zoom"><canvas class="view" id="zoom-live" width="206" height="296"></canvas><canvas class="overlay" id="overlay" width="618" height="888"></canvas></div></figure>
+</div>
+
+<h2>2. 正常大廳比例（電腦，1388 px）</h2>
+<canvas class="lobby" id="lobby" width="1536" height="1024"></canvas>
+
+<h2>3. 手機大廳寬度（392 px）</h2>
+<div class="phones">
+  <figure><figcaption>原始靜態</figcaption><canvas id="phone-original" width="1536" height="1024"></canvas></figure>
+  <figure><figcaption>吊臂搬運</figcaption><canvas id="phone-live" width="1536" height="1024"></canvas></figure>
+</div>
+
+<h2>4. 動作參數</h2>
+<table>
+<tbody>
+<tr><th>一起吊起的物件</th><td>② 黃色齒輪、③ 黃色支柱塔、④ 粉紅大方塊</td></tr>
+<tr><th>固定不動</th><td>⑤ 彩色方塊堆（在大方塊前面）、左側黃色方塊柱、肩部紅色圓環、方塊建築其餘部分</td></tr>
+<tr><th>吊起高度</th><td>10／12／15 px（預設 12 px，原圖像素）</td></tr>
+<tr><th>齒輪</th><td>吊起時同步轉動，每吊起 1 px 轉 1.25°（12 px 時轉 15°）</td></tr>
+<tr><th>手臂</th><td>主臂繞肩部抬起，肘部鉚釘轉動，前臂末端始終接在齒輪上</td></tr>
+<tr><th>節奏</th><td>放著 0.6 秒 → 吊起 1.7 秒 → 停在高處 0.5 秒 → 放下 1.7 秒，共 4.5 秒</td></tr>
+</tbody>
+</table>
+</main>
+<script src="map-asset.js"></script>
+<script src="arm-assets.js"></script>
+<script src="waterfall.js"></script>
+<script src="waterfall-layouts.js"></script>
+<script src="crane.js"></script>
+<script src="preview.js"></script>
+</body>
+</html>

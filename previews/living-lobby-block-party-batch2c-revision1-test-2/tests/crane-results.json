@@ -1,0 +1,2564 @@
+{
+  "date": "2026-11-23",
+  "runs": [
+    {
+      "profile": "desktop-1440",
+      "layout": {
+        "lobby": 1388,
+        "phone": 392,
+        "overflow": false
+      },
+      "checks": [
+        {
+          "liftPx": 10,
+          "periodSeconds": 4.5,
+          "samples": [
+            {
+              "t": 0,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.083,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.167,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.25,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.333,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.417,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.5,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.583,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.667,
+              "lift": 0.04,
+              "gearDeg": -0.05,
+              "boomDeg": -0.01,
+              "couplerDeg": -0.02,
+              "elbowPx": 0.02,
+              "linkMarginPx": 8.99,
+              "changed": 1779
+            },
+            {
+              "t": 0.75,
+              "lift": 0.19,
+              "gearDeg": -0.24,
+              "boomDeg": -0.05,
+              "couplerDeg": -0.12,
+              "elbowPx": 0.08,
+              "linkMarginPx": 8.97,
+              "changed": 11326
+            },
+            {
+              "t": 0.833,
+              "lift": 0.46,
+              "gearDeg": -0.57,
+              "boomDeg": -0.12,
+              "couplerDeg": -0.29,
+              "elbowPx": 0.18,
+              "linkMarginPx": 8.93,
+              "changed": 12837
+            },
+            {
+              "t": 0.917,
+              "lift": 0.83,
+              "gearDeg": -1.04,
+              "boomDeg": -0.21,
+              "couplerDeg": -0.52,
+              "elbowPx": 0.33,
+              "linkMarginPx": 8.89,
+              "changed": 13389
+            },
+            {
+              "t": 1,
+              "lift": 1.3,
+              "gearDeg": -1.63,
+              "boomDeg": -0.33,
+              "couplerDeg": -0.82,
+              "elbowPx": 0.51,
+              "linkMarginPx": 8.83,
+              "changed": 13810
+            },
+            {
+              "t": 1.083,
+              "lift": 1.87,
+              "gearDeg": -2.33,
+              "boomDeg": -0.47,
+              "couplerDeg": -1.18,
+              "elbowPx": 0.72,
+              "linkMarginPx": 8.76,
+              "changed": 13909
+            },
+            {
+              "t": 1.167,
+              "lift": 2.5,
+              "gearDeg": -3.13,
+              "boomDeg": -0.62,
+              "couplerDeg": -1.6,
+              "elbowPx": 0.95,
+              "linkMarginPx": 8.67,
+              "changed": 14060
+            },
+            {
+              "t": 1.25,
+              "lift": 3.19,
+              "gearDeg": -3.99,
+              "boomDeg": -0.78,
+              "couplerDeg": -2.06,
+              "elbowPx": 1.19,
+              "linkMarginPx": 8.57,
+              "changed": 14194
+            },
+            {
+              "t": 1.333,
+              "lift": 3.93,
+              "gearDeg": -4.91,
+              "boomDeg": -0.94,
+              "couplerDeg": -2.56,
+              "elbowPx": 1.44,
+              "linkMarginPx": 8.46,
+              "changed": 14251
+            },
+            {
+              "t": 1.417,
+              "lift": 4.69,
+              "gearDeg": -5.87,
+              "boomDeg": -1.1,
+              "couplerDeg": -3.09,
+              "elbowPx": 1.68,
+              "linkMarginPx": 8.35,
+              "changed": 14389
+            },
+            {
+              "t": 1.5,
+              "lift": 5.46,
+              "gearDeg": -6.83,
+              "boomDeg": -1.25,
+              "couplerDeg": -3.63,
+              "elbowPx": 1.92,
+              "linkMarginPx": 8.22,
+              "changed": 14517
+            },
+            {
+              "t": 1.583,
+              "lift": 6.22,
+              "gearDeg": -7.77,
+              "boomDeg": -1.4,
+              "couplerDeg": -4.18,
+              "elbowPx": 2.14,
+              "linkMarginPx": 8.1,
+              "changed": 14622
+            },
+            {
+              "t": 1.667,
+              "lift": 6.95,
+              "gearDeg": -8.69,
+              "boomDeg": -1.53,
+              "couplerDeg": -4.71,
+              "elbowPx": 2.35,
+              "linkMarginPx": 7.97,
+              "changed": 14684
+            },
+            {
+              "t": 1.75,
+              "lift": 7.63,
+              "gearDeg": -9.54,
+              "boomDeg": -1.65,
+              "couplerDeg": -5.22,
+              "elbowPx": 2.53,
+              "linkMarginPx": 7.85,
+              "changed": 14800
+            },
+            {
+              "t": 1.833,
+              "lift": 8.25,
+              "gearDeg": -10.32,
+              "boomDeg": -1.75,
+              "couplerDeg": -5.7,
+              "elbowPx": 2.69,
+              "linkMarginPx": 7.73,
+              "changed": 14908
+            },
+            {
+              "t": 1.917,
+              "lift": 8.8,
+              "gearDeg": -11,
+              "boomDeg": -1.84,
+              "couplerDeg": -6.12,
+              "elbowPx": 2.82,
+              "linkMarginPx": 7.63,
+              "changed": 14957
+            },
+            {
+              "t": 2,
+              "lift": 9.25,
+              "gearDeg": -11.56,
+              "boomDeg": -1.9,
+              "couplerDeg": -6.47,
+              "elbowPx": 2.92,
+              "linkMarginPx": 7.54,
+              "changed": 15056
+            },
+            {
+              "t": 2.083,
+              "lift": 9.6,
+              "gearDeg": -12.01,
+              "boomDeg": -1.96,
+              "couplerDeg": -6.76,
+              "elbowPx": 3,
+              "linkMarginPx": 7.47,
+              "changed": 15084
+            },
+            {
+              "t": 2.167,
+              "lift": 9.85,
+              "gearDeg": -12.31,
+              "boomDeg": -1.99,
+              "couplerDeg": -6.95,
+              "elbowPx": 3.05,
+              "linkMarginPx": 7.43,
+              "changed": 15104
+            },
+            {
+              "t": 2.25,
+              "lift": 9.98,
+              "gearDeg": -12.47,
+              "boomDeg": -2.01,
+              "couplerDeg": -7.06,
+              "elbowPx": 3.08,
+              "linkMarginPx": 7.4,
+              "changed": 15109
+            },
+            {
+              "t": 2.333,
+              "lift": 10,
+              "gearDeg": -12.5,
+              "boomDeg": -2.01,
+              "couplerDeg": -7.07,
+              "elbowPx": 3.08,
+              "linkMarginPx": 7.39,
+              "changed": 15074
+            },
+            {
+              "t": 2.417,
+              "lift": 10,
+              "gearDeg": -12.5,
+              "boomDeg": -2.01,
+              "couplerDeg": -7.07,
+              "elbowPx": 3.08,
+              "linkMarginPx": 7.39,
+              "changed": 15074
+            },
+            {
+              "t": 2.5,
+              "lift": 10,
+              "gearDeg": -12.5,
+              "boomDeg": -2.01,
+              "couplerDeg": -7.07,
+              "elbowPx": 3.08,
+              "linkMarginPx": 7.39,
+              "changed": 15074
+            },
+            {
+              "t": 2.583,
+              "lift": 10,
+              "gearDeg": -12.5,
+              "boomDeg": -2.01,
+              "couplerDeg": -7.07,
+              "elbowPx": 3.08,
+              "linkMarginPx": 7.39,
+              "changed": 15074
+            },
+            {
+              "t": 2.667,
+              "lift": 10,
+              "gearDeg": -12.5,
+              "boomDeg": -2.01,
+              "couplerDeg": -7.07,
+              "elbowPx": 3.08,
+              "linkMarginPx": 7.39,
+              "changed": 15074
+            },
+            {
+              "t": 2.75,
+              "lift": 10,
+              "gearDeg": -12.5,
+              "boomDeg": -2.01,
+              "couplerDeg": -7.07,
+              "elbowPx": 3.08,
+              "linkMarginPx": 7.39,
+              "changed": 15074
+            },
+            {
+              "t": 2.833,
+              "lift": 9.99,
+              "gearDeg": -12.49,
+              "boomDeg": -2.01,
+              "couplerDeg": -7.07,
+              "elbowPx": 3.08,
+              "linkMarginPx": 7.4,
+              "changed": 15113
+            },
+            {
+              "t": 2.917,
+              "lift": 9.88,
+              "gearDeg": -12.36,
+              "boomDeg": -1.99,
+              "couplerDeg": -6.98,
+              "elbowPx": 3.06,
+              "linkMarginPx": 7.42,
+              "changed": 15105
+            },
+            {
+              "t": 3,
+              "lift": 9.66,
+              "gearDeg": -12.08,
+              "boomDeg": -1.96,
+              "couplerDeg": -6.8,
+              "elbowPx": 3.01,
+              "linkMarginPx": 7.46,
+              "changed": 15087
+            },
+            {
+              "t": 3.083,
+              "lift": 9.33,
+              "gearDeg": -11.66,
+              "boomDeg": -1.92,
+              "couplerDeg": -6.54,
+              "elbowPx": 2.94,
+              "linkMarginPx": 7.53,
+              "changed": 15060
+            },
+            {
+              "t": 3.167,
+              "lift": 8.9,
+              "gearDeg": -11.12,
+              "boomDeg": -1.85,
+              "couplerDeg": -6.2,
+              "elbowPx": 2.84,
+              "linkMarginPx": 7.61,
+              "changed": 14966
+            },
+            {
+              "t": 3.25,
+              "lift": 8.37,
+              "gearDeg": -10.46,
+              "boomDeg": -1.77,
+              "couplerDeg": -5.79,
+              "elbowPx": 2.71,
+              "linkMarginPx": 7.71,
+              "changed": 14918
+            },
+            {
+              "t": 3.333,
+              "lift": 7.76,
+              "gearDeg": -9.7,
+              "boomDeg": -1.67,
+              "couplerDeg": -5.32,
+              "elbowPx": 2.56,
+              "linkMarginPx": 7.83,
+              "changed": 14812
+            },
+            {
+              "t": 3.417,
+              "lift": 7.09,
+              "gearDeg": -8.86,
+              "boomDeg": -1.56,
+              "couplerDeg": -4.82,
+              "elbowPx": 2.39,
+              "linkMarginPx": 7.95,
+              "changed": 14759
+            },
+            {
+              "t": 3.5,
+              "lift": 6.37,
+              "gearDeg": -7.96,
+              "boomDeg": -1.43,
+              "couplerDeg": -4.29,
+              "elbowPx": 2.19,
+              "linkMarginPx": 8.07,
+              "changed": 14636
+            },
+            {
+              "t": 3.583,
+              "lift": 5.61,
+              "gearDeg": -7.02,
+              "boomDeg": -1.28,
+              "couplerDeg": -3.74,
+              "elbowPx": 1.97,
+              "linkMarginPx": 8.2,
+              "changed": 14522
+            },
+            {
+              "t": 3.667,
+              "lift": 4.85,
+              "gearDeg": -6.06,
+              "boomDeg": -1.13,
+              "couplerDeg": -3.2,
+              "elbowPx": 1.73,
+              "linkMarginPx": 8.32,
+              "changed": 14399
+            },
+            {
+              "t": 3.75,
+              "lift": 4.08,
+              "gearDeg": -5.1,
+              "boomDeg": -0.97,
+              "couplerDeg": -2.67,
+              "elbowPx": 1.49,
+              "linkMarginPx": 8.44,
+              "changed": 14335
+            },
+            {
+              "t": 3.833,
+              "lift": 3.34,
+              "gearDeg": -4.17,
+              "boomDeg": -0.81,
+              "couplerDeg": -2.16,
+              "elbowPx": 1.24,
+              "linkMarginPx": 8.55,
+              "changed": 14208
+            },
+            {
+              "t": 3.917,
+              "lift": 2.63,
+              "gearDeg": -3.29,
+              "boomDeg": -0.65,
+              "couplerDeg": -1.69,
+              "elbowPx": 1,
+              "linkMarginPx": 8.65,
+              "changed": 14072
+            },
+            {
+              "t": 4,
+              "lift": 1.99,
+              "gearDeg": -2.48,
+              "boomDeg": -0.5,
+              "couplerDeg": -1.26,
+              "elbowPx": 0.76,
+              "linkMarginPx": 8.74,
+              "changed": 13923
+            },
+            {
+              "t": 4.083,
+              "lift": 1.41,
+              "gearDeg": -1.76,
+              "boomDeg": -0.36,
+              "couplerDeg": -0.89,
+              "elbowPx": 0.55,
+              "linkMarginPx": 8.82,
+              "changed": 13839
+            },
+            {
+              "t": 4.167,
+              "lift": 0.92,
+              "gearDeg": -1.15,
+              "boomDeg": -0.24,
+              "couplerDeg": -0.58,
+              "elbowPx": 0.36,
+              "linkMarginPx": 8.88,
+              "changed": 13424
+            },
+            {
+              "t": 4.25,
+              "lift": 0.52,
+              "gearDeg": -0.66,
+              "boomDeg": -0.14,
+              "couplerDeg": -0.33,
+              "elbowPx": 0.21,
+              "linkMarginPx": 8.93,
+              "changed": 13129
+            },
+            {
+              "t": 4.333,
+              "lift": 0.24,
+              "gearDeg": -0.29,
+              "boomDeg": -0.06,
+              "couplerDeg": -0.15,
+              "elbowPx": 0.09,
+              "linkMarginPx": 8.96,
+              "changed": 11637
+            },
+            {
+              "t": 4.417,
+              "lift": 0.06,
+              "gearDeg": -0.07,
+              "boomDeg": -0.02,
+              "couplerDeg": -0.04,
+              "elbowPx": 0.02,
+              "linkMarginPx": 8.98,
+              "changed": 2467
+            },
+            {
+              "t": 4.5,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 10.3,
+              "lift": 3.63,
+              "gearDeg": -4.54,
+              "boomDeg": -0.87,
+              "couplerDeg": -2.36,
+              "elbowPx": 1.34,
+              "linkMarginPx": 8.51,
+              "changed": 14227
+            },
+            {
+              "t": 13.637,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 33.75,
+              "lift": 9.98,
+              "gearDeg": -12.47,
+              "boomDeg": -2.01,
+              "couplerDeg": -7.06,
+              "elbowPx": 3.08,
+              "linkMarginPx": 7.4,
+              "changed": 15109
+            }
+          ],
+          "restExact": true,
+          "outsideMaskMax": 0,
+          "maskEnvelopeLeaks": 0,
+          "alphaChangedMax": 0,
+          "changedPixelsMax": 15113,
+          "foreignColorMaxDistance": 58.7,
+          "foreignColorPixelsOver30": 1619,
+          "protected": {
+            "torusChangedMax": 0,
+            "frontPileAndColumnChangedMax": 0
+          },
+          "peaks": {
+            "liftPx": 10,
+            "gearDeg": 12.5,
+            "boomDeg": 2.01,
+            "couplerDeg": 7.07,
+            "elbowPx": 3.08
+          },
+          "minLinkMarginPx": 7.39,
+          "loopExact": true,
+          "sameAngleExact": true,
+          "frameStep60fps": {
+            "max": 40,
+            "meanPerPixel": 0.512
+          },
+          "paintMsPerFrame": 2.605
+        },
+        {
+          "liftPx": 12,
+          "periodSeconds": 4.5,
+          "samples": [
+            {
+              "t": 0,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.083,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.167,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.25,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.333,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.417,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.5,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.583,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.667,
+              "lift": 0.05,
+              "gearDeg": -0.06,
+              "boomDeg": -0.01,
+              "couplerDeg": -0.03,
+              "elbowPx": 0.02,
+              "linkMarginPx": 8.98,
+              "changed": 2051
+            },
+            {
+              "t": 0.75,
+              "lift": 0.23,
+              "gearDeg": -0.29,
+              "boomDeg": -0.06,
+              "couplerDeg": -0.14,
+              "elbowPx": 0.09,
+              "linkMarginPx": 8.96,
+              "changed": 11597
+            },
+            {
+              "t": 0.833,
+              "lift": 0.55,
+              "gearDeg": -0.69,
+              "boomDeg": -0.14,
+              "couplerDeg": -0.34,
+              "elbowPx": 0.22,
+              "linkMarginPx": 8.92,
+              "changed": 13152
+            },
+            {
+              "t": 0.917,
+              "lift": 1,
+              "gearDeg": -1.25,
+              "boomDeg": -0.26,
+              "couplerDeg": -0.63,
+              "elbowPx": 0.39,
+              "linkMarginPx": 8.87,
+              "changed": 13578
+            },
+            {
+              "t": 1,
+              "lift": 1.57,
+              "gearDeg": -1.96,
+              "boomDeg": -0.4,
+              "couplerDeg": -0.99,
+              "elbowPx": 0.61,
+              "linkMarginPx": 8.8,
+              "changed": 13875
+            },
+            {
+              "t": 1.083,
+              "lift": 2.24,
+              "gearDeg": -2.8,
+              "boomDeg": -0.56,
+              "couplerDeg": -1.43,
+              "elbowPx": 0.85,
+              "linkMarginPx": 8.71,
+              "changed": 14036
+            },
+            {
+              "t": 1.167,
+              "lift": 3,
+              "gearDeg": -3.75,
+              "boomDeg": -0.73,
+              "couplerDeg": -1.93,
+              "elbowPx": 1.12,
+              "linkMarginPx": 8.6,
+              "changed": 14062
+            },
+            {
+              "t": 1.25,
+              "lift": 3.83,
+              "gearDeg": -4.79,
+              "boomDeg": -0.92,
+              "couplerDeg": -2.49,
+              "elbowPx": 1.41,
+              "linkMarginPx": 8.48,
+              "changed": 14252
+            },
+            {
+              "t": 1.333,
+              "lift": 4.72,
+              "gearDeg": -5.9,
+              "boomDeg": -1.1,
+              "couplerDeg": -3.11,
+              "elbowPx": 1.69,
+              "linkMarginPx": 8.34,
+              "changed": 14391
+            },
+            {
+              "t": 1.417,
+              "lift": 5.63,
+              "gearDeg": -7.04,
+              "boomDeg": -1.29,
+              "couplerDeg": -3.75,
+              "elbowPx": 1.97,
+              "linkMarginPx": 8.2,
+              "changed": 14530
+            },
+            {
+              "t": 1.5,
+              "lift": 6.55,
+              "gearDeg": -8.19,
+              "boomDeg": -1.46,
+              "couplerDeg": -4.42,
+              "elbowPx": 2.24,
+              "linkMarginPx": 8.04,
+              "changed": 14653
+            },
+            {
+              "t": 1.583,
+              "lift": 7.46,
+              "gearDeg": -9.33,
+              "boomDeg": -1.62,
+              "couplerDeg": -5.1,
+              "elbowPx": 2.49,
+              "linkMarginPx": 7.88,
+              "changed": 14791
+            },
+            {
+              "t": 1.667,
+              "lift": 8.34,
+              "gearDeg": -10.42,
+              "boomDeg": -1.76,
+              "couplerDeg": -5.76,
+              "elbowPx": 2.71,
+              "linkMarginPx": 7.72,
+              "changed": 14915
+            },
+            {
+              "t": 1.75,
+              "lift": 9.16,
+              "gearDeg": -11.45,
+              "boomDeg": -1.89,
+              "couplerDeg": -6.4,
+              "elbowPx": 2.9,
+              "linkMarginPx": 7.56,
+              "changed": 15043
+            },
+            {
+              "t": 1.833,
+              "lift": 9.9,
+              "gearDeg": -12.38,
+              "boomDeg": -2,
+              "couplerDeg": -7,
+              "elbowPx": 3.06,
+              "linkMarginPx": 7.41,
+              "changed": 15103
+            },
+            {
+              "t": 1.917,
+              "lift": 10.56,
+              "gearDeg": -13.2,
+              "boomDeg": -2.08,
+              "couplerDeg": -7.53,
+              "elbowPx": 3.2,
+              "linkMarginPx": 7.28,
+              "changed": 15215
+            },
+            {
+              "t": 2,
+              "lift": 11.1,
+              "gearDeg": -13.88,
+              "boomDeg": -2.15,
+              "couplerDeg": -7.98,
+              "elbowPx": 3.3,
+              "linkMarginPx": 7.17,
+              "changed": 15290
+            },
+            {
+              "t": 2.083,
+              "lift": 11.53,
+              "gearDeg": -14.41,
+              "boomDeg": -2.2,
+              "couplerDeg": -8.33,
+              "elbowPx": 3.38,
+              "linkMarginPx": 7.08,
+              "changed": 15329
+            },
+            {
+              "t": 2.167,
+              "lift": 11.82,
+              "gearDeg": -14.77,
+              "boomDeg": -2.23,
+              "couplerDeg": -8.58,
+              "elbowPx": 3.43,
+              "linkMarginPx": 7.01,
+              "changed": 15344
+            },
+            {
+              "t": 2.25,
+              "lift": 11.97,
+              "gearDeg": -14.97,
+              "boomDeg": -2.25,
+              "couplerDeg": -8.71,
+              "elbowPx": 3.45,
+              "linkMarginPx": 6.98,
+              "changed": 15355
+            },
+            {
+              "t": 2.333,
+              "lift": 12,
+              "gearDeg": -15,
+              "boomDeg": -2.25,
+              "couplerDeg": -8.73,
+              "elbowPx": 3.46,
+              "linkMarginPx": 6.97,
+              "changed": 15321
+            },
+            {
+              "t": 2.417,
+              "lift": 12,
+              "gearDeg": -15,
+              "boomDeg": -2.25,
+              "couplerDeg": -8.73,
+              "elbowPx": 3.46,
+              "linkMarginPx": 6.97,
+              "changed": 15321
+            },
+            {
+              "t": 2.5,
+              "lift": 12,
+              "gearDeg": -15,
+              "boomDeg": -2.25,
+              "couplerDeg": -8.73,
+              "elbowPx": 3.46,
+              "linkMarginPx": 6.97,
+              "changed": 15321
+            },
+            {
+              "t": 2.583,
+              "lift": 12,
+              "gearDeg": -15,
+              "boomDeg": -2.25,
+              "couplerDeg": -8.73,
+              "elbowPx": 3.46,
+              "linkMarginPx": 6.97,
+              "changed": 15321
+            },
+            {
+              "t": 2.667,
+              "lift": 12,
+              "gearDeg": -15,
+              "boomDeg": -2.25,
+              "couplerDeg": -8.73,
+              "elbowPx": 3.46,
+              "linkMarginPx": 6.97,
+              "changed": 15321
+            },
+            {
+              "t": 2.75,
+              "lift": 12,
+              "gearDeg": -15,
+              "boomDeg": -2.25,
+              "couplerDeg": -8.73,
+              "elbowPx": 3.46,
+              "linkMarginPx": 6.97,
+              "changed": 15321
+            },
+            {
+              "t": 2.833,
+              "lift": 11.99,
+              "gearDeg": -14.99,
+              "boomDeg": -2.25,
+              "couplerDeg": -8.72,
+              "elbowPx": 3.46,
+              "linkMarginPx": 6.98,
+              "changed": 15356
+            },
+            {
+              "t": 2.917,
+              "lift": 11.86,
+              "gearDeg": -14.83,
+              "boomDeg": -2.24,
+              "couplerDeg": -8.62,
+              "elbowPx": 3.43,
+              "linkMarginPx": 7,
+              "changed": 15346
+            },
+            {
+              "t": 3,
+              "lift": 11.59,
+              "gearDeg": -14.49,
+              "boomDeg": -2.21,
+              "couplerDeg": -8.39,
+              "elbowPx": 3.39,
+              "linkMarginPx": 7.06,
+              "changed": 15333
+            },
+            {
+              "t": 3.083,
+              "lift": 11.2,
+              "gearDeg": -14,
+              "boomDeg": -2.16,
+              "couplerDeg": -8.05,
+              "elbowPx": 3.32,
+              "linkMarginPx": 7.15,
+              "changed": 15302
+            },
+            {
+              "t": 3.167,
+              "lift": 10.67,
+              "gearDeg": -13.34,
+              "boomDeg": -2.1,
+              "couplerDeg": -7.62,
+              "elbowPx": 3.22,
+              "linkMarginPx": 7.26,
+              "changed": 15219
+            },
+            {
+              "t": 3.25,
+              "lift": 10.04,
+              "gearDeg": -12.55,
+              "boomDeg": -2.02,
+              "couplerDeg": -7.11,
+              "elbowPx": 3.09,
+              "linkMarginPx": 7.39,
+              "changed": 15074
+            },
+            {
+              "t": 3.333,
+              "lift": 9.31,
+              "gearDeg": -11.64,
+              "boomDeg": -1.91,
+              "couplerDeg": -6.52,
+              "elbowPx": 2.94,
+              "linkMarginPx": 7.53,
+              "changed": 15065
+            },
+            {
+              "t": 3.417,
+              "lift": 8.51,
+              "gearDeg": -10.63,
+              "boomDeg": -1.79,
+              "couplerDeg": -5.89,
+              "elbowPx": 2.75,
+              "linkMarginPx": 7.69,
+              "changed": 14928
+            },
+            {
+              "t": 3.5,
+              "lift": 7.64,
+              "gearDeg": -9.55,
+              "boomDeg": -1.65,
+              "couplerDeg": -5.23,
+              "elbowPx": 2.53,
+              "linkMarginPx": 7.85,
+              "changed": 14804
+            },
+            {
+              "t": 3.583,
+              "lift": 6.74,
+              "gearDeg": -8.42,
+              "boomDeg": -1.49,
+              "couplerDeg": -4.56,
+              "elbowPx": 2.29,
+              "linkMarginPx": 8.01,
+              "changed": 14671
+            },
+            {
+              "t": 3.667,
+              "lift": 5.82,
+              "gearDeg": -7.27,
+              "boomDeg": -1.32,
+              "couplerDeg": -3.89,
+              "elbowPx": 2.03,
+              "linkMarginPx": 8.16,
+              "changed": 14532
+            },
+            {
+              "t": 3.75,
+              "lift": 4.9,
+              "gearDeg": -6.12,
+              "boomDeg": -1.14,
+              "couplerDeg": -3.23,
+              "elbowPx": 1.75,
+              "linkMarginPx": 8.31,
+              "changed": 14404
+            },
+            {
+              "t": 3.833,
+              "lift": 4.01,
+              "gearDeg": -5.01,
+              "boomDeg": -0.95,
+              "couplerDeg": -2.61,
+              "elbowPx": 1.46,
+              "linkMarginPx": 8.45,
+              "changed": 14229
+            },
+            {
+              "t": 3.917,
+              "lift": 3.16,
+              "gearDeg": -3.95,
+              "boomDeg": -0.77,
+              "couplerDeg": -2.04,
+              "elbowPx": 1.18,
+              "linkMarginPx": 8.58,
+              "changed": 14191
+            },
+            {
+              "t": 4,
+              "lift": 2.38,
+              "gearDeg": -2.98,
+              "boomDeg": -0.59,
+              "couplerDeg": -1.52,
+              "elbowPx": 0.91,
+              "linkMarginPx": 8.69,
+              "changed": 14053
+            },
+            {
+              "t": 4.083,
+              "lift": 1.69,
+              "gearDeg": -2.12,
+              "boomDeg": -0.43,
+              "couplerDeg": -1.07,
+              "elbowPx": 0.65,
+              "linkMarginPx": 8.78,
+              "changed": 13886
+            },
+            {
+              "t": 4.167,
+              "lift": 1.1,
+              "gearDeg": -1.38,
+              "boomDeg": -0.28,
+              "couplerDeg": -0.69,
+              "elbowPx": 0.43,
+              "linkMarginPx": 8.85,
+              "changed": 13746
+            },
+            {
+              "t": 4.25,
+              "lift": 0.63,
+              "gearDeg": -0.79,
+              "boomDeg": -0.16,
+              "couplerDeg": -0.39,
+              "elbowPx": 0.25,
+              "linkMarginPx": 8.91,
+              "changed": 13232
+            },
+            {
+              "t": 4.333,
+              "lift": 0.28,
+              "gearDeg": -0.35,
+              "boomDeg": -0.07,
+              "couplerDeg": -0.18,
+              "elbowPx": 0.11,
+              "linkMarginPx": 8.96,
+              "changed": 12122
+            },
+            {
+              "t": 4.417,
+              "lift": 0.07,
+              "gearDeg": -0.09,
+              "boomDeg": -0.02,
+              "couplerDeg": -0.04,
+              "elbowPx": 0.03,
+              "linkMarginPx": 8.98,
+              "changed": 8974
+            },
+            {
+              "t": 4.5,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 10.3,
+              "lift": 4.36,
+              "gearDeg": -5.45,
+              "boomDeg": -1.03,
+              "couplerDeg": -2.86,
+              "elbowPx": 1.58,
+              "linkMarginPx": 8.4,
+              "changed": 14356
+            },
+            {
+              "t": 13.637,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 33.75,
+              "lift": 11.97,
+              "gearDeg": -14.97,
+              "boomDeg": -2.25,
+              "couplerDeg": -8.71,
+              "elbowPx": 3.45,
+              "linkMarginPx": 6.98,
+              "changed": 15355
+            }
+          ],
+          "restExact": true,
+          "outsideMaskMax": 0,
+          "maskEnvelopeLeaks": 0,
+          "alphaChangedMax": 0,
+          "changedPixelsMax": 15356,
+          "foreignColorMaxDistance": 58.8,
+          "foreignColorPixelsOver30": 1718,
+          "protected": {
+            "torusChangedMax": 0,
+            "frontPileAndColumnChangedMax": 0
+          },
+          "peaks": {
+            "liftPx": 12,
+            "gearDeg": 15,
+            "boomDeg": 2.25,
+            "couplerDeg": 8.73,
+            "elbowPx": 3.46
+          },
+          "minLinkMarginPx": 6.97,
+          "loopExact": true,
+          "sameAngleExact": true,
+          "frameStep60fps": {
+            "max": 41,
+            "meanPerPixel": 0.611
+          },
+          "paintMsPerFrame": 2.915
+        },
+        {
+          "liftPx": 15,
+          "periodSeconds": 4.5,
+          "samples": [
+            {
+              "t": 0,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.083,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.167,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.25,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.333,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.417,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.5,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.583,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.667,
+              "lift": 0.06,
+              "gearDeg": -0.07,
+              "boomDeg": -0.01,
+              "couplerDeg": -0.04,
+              "elbowPx": 0.02,
+              "linkMarginPx": 8.98,
+              "changed": 2399
+            },
+            {
+              "t": 0.75,
+              "lift": 0.29,
+              "gearDeg": -0.36,
+              "boomDeg": -0.07,
+              "couplerDeg": -0.18,
+              "elbowPx": 0.11,
+              "linkMarginPx": 8.96,
+              "changed": 12147
+            },
+            {
+              "t": 0.833,
+              "lift": 0.69,
+              "gearDeg": -0.86,
+              "boomDeg": -0.18,
+              "couplerDeg": -0.43,
+              "elbowPx": 0.27,
+              "linkMarginPx": 8.91,
+              "changed": 13285
+            },
+            {
+              "t": 0.917,
+              "lift": 1.25,
+              "gearDeg": -1.56,
+              "boomDeg": -0.32,
+              "couplerDeg": -0.79,
+              "elbowPx": 0.49,
+              "linkMarginPx": 8.84,
+              "changed": 13790
+            },
+            {
+              "t": 1,
+              "lift": 1.96,
+              "gearDeg": -2.45,
+              "boomDeg": -0.49,
+              "couplerDeg": -1.24,
+              "elbowPx": 0.75,
+              "linkMarginPx": 8.74,
+              "changed": 13924
+            },
+            {
+              "t": 1.083,
+              "lift": 2.8,
+              "gearDeg": -3.5,
+              "boomDeg": -0.69,
+              "couplerDeg": -1.8,
+              "elbowPx": 1.05,
+              "linkMarginPx": 8.63,
+              "changed": 14083
+            },
+            {
+              "t": 1.167,
+              "lift": 3.75,
+              "gearDeg": -4.69,
+              "boomDeg": -0.9,
+              "couplerDeg": -2.44,
+              "elbowPx": 1.38,
+              "linkMarginPx": 8.49,
+              "changed": 14237
+            },
+            {
+              "t": 1.25,
+              "lift": 4.79,
+              "gearDeg": -5.99,
+              "boomDeg": -1.12,
+              "couplerDeg": -3.16,
+              "elbowPx": 1.72,
+              "linkMarginPx": 8.33,
+              "changed": 14397
+            },
+            {
+              "t": 1.333,
+              "lift": 5.9,
+              "gearDeg": -7.37,
+              "boomDeg": -1.34,
+              "couplerDeg": -3.94,
+              "elbowPx": 2.05,
+              "linkMarginPx": 8.15,
+              "changed": 14548
+            },
+            {
+              "t": 1.417,
+              "lift": 7.04,
+              "gearDeg": -8.8,
+              "boomDeg": -1.55,
+              "couplerDeg": -4.78,
+              "elbowPx": 2.37,
+              "linkMarginPx": 7.96,
+              "changed": 14641
+            },
+            {
+              "t": 1.5,
+              "lift": 8.19,
+              "gearDeg": -10.24,
+              "boomDeg": -1.74,
+              "couplerDeg": -5.65,
+              "elbowPx": 2.67,
+              "linkMarginPx": 7.75,
+              "changed": 14906
+            },
+            {
+              "t": 1.583,
+              "lift": 9.33,
+              "gearDeg": -11.66,
+              "boomDeg": -1.92,
+              "couplerDeg": -6.54,
+              "elbowPx": 2.94,
+              "linkMarginPx": 7.53,
+              "changed": 15060
+            },
+            {
+              "t": 1.667,
+              "lift": 10.42,
+              "gearDeg": -13.03,
+              "boomDeg": -2.07,
+              "couplerDeg": -7.42,
+              "elbowPx": 3.17,
+              "linkMarginPx": 7.31,
+              "changed": 15190
+            },
+            {
+              "t": 1.75,
+              "lift": 11.45,
+              "gearDeg": -14.31,
+              "boomDeg": -2.19,
+              "couplerDeg": -8.27,
+              "elbowPx": 3.36,
+              "linkMarginPx": 7.09,
+              "changed": 15326
+            },
+            {
+              "t": 1.833,
+              "lift": 12.38,
+              "gearDeg": -15.47,
+              "boomDeg": -2.29,
+              "couplerDeg": -9.06,
+              "elbowPx": 3.52,
+              "linkMarginPx": 6.89,
+              "changed": 15438
+            },
+            {
+              "t": 1.917,
+              "lift": 13.2,
+              "gearDeg": -16.49,
+              "boomDeg": -2.37,
+              "couplerDeg": -9.77,
+              "elbowPx": 3.64,
+              "linkMarginPx": 6.71,
+              "changed": 15533
+            },
+            {
+              "t": 2,
+              "lift": 13.88,
+              "gearDeg": -17.35,
+              "boomDeg": -2.43,
+              "couplerDeg": -10.38,
+              "elbowPx": 3.73,
+              "linkMarginPx": 6.55,
+              "changed": 15580
+            },
+            {
+              "t": 2.083,
+              "lift": 14.41,
+              "gearDeg": -18.01,
+              "boomDeg": -2.47,
+              "couplerDeg": -10.87,
+              "elbowPx": 3.79,
+              "linkMarginPx": 6.42,
+              "changed": 15667
+            },
+            {
+              "t": 2.167,
+              "lift": 14.77,
+              "gearDeg": -18.47,
+              "boomDeg": -2.49,
+              "couplerDeg": -11.21,
+              "elbowPx": 3.82,
+              "linkMarginPx": 6.33,
+              "changed": 15687
+            },
+            {
+              "t": 2.25,
+              "lift": 14.97,
+              "gearDeg": -18.71,
+              "boomDeg": -2.5,
+              "couplerDeg": -11.39,
+              "elbowPx": 3.84,
+              "linkMarginPx": 6.29,
+              "changed": 15693
+            },
+            {
+              "t": 2.333,
+              "lift": 15,
+              "gearDeg": -18.75,
+              "boomDeg": -2.51,
+              "couplerDeg": -11.42,
+              "elbowPx": 3.84,
+              "linkMarginPx": 6.28,
+              "changed": 15647
+            },
+            {
+              "t": 2.417,
+              "lift": 15,
+              "gearDeg": -18.75,
+              "boomDeg": -2.51,
+              "couplerDeg": -11.42,
+              "elbowPx": 3.84,
+              "linkMarginPx": 6.28,
+              "changed": 15647
+            },
+            {
+              "t": 2.5,
+              "lift": 15,
+              "gearDeg": -18.75,
+              "boomDeg": -2.51,
+              "couplerDeg": -11.42,
+              "elbowPx": 3.84,
+              "linkMarginPx": 6.28,
+              "changed": 15647
+            },
+            {
+              "t": 2.583,
+              "lift": 15,
+              "gearDeg": -18.75,
+              "boomDeg": -2.51,
+              "couplerDeg": -11.42,
+              "elbowPx": 3.84,
+              "linkMarginPx": 6.28,
+              "changed": 15647
+            },
+            {
+              "t": 2.667,
+              "lift": 15,
+              "gearDeg": -18.75,
+              "boomDeg": -2.51,
+              "couplerDeg": -11.42,
+              "elbowPx": 3.84,
+              "linkMarginPx": 6.28,
+              "changed": 15647
+            },
+            {
+              "t": 2.75,
+              "lift": 15,
+              "gearDeg": -18.75,
+              "boomDeg": -2.51,
+              "couplerDeg": -11.42,
+              "elbowPx": 3.84,
+              "linkMarginPx": 6.28,
+              "changed": 15647
+            },
+            {
+              "t": 2.833,
+              "lift": 14.99,
+              "gearDeg": -18.73,
+              "boomDeg": -2.51,
+              "couplerDeg": -11.41,
+              "elbowPx": 3.84,
+              "linkMarginPx": 6.28,
+              "changed": 15695
+            },
+            {
+              "t": 2.917,
+              "lift": 14.83,
+              "gearDeg": -18.53,
+              "boomDeg": -2.5,
+              "couplerDeg": -11.26,
+              "elbowPx": 3.83,
+              "linkMarginPx": 6.32,
+              "changed": 15689
+            },
+            {
+              "t": 3,
+              "lift": 14.49,
+              "gearDeg": -18.12,
+              "boomDeg": -2.47,
+              "couplerDeg": -10.95,
+              "elbowPx": 3.79,
+              "linkMarginPx": 6.4,
+              "changed": 15675
+            },
+            {
+              "t": 3.083,
+              "lift": 14,
+              "gearDeg": -17.49,
+              "boomDeg": -2.44,
+              "couplerDeg": -10.49,
+              "elbowPx": 3.74,
+              "linkMarginPx": 6.52,
+              "changed": 15585
+            },
+            {
+              "t": 3.167,
+              "lift": 13.34,
+              "gearDeg": -16.68,
+              "boomDeg": -2.38,
+              "couplerDeg": -9.91,
+              "elbowPx": 3.66,
+              "linkMarginPx": 6.67,
+              "changed": 15554
+            },
+            {
+              "t": 3.25,
+              "lift": 12.55,
+              "gearDeg": -15.69,
+              "boomDeg": -2.31,
+              "couplerDeg": -9.21,
+              "elbowPx": 3.54,
+              "linkMarginPx": 6.85,
+              "changed": 15448
+            },
+            {
+              "t": 3.333,
+              "lift": 11.64,
+              "gearDeg": -14.55,
+              "boomDeg": -2.21,
+              "couplerDeg": -8.43,
+              "elbowPx": 3.4,
+              "linkMarginPx": 7.05,
+              "changed": 15335
+            },
+            {
+              "t": 3.417,
+              "lift": 10.63,
+              "gearDeg": -13.29,
+              "boomDeg": -2.09,
+              "couplerDeg": -7.59,
+              "elbowPx": 3.21,
+              "linkMarginPx": 7.27,
+              "changed": 15216
+            },
+            {
+              "t": 3.5,
+              "lift": 9.55,
+              "gearDeg": -11.94,
+              "boomDeg": -1.95,
+              "couplerDeg": -6.71,
+              "elbowPx": 2.99,
+              "linkMarginPx": 7.48,
+              "changed": 15081
+            },
+            {
+              "t": 3.583,
+              "lift": 8.42,
+              "gearDeg": -10.53,
+              "boomDeg": -1.78,
+              "couplerDeg": -5.83,
+              "elbowPx": 2.73,
+              "linkMarginPx": 7.7,
+              "changed": 14919
+            },
+            {
+              "t": 3.667,
+              "lift": 7.27,
+              "gearDeg": -9.09,
+              "boomDeg": -1.59,
+              "couplerDeg": -4.95,
+              "elbowPx": 2.43,
+              "linkMarginPx": 7.91,
+              "changed": 14778
+            },
+            {
+              "t": 3.75,
+              "lift": 6.12,
+              "gearDeg": -7.65,
+              "boomDeg": -1.38,
+              "couplerDeg": -4.11,
+              "elbowPx": 2.12,
+              "linkMarginPx": 8.11,
+              "changed": 14619
+            },
+            {
+              "t": 3.833,
+              "lift": 5.01,
+              "gearDeg": -6.26,
+              "boomDeg": -1.16,
+              "couplerDeg": -3.31,
+              "elbowPx": 1.78,
+              "linkMarginPx": 8.3,
+              "changed": 14358
+            },
+            {
+              "t": 3.917,
+              "lift": 3.95,
+              "gearDeg": -4.94,
+              "boomDeg": -0.94,
+              "couplerDeg": -2.58,
+              "elbowPx": 1.45,
+              "linkMarginPx": 8.46,
+              "changed": 14252
+            },
+            {
+              "t": 4,
+              "lift": 2.98,
+              "gearDeg": -3.73,
+              "boomDeg": -0.73,
+              "couplerDeg": -1.92,
+              "elbowPx": 1.12,
+              "linkMarginPx": 8.6,
+              "changed": 14091
+            },
+            {
+              "t": 4.083,
+              "lift": 2.12,
+              "gearDeg": -2.64,
+              "boomDeg": -0.53,
+              "couplerDeg": -1.35,
+              "elbowPx": 0.81,
+              "linkMarginPx": 8.72,
+              "changed": 14020
+            },
+            {
+              "t": 4.167,
+              "lift": 1.38,
+              "gearDeg": -1.72,
+              "boomDeg": -0.35,
+              "couplerDeg": -0.87,
+              "elbowPx": 0.54,
+              "linkMarginPx": 8.82,
+              "changed": 13835
+            },
+            {
+              "t": 4.25,
+              "lift": 0.79,
+              "gearDeg": -0.98,
+              "boomDeg": -0.2,
+              "couplerDeg": -0.49,
+              "elbowPx": 0.31,
+              "linkMarginPx": 8.89,
+              "changed": 13356
+            },
+            {
+              "t": 4.333,
+              "lift": 0.35,
+              "gearDeg": -0.44,
+              "boomDeg": -0.09,
+              "couplerDeg": -0.22,
+              "elbowPx": 0.14,
+              "linkMarginPx": 8.95,
+              "changed": 12412
+            },
+            {
+              "t": 4.417,
+              "lift": 0.09,
+              "gearDeg": -0.11,
+              "boomDeg": -0.02,
+              "couplerDeg": -0.06,
+              "elbowPx": 0.04,
+              "linkMarginPx": 8.98,
+              "changed": 9400
+            },
+            {
+              "t": 4.5,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 10.3,
+              "lift": 5.45,
+              "gearDeg": -6.81,
+              "boomDeg": -1.25,
+              "couplerDeg": -3.62,
+              "elbowPx": 1.92,
+              "linkMarginPx": 8.23,
+              "changed": 14515
+            },
+            {
+              "t": 13.637,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 33.75,
+              "lift": 14.97,
+              "gearDeg": -18.71,
+              "boomDeg": -2.5,
+              "couplerDeg": -11.39,
+              "elbowPx": 3.84,
+              "linkMarginPx": 6.29,
+              "changed": 15693
+            }
+          ],
+          "restExact": true,
+          "outsideMaskMax": 0,
+          "maskEnvelopeLeaks": 0,
+          "alphaChangedMax": 0,
+          "changedPixelsMax": 15695,
+          "foreignColorMaxDistance": 117.1,
+          "foreignColorPixelsOver30": 2355,
+          "protected": {
+            "torusChangedMax": 0,
+            "frontPileAndColumnChangedMax": 0
+          },
+          "peaks": {
+            "liftPx": 15,
+            "gearDeg": 18.75,
+            "boomDeg": 2.51,
+            "couplerDeg": 11.42,
+            "elbowPx": 3.84
+          },
+          "minLinkMarginPx": 6.28,
+          "loopExact": true,
+          "sameAngleExact": true,
+          "frameStep60fps": {
+            "max": 56,
+            "meanPerPixel": 0.755
+          },
+          "paintMsPerFrame": 2.48
+        }
+      ],
+      "errors": []
+    },
+    {
+      "profile": "pixel7-412",
+      "layout": {
+        "lobby": 392,
+        "phone": 392,
+        "overflow": false
+      },
+      "checks": [
+        {
+          "liftPx": 12,
+          "periodSeconds": 4.5,
+          "samples": [
+            {
+              "t": 0,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.083,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.167,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.25,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.333,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.417,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.5,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.583,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 0.667,
+              "lift": 0.05,
+              "gearDeg": -0.06,
+              "boomDeg": -0.01,
+              "couplerDeg": -0.03,
+              "elbowPx": 0.02,
+              "linkMarginPx": 8.98,
+              "changed": 2051
+            },
+            {
+              "t": 0.75,
+              "lift": 0.23,
+              "gearDeg": -0.29,
+              "boomDeg": -0.06,
+              "couplerDeg": -0.14,
+              "elbowPx": 0.09,
+              "linkMarginPx": 8.96,
+              "changed": 11597
+            },
+            {
+              "t": 0.833,
+              "lift": 0.55,
+              "gearDeg": -0.69,
+              "boomDeg": -0.14,
+              "couplerDeg": -0.34,
+              "elbowPx": 0.22,
+              "linkMarginPx": 8.92,
+              "changed": 13152
+            },
+            {
+              "t": 0.917,
+              "lift": 1,
+              "gearDeg": -1.25,
+              "boomDeg": -0.26,
+              "couplerDeg": -0.63,
+              "elbowPx": 0.39,
+              "linkMarginPx": 8.87,
+              "changed": 13578
+            },
+            {
+              "t": 1,
+              "lift": 1.57,
+              "gearDeg": -1.96,
+              "boomDeg": -0.4,
+              "couplerDeg": -0.99,
+              "elbowPx": 0.61,
+              "linkMarginPx": 8.8,
+              "changed": 13875
+            },
+            {
+              "t": 1.083,
+              "lift": 2.24,
+              "gearDeg": -2.8,
+              "boomDeg": -0.56,
+              "couplerDeg": -1.43,
+              "elbowPx": 0.85,
+              "linkMarginPx": 8.71,
+              "changed": 14036
+            },
+            {
+              "t": 1.167,
+              "lift": 3,
+              "gearDeg": -3.75,
+              "boomDeg": -0.73,
+              "couplerDeg": -1.93,
+              "elbowPx": 1.12,
+              "linkMarginPx": 8.6,
+              "changed": 14062
+            },
+            {
+              "t": 1.25,
+              "lift": 3.83,
+              "gearDeg": -4.79,
+              "boomDeg": -0.92,
+              "couplerDeg": -2.49,
+              "elbowPx": 1.41,
+              "linkMarginPx": 8.48,
+              "changed": 14252
+            },
+            {
+              "t": 1.333,
+              "lift": 4.72,
+              "gearDeg": -5.9,
+              "boomDeg": -1.1,
+              "couplerDeg": -3.11,
+              "elbowPx": 1.69,
+              "linkMarginPx": 8.34,
+              "changed": 14391
+            },
+            {
+              "t": 1.417,
+              "lift": 5.63,
+              "gearDeg": -7.04,
+              "boomDeg": -1.29,
+              "couplerDeg": -3.75,
+              "elbowPx": 1.97,
+              "linkMarginPx": 8.2,
+              "changed": 14530
+            },
+            {
+              "t": 1.5,
+              "lift": 6.55,
+              "gearDeg": -8.19,
+              "boomDeg": -1.46,
+              "couplerDeg": -4.42,
+              "elbowPx": 2.24,
+              "linkMarginPx": 8.04,
+              "changed": 14653
+            },
+            {
+              "t": 1.583,
+              "lift": 7.46,
+              "gearDeg": -9.33,
+              "boomDeg": -1.62,
+              "couplerDeg": -5.1,
+              "elbowPx": 2.49,
+              "linkMarginPx": 7.88,
+              "changed": 14791
+            },
+            {
+              "t": 1.667,
+              "lift": 8.34,
+              "gearDeg": -10.42,
+              "boomDeg": -1.76,
+              "couplerDeg": -5.76,
+              "elbowPx": 2.71,
+              "linkMarginPx": 7.72,
+              "changed": 14915
+            },
+            {
+              "t": 1.75,
+              "lift": 9.16,
+              "gearDeg": -11.45,
+              "boomDeg": -1.89,
+              "couplerDeg": -6.4,
+              "elbowPx": 2.9,
+              "linkMarginPx": 7.56,
+              "changed": 15043
+            },
+            {
+              "t": 1.833,
+              "lift": 9.9,
+              "gearDeg": -12.38,
+              "boomDeg": -2,
+              "couplerDeg": -7,
+              "elbowPx": 3.06,
+              "linkMarginPx": 7.41,
+              "changed": 15103
+            },
+            {
+              "t": 1.917,
+              "lift": 10.56,
+              "gearDeg": -13.2,
+              "boomDeg": -2.08,
+              "couplerDeg": -7.53,
+              "elbowPx": 3.2,
+              "linkMarginPx": 7.28,
+              "changed": 15215
+            },
+            {
+              "t": 2,
+              "lift": 11.1,
+              "gearDeg": -13.88,
+              "boomDeg": -2.15,
+              "couplerDeg": -7.98,
+              "elbowPx": 3.3,
+              "linkMarginPx": 7.17,
+              "changed": 15290
+            },
+            {
+              "t": 2.083,
+              "lift": 11.53,
+              "gearDeg": -14.41,
+              "boomDeg": -2.2,
+              "couplerDeg": -8.33,
+              "elbowPx": 3.38,
+              "linkMarginPx": 7.08,
+              "changed": 15329
+            },
+            {
+              "t": 2.167,
+              "lift": 11.82,
+              "gearDeg": -14.77,
+              "boomDeg": -2.23,
+              "couplerDeg": -8.58,
+              "elbowPx": 3.43,
+              "linkMarginPx": 7.01,
+              "changed": 15344
+            },
+            {
+              "t": 2.25,
+              "lift": 11.97,
+              "gearDeg": -14.97,
+              "boomDeg": -2.25,
+              "couplerDeg": -8.71,
+              "elbowPx": 3.45,
+              "linkMarginPx": 6.98,
+              "changed": 15355
+            },
+            {
+              "t": 2.333,
+              "lift": 12,
+              "gearDeg": -15,
+              "boomDeg": -2.25,
+              "couplerDeg": -8.73,
+              "elbowPx": 3.46,
+              "linkMarginPx": 6.97,
+              "changed": 15321
+            },
+            {
+              "t": 2.417,
+              "lift": 12,
+              "gearDeg": -15,
+              "boomDeg": -2.25,
+              "couplerDeg": -8.73,
+              "elbowPx": 3.46,
+              "linkMarginPx": 6.97,
+              "changed": 15321
+            },
+            {
+              "t": 2.5,
+              "lift": 12,
+              "gearDeg": -15,
+              "boomDeg": -2.25,
+              "couplerDeg": -8.73,
+              "elbowPx": 3.46,
+              "linkMarginPx": 6.97,
+              "changed": 15321
+            },
+            {
+              "t": 2.583,
+              "lift": 12,
+              "gearDeg": -15,
+              "boomDeg": -2.25,
+              "couplerDeg": -8.73,
+              "elbowPx": 3.46,
+              "linkMarginPx": 6.97,
+              "changed": 15321
+            },
+            {
+              "t": 2.667,
+              "lift": 12,
+              "gearDeg": -15,
+              "boomDeg": -2.25,
+              "couplerDeg": -8.73,
+              "elbowPx": 3.46,
+              "linkMarginPx": 6.97,
+              "changed": 15321
+            },
+            {
+              "t": 2.75,
+              "lift": 12,
+              "gearDeg": -15,
+              "boomDeg": -2.25,
+              "couplerDeg": -8.73,
+              "elbowPx": 3.46,
+              "linkMarginPx": 6.97,
+              "changed": 15321
+            },
+            {
+              "t": 2.833,
+              "lift": 11.99,
+              "gearDeg": -14.99,
+              "boomDeg": -2.25,
+              "couplerDeg": -8.72,
+              "elbowPx": 3.46,
+              "linkMarginPx": 6.98,
+              "changed": 15356
+            },
+            {
+              "t": 2.917,
+              "lift": 11.86,
+              "gearDeg": -14.83,
+              "boomDeg": -2.24,
+              "couplerDeg": -8.62,
+              "elbowPx": 3.43,
+              "linkMarginPx": 7,
+              "changed": 15346
+            },
+            {
+              "t": 3,
+              "lift": 11.59,
+              "gearDeg": -14.49,
+              "boomDeg": -2.21,
+              "couplerDeg": -8.39,
+              "elbowPx": 3.39,
+              "linkMarginPx": 7.06,
+              "changed": 15333
+            },
+            {
+              "t": 3.083,
+              "lift": 11.2,
+              "gearDeg": -14,
+              "boomDeg": -2.16,
+              "couplerDeg": -8.05,
+              "elbowPx": 3.32,
+              "linkMarginPx": 7.15,
+              "changed": 15302
+            },
+            {
+              "t": 3.167,
+              "lift": 10.67,
+              "gearDeg": -13.34,
+              "boomDeg": -2.1,
+              "couplerDeg": -7.62,
+              "elbowPx": 3.22,
+              "linkMarginPx": 7.26,
+              "changed": 15219
+            },
+            {
+              "t": 3.25,
+              "lift": 10.04,
+              "gearDeg": -12.55,
+              "boomDeg": -2.02,
+              "couplerDeg": -7.11,
+              "elbowPx": 3.09,
+              "linkMarginPx": 7.39,
+              "changed": 15074
+            },
+            {
+              "t": 3.333,
+              "lift": 9.31,
+              "gearDeg": -11.64,
+              "boomDeg": -1.91,
+              "couplerDeg": -6.52,
+              "elbowPx": 2.94,
+              "linkMarginPx": 7.53,
+              "changed": 15065
+            },
+            {
+              "t": 3.417,
+              "lift": 8.51,
+              "gearDeg": -10.63,
+              "boomDeg": -1.79,
+              "couplerDeg": -5.89,
+              "elbowPx": 2.75,
+              "linkMarginPx": 7.69,
+              "changed": 14928
+            },
+            {
+              "t": 3.5,
+              "lift": 7.64,
+              "gearDeg": -9.55,
+              "boomDeg": -1.65,
+              "couplerDeg": -5.23,
+              "elbowPx": 2.53,
+              "linkMarginPx": 7.85,
+              "changed": 14804
+            },
+            {
+              "t": 3.583,
+              "lift": 6.74,
+              "gearDeg": -8.42,
+              "boomDeg": -1.49,
+              "couplerDeg": -4.56,
+              "elbowPx": 2.29,
+              "linkMarginPx": 8.01,
+              "changed": 14671
+            },
+            {
+              "t": 3.667,
+              "lift": 5.82,
+              "gearDeg": -7.27,
+              "boomDeg": -1.32,
+              "couplerDeg": -3.89,
+              "elbowPx": 2.03,
+              "linkMarginPx": 8.16,
+              "changed": 14532
+            },
+            {
+              "t": 3.75,
+              "lift": 4.9,
+              "gearDeg": -6.12,
+              "boomDeg": -1.14,
+              "couplerDeg": -3.23,
+              "elbowPx": 1.75,
+              "linkMarginPx": 8.31,
+              "changed": 14404
+            },
+            {
+              "t": 3.833,
+              "lift": 4.01,
+              "gearDeg": -5.01,
+              "boomDeg": -0.95,
+              "couplerDeg": -2.61,
+              "elbowPx": 1.46,
+              "linkMarginPx": 8.45,
+              "changed": 14229
+            },
+            {
+              "t": 3.917,
+              "lift": 3.16,
+              "gearDeg": -3.95,
+              "boomDeg": -0.77,
+              "couplerDeg": -2.04,
+              "elbowPx": 1.18,
+              "linkMarginPx": 8.58,
+              "changed": 14191
+            },
+            {
+              "t": 4,
+              "lift": 2.38,
+              "gearDeg": -2.98,
+              "boomDeg": -0.59,
+              "couplerDeg": -1.52,
+              "elbowPx": 0.91,
+              "linkMarginPx": 8.69,
+              "changed": 14053
+            },
+            {
+              "t": 4.083,
+              "lift": 1.69,
+              "gearDeg": -2.12,
+              "boomDeg": -0.43,
+              "couplerDeg": -1.07,
+              "elbowPx": 0.65,
+              "linkMarginPx": 8.78,
+              "changed": 13886
+            },
+            {
+              "t": 4.167,
+              "lift": 1.1,
+              "gearDeg": -1.38,
+              "boomDeg": -0.28,
+              "couplerDeg": -0.69,
+              "elbowPx": 0.43,
+              "linkMarginPx": 8.85,
+              "changed": 13746
+            },
+            {
+              "t": 4.25,
+              "lift": 0.63,
+              "gearDeg": -0.79,
+              "boomDeg": -0.16,
+              "couplerDeg": -0.39,
+              "elbowPx": 0.25,
+              "linkMarginPx": 8.91,
+              "changed": 13232
+            },
+            {
+              "t": 4.333,
+              "lift": 0.28,
+              "gearDeg": -0.35,
+              "boomDeg": -0.07,
+              "couplerDeg": -0.18,
+              "elbowPx": 0.11,
+              "linkMarginPx": 8.96,
+              "changed": 12122
+            },
+            {
+              "t": 4.417,
+              "lift": 0.07,
+              "gearDeg": -0.09,
+              "boomDeg": -0.02,
+              "couplerDeg": -0.04,
+              "elbowPx": 0.03,
+              "linkMarginPx": 8.98,
+              "changed": 8974
+            },
+            {
+              "t": 4.5,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 10.3,
+              "lift": 4.36,
+              "gearDeg": -5.45,
+              "boomDeg": -1.03,
+              "couplerDeg": -2.86,
+              "elbowPx": 1.58,
+              "linkMarginPx": 8.4,
+              "changed": 14356
+            },
+            {
+              "t": 13.637,
+              "lift": 0,
+              "gearDeg": 0,
+              "boomDeg": -0.0,
+              "couplerDeg": 0,
+              "elbowPx": 0,
+              "linkMarginPx": 8.99,
+              "changed": 0
+            },
+            {
+              "t": 33.75,
+              "lift": 11.97,
+              "gearDeg": -14.97,
+              "boomDeg": -2.25,
+              "couplerDeg": -8.71,
+              "elbowPx": 3.45,
+              "linkMarginPx": 6.98,
+              "changed": 15355
+            }
+          ],
+          "restExact": true,
+          "outsideMaskMax": 0,
+          "maskEnvelopeLeaks": 0,
+          "alphaChangedMax": 0,
+          "changedPixelsMax": 15356,
+          "foreignColorMaxDistance": 58.8,
+          "foreignColorPixelsOver30": 1718,
+          "protected": {
+            "torusChangedMax": 0,
+            "frontPileAndColumnChangedMax": 0
+          },
+          "peaks": {
+            "liftPx": 12,
+            "gearDeg": 15,
+            "boomDeg": 2.25,
+            "couplerDeg": 8.73,
+            "elbowPx": 3.46
+          },
+          "minLinkMarginPx": 6.97,
+          "loopExact": true,
+          "sameAngleExact": true,
+          "frameStep60fps": {
+            "max": 41,
+            "meanPerPixel": 0.611
+          },
+          "paintMsPerFrame": 2.748
+        }
+      ],
+      "errors": []
+    }
+  ],
+  "layout": {
+    "mapSha256": "78c4885e61f71b4cb5c63680eed97a04c0023aed81f2e58ae839ff3ff913953f",
+    "rectXYWH": [
+      268,
+      212,
+      256,
+      336
+    ],
+    "shoulderXY": [
+      327.8,
+      367.5
+    ],
+    "elbowXY": [
+      389.6,
+      305.0
+    ],
+    "pinXY": [
+      418.35,
+      308.81
+    ],
+    "gearPivotXY": [
+      437.0,
+      320.0
+    ],
+    "hubPivotXY": [
+      417.6,
+      332.0
+    ],
+    "bp04TieXY": [
+      410.0,
+      296.0
+    ],
+    "boomLength": 87.89,
+    "forearmLength": 29.0,
+    "gearPinRadius": 21.75,
+    "pixels": {
+      "boom": 2482,
+      "coupler": 1223,
+      "torus": 688,
+      "gear": 1375,
+      "hub": 975,
+      "boomUnderKnuckle": 749,
+      "boomUnderTorus": 474,
+      "forearmUnderGear": 370,
+      "gearUnderHub": 139,
+      "plateRepaired": 13366,
+      "bp04StringProtected": 108,
+      "load": 7384,
+      "front": 5512,
+      "cubeBehindPile": 1489,
+      "bracketUnderGear": 418,
+      "mask": 34141
+    },
+    "assets": {
+      "arm-assets/plate.png": "ca491087730ae13792b9bc7fd3d5bae996f66d4a2e357433995af983323a88dd",
+      "arm-assets/boom.png": "033ba0e59b621eb6925e28172c3e2a4e69188d90a94ea69a194044f87e8299f1",
+      "arm-assets/coupler.png": "abe70f66ed41df202a3c18d16a35496094d82ad77b7d2b09f58b9b411eead75d",
+      "arm-assets/torus.png": "6445299a82a4a95f2f8af72bd444bf4d61b12166437c88295b58e9c959e1f8a0",
+      "arm-assets/load.png": "a87a9213973b93b63b62a2b7cef827cdbd12fdc80a3c2704fee272c738fef7d0",
+      "arm-assets/front.png": "d2b15e27f832a6e7a58bf9dd4a9bf457c5aea9885795e658fe54512bb22d5aa3",
+      "arm-assets/gear.png": "567d696dc0556f339da07058a60bdc396868433a3a3df2a72ce0bc342a00b94a",
+      "arm-assets/hub.png": "5a99e83dfdd98aa1281b67d0386708f78a7aea735058be4142c1d67f856528ad",
+      "arm-assets/mask.png": "24eea836765c9392c75a4b604bb163cc0b4864a315e7d1f57227f2efeac62393"
+    }
+  },
+  "chrome": "153.0.8010.12",
+  "visibility": {
+    "10px": {
+      "loadLiftMapPx": 10,
+      "gearRimTurnMapPx": 6.11,
+      "elbowMapPx": 3.08,
+      "desktop1388Px": 9.04,
+      "phone392Px": 2.55
+    },
+    "12px": {
+      "loadLiftMapPx": 12,
+      "gearRimTurnMapPx": 7.33,
+      "elbowMapPx": 3.46,
+      "desktop1388Px": 10.84,
+      "phone392Px": 3.06
+    },
+    "15px": {
+      "loadLiftMapPx": 15,
+      "gearRimTurnMapPx": 9.16,
+      "elbowMapPx": 3.84,
+      "desktop1388Px": 13.55,
+      "phone392Px": 3.83
+    }
+  }
+}
