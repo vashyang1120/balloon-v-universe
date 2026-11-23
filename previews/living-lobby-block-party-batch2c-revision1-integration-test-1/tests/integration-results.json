@@ -1,0 +1,259 @@
+{
+  "date": "2026-11-23 23:18",
+  "root": "http://127.0.0.1:8765/",
+  "runs": [
+    {
+      "profile": "desktop-1440",
+      "liftPx": 10,
+      "frames": [
+        {
+          "ms": 0,
+          "changedInMask": 0,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 600,
+          "changedInMask": 0,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 1450,
+          "changedInMask": 15009,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 2550,
+          "changedInMask": 15731,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 3200,
+          "changedInMask": 15583,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 3900,
+          "changedInMask": 14655,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 4500,
+          "changedInMask": 0,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 7050,
+          "changedInMask": 15731,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 12300,
+          "changedInMask": 15454,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        }
+      ],
+      "domSame": true,
+      "errors": [],
+      "baselineErrors": []
+    },
+    {
+      "profile": "desktop-1440",
+      "liftPx": 12,
+      "frames": [
+        {
+          "ms": 0,
+          "changedInMask": 0,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 600,
+          "changedInMask": 0,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 1450,
+          "changedInMask": 15157,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 2550,
+          "changedInMask": 15974,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 3200,
+          "changedInMask": 15824,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 3900,
+          "changedInMask": 14798,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 4500,
+          "changedInMask": 0,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 7050,
+          "changedInMask": 15974,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 12300,
+          "changedInMask": 15711,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        }
+      ],
+      "domSame": true,
+      "errors": [],
+      "baselineErrors": []
+    },
+    {
+      "profile": "desktop-1440",
+      "liftPx": 15,
+      "frames": [
+        {
+          "ms": 0,
+          "changedInMask": 0,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 600,
+          "changedInMask": 0,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 1450,
+          "changedInMask": 15430,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 2550,
+          "changedInMask": 16308,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 3200,
+          "changedInMask": 16096,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 3900,
+          "changedInMask": 14959,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 4500,
+          "changedInMask": 0,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 7050,
+          "changedInMask": 16308,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 12300,
+          "changedInMask": 15968,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        }
+      ],
+      "domSame": true,
+      "errors": [],
+      "baselineErrors": []
+    },
+    {
+      "profile": "pixel7-412",
+      "liftPx": 12,
+      "frames": [
+        {
+          "ms": 0,
+          "changedInMask": 0,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 600,
+          "changedInMask": 0,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 1450,
+          "changedInMask": 15157,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 2550,
+          "changedInMask": 15974,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 3200,
+          "changedInMask": 15824,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 3900,
+          "changedInMask": 14798,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 4500,
+          "changedInMask": 0,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 7050,
+          "changedInMask": 15974,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        },
+        {
+          "ms": 12300,
+          "changedInMask": 15711,
+          "changedOutsideMask": 0,
+          "alphaChanged": 0
+        }
+      ],
+      "domSame": true,
+      "errors": [],
+      "baselineErrors": []
+    }
+  ],
+  "chrome": "153.0.8010.12"
+}

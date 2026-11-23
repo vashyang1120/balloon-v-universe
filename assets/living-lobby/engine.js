@@ -207,6 +207,7 @@ function measure(sheet,splitFraction){
   ]);
   const waterfallPatches = LobbyWaterfalls.prepare(map,background);
   const speakerState = LobbySpeakers.prepare(map);
+  const craneState = typeof LobbyCrane === "object" ? await LobbyCrane.prepare(LobbyArmAssets) : null;
   const [previousArt, nextArt, angleArt, venueArt] = characterArt;
   const clips = [...measure(previousArt,.497), ...measure(nextArt,.486), measure(angleArt,1)[0], ...measureVenues(venueArt)];
   const balloons = sprites.slice(0, config.balloons.length);
@@ -240,6 +241,7 @@ function measure(sheet,splitFraction){
       ctx.drawImage(background,0,0);
       LobbyWaterfalls.paint(ctx,waterfallPatches,seconds);
       LobbySpeakers.paint(ctx, speakerState, seconds, envelope, pulseSettings);
+      if (craneState) LobbyCrane.paint(ctx, craneState, seconds);
       balloons.forEach((sprite,i)=>{
         const {boundsXYWH:[x,y],anchorXY:[ax,ay],motionAmplitudeXYDegrees:[dx,dy,rotation],periodMs}=config.balloons[i];
         const cycle=(seconds*1000/periodMs)*2*Math.PI;

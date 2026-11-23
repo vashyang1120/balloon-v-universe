@@ -1,0 +1,103 @@
+{
+  "project": "Universe Living Lobby v1.0",
+  "version": "Living Lobby Art v1.0 | Batch 2-C Revision 1 Integration Test 1",
+  "date": "2026-11-23",
+  "status": "integrated-on-branch; independent preview deployment pending (notice truncated)",
+  "base": {
+    "main": "c6ec0d396e5449872575d3a7b90b85c0ce2b05ae",
+    "animationSource": {
+      "branch": "dev/living-lobby-block-party-batch2c-revision1-test2",
+      "commit": "b40f9b2593f09770e93dad71953f3f5fbb517524"
+    }
+  },
+  "productionAssets": {
+    "assets.js": "assets/living-lobby/assets.js (on main; references art/<sha256>.png)",
+    "backgroundEqualsMapRGBInCraneRect": true
+  },
+  "changes": {
+    "engine.js": "+2 lines (prepare; paint after speakers)",
+    "index.html": "+2 script tags, engine cache key",
+    "added": [
+      "assets/living-lobby/crane.js",
+      "assets/living-lobby/crane-assets.js",
+      "assets/living-lobby/crane/*.png (9)",
+      "assets/living-lobby/crane/layout.json"
+    ]
+  },
+  "motion": {
+    "liftPxDefault": 12,
+    "liftPxOptions": [
+      10,
+      12,
+      15
+    ],
+    "query": "?craneLift=10|12|15, 0=off",
+    "periodSeconds": 4.5,
+    "gearDegreesPerPx": -1.25
+  },
+  "tests": {
+    "file": "previews/living-lobby-block-party-batch2c-revision1-integration-test-1/tests/integration-results.json",
+    "chrome": "153.0.8010.12",
+    "summary": [
+      {
+        "profile": "desktop-1440",
+        "liftPx": 10,
+        "maxOutsideMask": 0,
+        "maxAlphaChanged": 0,
+        "domSame": true,
+        "errors": 0
+      },
+      {
+        "profile": "desktop-1440",
+        "liftPx": 12,
+        "maxOutsideMask": 0,
+        "maxAlphaChanged": 0,
+        "domSame": true,
+        "errors": 0
+      },
+      {
+        "profile": "desktop-1440",
+        "liftPx": 15,
+        "maxOutsideMask": 0,
+        "maxAlphaChanged": 0,
+        "domSame": true,
+        "errors": 0
+      },
+      {
+        "profile": "pixel7-412",
+        "liftPx": 12,
+        "maxOutsideMask": 0,
+        "maxAlphaChanged": 0,
+        "domSame": true,
+        "errors": 0
+      }
+    ]
+  },
+  "files": {
+    "assets/living-lobby/crane-assets.js": "758ec1cc84cdd3a2720f607e627574f3b01fad0c93d850c18640b1966f444975",
+    "assets/living-lobby/crane.js": "ab33871adbdac558a8450be8465def3bab91eb113685f92ae5a6e260ba9eb195",
+    "assets/living-lobby/crane/boom.png": "033ba0e59b621eb6925e28172c3e2a4e69188d90a94ea69a194044f87e8299f1",
+    "assets/living-lobby/crane/coupler.png": "abe70f66ed41df202a3c18d16a35496094d82ad77b7d2b09f58b9b411eead75d",
+    "assets/living-lobby/crane/front.png": "d2b15e27f832a6e7a58bf9dd4a9bf457c5aea9885795e658fe54512bb22d5aa3",
+    "assets/living-lobby/crane/gear.png": "567d696dc0556f339da07058a60bdc396868433a3a3df2a72ce0bc342a00b94a",
+    "assets/living-lobby/crane/hub.png": "5a99e83dfdd98aa1281b67d0386708f78a7aea735058be4142c1d67f856528ad",
+    "assets/living-lobby/crane/layout.json": "89bb000a8ae91c423d9d53fe40f15a4c3b1960c73892210874d3a8380bf41735",
+    "assets/living-lobby/crane/load.png": "a87a9213973b93b63b62a2b7cef827cdbd12fdc80a3c2704fee272c738fef7d0",
+    "assets/living-lobby/crane/mask.png": "24eea836765c9392c75a4b604bb163cc0b4864a315e7d1f57227f2efeac62393",
+    "assets/living-lobby/crane/plate.png": "9442f5dda23ba587e35fd7cb887f7a07cfb3fd8aeb8e71493072ff38d20b3c22",
+    "assets/living-lobby/crane/torus.png": "6445299a82a4a95f2f8af72bd444bf4d61b12166437c88295b58e9c959e1f8a0",
+    "assets/living-lobby/engine.js": "576eb372fc5e80d317f7fba3c2546903f646c08e6ce3e4c265e2d1638f0545b4",
+    "index.html": "ba4042bfa8f202254749cec2c9d55b2d9750869b3502a4d94a98ccfd6ba44572",
+    "previews/living-lobby-block-party-batch2c-revision1-integration-test-1/HANDOFF.md": "602f9eb07742b0f79a470771ae43e0aaa528016990f6fb10dddd7e4ae29ae467",
+    "previews/living-lobby-block-party-batch2c-revision1-integration-test-1/README.md": "f707deb13ca5eef8591ac3fe349efddfdfdabd61bcb57613f732cf28b122ce61",
+    "previews/living-lobby-block-party-batch2c-revision1-integration-test-1/check-integration.py": "ce9e3c36e2114b6db4ea8bd1abb31f85ff28aa359fd6f1858d27712938331adc",
+    "previews/living-lobby-block-party-batch2c-revision1-integration-test-1/record.py": "3b0ff11eaaeb21428a2324df0ac24448c6264b6dd1f3b4689c89671b695aeb7c",
+    "previews/living-lobby-block-party-batch2c-revision1-integration-test-1/tests/frames/desktop-1440-lift12.png": "08c66df55a6b773cf47aeebd8b7541185c00ebddffb9b76ab60bf40c3d862d7a",
+    "previews/living-lobby-block-party-batch2c-revision1-integration-test-1/tests/frames/lobby-crop-2550ms.png": "06b1afae2ee5aee153926f63c73ac28910b2bacbee81c74d897c17316eb1685d",
+    "previews/living-lobby-block-party-batch2c-revision1-integration-test-1/tests/frames/lobby-crop-600ms.png": "e7bdb08ba2c6251aab393a5186fbdd1f280e4ec0b1a6232525123e053e5815e1",
+    "previews/living-lobby-block-party-batch2c-revision1-integration-test-1/tests/frames/pixel7-412-lift12.png": "124842b78574997b461059326bd5976978ef804250e63a2fbb48fb412e173c5a",
+    "previews/living-lobby-block-party-batch2c-revision1-integration-test-1/tests/integration-results.json": "605a8c5f51e217ffb47ddc484384993810052b5186e4c354395ea219c0209378",
+    "previews/living-lobby-block-party-batch2c-revision1-integration-test-1/videos/full-lobby-desktop.mp4": "80ae58499cfdc08f71967c99107e7811e41ee74288340510d0fae5616bdea8b9",
+    "previews/living-lobby-block-party-batch2c-revision1-integration-test-1/videos/full-lobby-phone.mp4": "97f441c5b3064b4b9fd62648a0fd34a7fe400899aef769cda3788c515265b6c5"
+  }
+}
