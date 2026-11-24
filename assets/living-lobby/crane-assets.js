@@ -1,0 +1,3 @@
+"use strict";
+// Batch 2-C Revision 1｜吊臂搬運圖層（全部取自原始地圖像素，見 crane/layout.json）。路徑相對於 assets/living-lobby/。
+const LobbyArmAssets = {"layout": {"rectXYWH": [268, 212, 256, 336], "shoulderXY": [327.8, 367.5], "elbowXY": [389.6, 305.0], "pinXY": [418.35, 308.81], "gearPivotXY": [437.0, 320.0], "hubPivotXY": [417.6, 332.0], "bp04TieXY": [410.0, 296.0]}, "images": {"plate": "crane/plate.png", "boom": "crane/boom.png", "coupler": "crane/coupler.png", "torus": "crane/torus.png", "load": "crane/load.png", "gear": "crane/gear.png", "hub": "crane/hub.png", "front": "crane/front.png", "mask": "crane/mask.png"}};
